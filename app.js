@@ -42,7 +42,7 @@ const festivalData = {
         {"time": "Neděle 9.května  9:00- 11:00", "event": "Závěrečné workshopy", "description": "Krátké workshopy - jednohubky"},
         {"time": "Neděle 9. května  13:00 - 13:15", "event": "Open call - workshopy", "description": "Posezení nad návrhy otevřených workshopů"},
         {"time": "Neděle 9. května  13:30 - 14:30", "event": "Open call - workshopy I", "description": "Otevřených workshopy 1"},
-         {"time": "Neděle 9. května  14:45 - 15:45", "event": "Open call - workshopy II", "description": "Otevřené h workshopy 2"}
+        {"time": "Neděle 9. května  14:45 - 15:45", "event": "Open call - workshopy II", "description": "Otevřené h workshopy 2"},
         {"time": "Neděle 9. května  16:00 ", "event": "Společné foto", "description": "Společné foto"}
     ],
     "faq": [
