@@ -13,10 +13,10 @@ let appState = {
 const festivalData = {
     "festival_info": {
         "name": "Improtřesk 2026",
-        "date": "15-17. července 2026",
-        "location": "Kulturní centrum Praha",
+        "date": "7.-10. květen 2026",
+        "location": "Praha",
         "description": "Mezinárodní festival improvizačního divadla",
-        "ticket_price": "1200 Kč"
+        "ticket_price": "12000 Kč"
     },
     "workshops": [
         {"id": 1, "name": "Základy improvizace", "description": "Úvodní workshop pro začátečníky", "instructor": "Jana Nováková", "capacity": 12, "current_enrolled": 8, "price": 500},
@@ -31,21 +31,28 @@ const festivalData = {
         {"id": 10, "name": "Improvizační bojové umění", "description": "Bezpečné scénické boje v improvizaci", "instructor": "Jakub Bojovník", "capacity": 12, "current_enrolled": 10, "price": 600}
     ],
     "program": [
-        {"time": "Pátek 15.7. - 19:00", "event": "Zahajovací ceremoniál", "description": "Oficiální zahájení festivalu s účastí všech skupin"},
-        {"time": "Sobota 16.7. - 10:00", "event": "Workshop bloky", "description": "První kolo workshopů dle výběru účastníků"},
-        {"time": "Sobota 16.7. - 14:00", "event": "Mezinárodní představení", "description": "Vystoupení zahraničních skupin"},
-        {"time": "Sobota 16.7. - 20:00", "event": "Improvizační souboje", "description": "Soutěžní zápasy mezi týmy"},
-        {"time": "Neděle 17.7. - 11:00", "event": "Závěrečné workshopy", "description": "Druhé kolo workshopů"},
-        {"time": "Neděle 17.7. - 16:00", "event": "Závěrečné představení", "description": "Společné vystoupení všech účastníků"}
+        {"time": "Čtvrtek 7. května - 19:00", "event": "Zahajovací ceremoniál", "description": "Oficiální zahájení festivalu s účastí všech skupin"},
+        {"time": "Pátek 8. května  - 9:00 - 13:00", "event": "Workshop bloky", "description": "První část  workshopů dle výběru účastníků"},
+        {"time": "Pátek 8. května  - 15:00 - 17:00", "event": "Workshop bloky", "description": "Druhé část  workshopů dle výběru účastníků"},
+        {"time": "Pátek 9. května - 19:30", "event": "Mezinárodní představení", "description": "Vystoupení zahraničních skupin"},
+        {"time": "Sobota 9. května  - 9:00 - 13:00", "event": "Workshop bloky", "description": "Třetí část  workshopů dle výběru účastníků"},
+        {"time": "Sobota 9. května  - 15:00 - 17:00", "event": "Workshop bloky", "description": "Čtvrtá část  workshopů dle výběru účastníků"},        
+        {"time": "Sobota 9. května - 19:30", "event": "Mezinárodní představení", "description": "Vystoupení zahraničních skupin"},
+        {"time": "Sobota 9. května - 21:00", "event": "Mezinárodní představení II", "description": "Vystoupení zahraničních skupin"},                
+        {"time": "Neděle 9.května  9:00- 11:00", "event": "Závěrečné workshopy", "description": "Krátké workshopy - jednohubky"},
+        {"time": "Neděle 9. května  13:00 - 13:15", "event": "Open call - workshopy", "description": "Posezení nad návrhy otevřených workshopů"},
+        {"time": "Neděle 9. května  13:30 - 14:30", "event": "Open call - workshopy I", "description": "Otevřených workshopy 1"},
+         {"time": "Neděle 9. května  14:45 - 15:45", "event": "Open call - workshopy II", "description": "Otevřené h workshopy 2"}
+        {"time": "Neděle 9. května  16:00 ", "event": "Společné foto", "description": "Společné foto"}
     ],
     "faq": [
         {"question": "Jak se registrovat na festival?", "answer": "Registrace probíhá online přes náš systém. Stačí si vytvořit účet a vybrat si jeden workshop."},
         {"question": "Můžu si vybrat více workshopů?", "answer": "Každý účastník si může vybrat pouze jeden workshop kvůli omezenému počtu míst."},
-        {"question": "Co když je workshop plný?", "answer": "V takovém případě si můžete vybrat jiný workshop nebo se přidat na čekací listinu."},
+        {"question": "Co když je workshop plný?", "answer": "V takovém případě si můžete vybrat jiný workshop, a přidat se na čekací listinu. Když se na workshopu, po kterém toužíš uvolní místo, systém ho automaticky zaplní."},
         {"question": "Jak probíhá platba?", "answer": "Po registraci vám bude vygenerován QR kód pro bankovní převod s konkrétními platebními údaji."}
     ],
     "admin_credentials": {"email": "admin@improtresk.cz", "password": "admin123"},
-    "bank_info": {"account": "1234567890/0100", "bank_name": "Komerční banka"}
+    "bank_info": {"account": "1234567890123456/0100", "bank_name": "Komerční banka"}
 };
 
 // Utility Functions
