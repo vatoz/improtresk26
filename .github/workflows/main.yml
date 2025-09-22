@@ -1,5 +1,7 @@
-on: push
-name: 🚀 Deploy website on push
+on: 
+  push:
+  workflow_dispatch:
+name: 🚀 Deploy website
 jobs:
   web-deploy:
     name: 🎉 Deploy
