@@ -1,0 +1,90 @@
+<!-- Registration Form -->
+<div class="container">
+    <h1>Registrace na festival</h1>
+
+    {% if session.error %}
+        <div class="alert alert-error">
+            {{ session.error }}
+        </div>
+    {% endif %}
+
+    {% if session.success %}
+        <div class="alert alert-success">
+            {{ session.success }}
+        </div>
+    {% endif %}
+
+    {% if workshops is empty %}
+        <div class="card">
+            <div class="card__body">
+                <p>Momentálně nejsou k dispozici žádné volné workshopy.</p>
+                <a href="/workshops" class="btn btn--secondary">Zpět na přehled workshopů</a>
+            </div>
+        </div>
+    {% else %}
+        <form id="festival-registration-form" class="registration-form" method="POST" action="/workshop/register">
+            <div class="card">
+                <div class="card__body">
+                    <h3>Výběr workshopu</h3>
+                    <div class="form-group">
+                        <label class="form-label">Vyberte workshop (povinné):</label>
+                        <select name="workshop_id" id="workshop-select" class="form-control" required>
+                            <option value="">-- Vyberte workshop --</option>
+                            {% for workshop in workshops %}
+                                <option value="{{ workshop.id }}" data-price="{{ workshop.price }}">
+                                    {{ workshop.name }} - {{ workshop.date|date('j.n.Y') }} {{ workshop.time[:5] }}
+                                    ({{ workshop.available_spots }} volných míst)
+                                    - {{ workshop.price|number_format(0, ',', ' ') }} Kč
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div id="workshop-details" class="workshop-details-box" style="display: none;">
+                        <!-- Workshop details will be shown here when selected -->
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">
+                            <input type="checkbox" name="companion_program" id="companion-program">
+                            Zájem o doprovodný program (vstup na večerní představení)
+                        </label>
+                    </div>
+
+                    <div class="form-summary">
+                        <div class="summary-row">
+                            <span>Cena workshopu:</span>
+                            <span id="workshop-price">0 Kč</span>
+                        </div>
+                        <div class="summary-row total">
+                            <strong>Celková cena:</strong>
+                            <strong id="total-price">0 Kč</strong>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn btn--primary btn--lg">Pokračovat k platbě</button>
+                </div>
+            </div>
+        </form>
+    {% endif %}
+</div>
+
+<script>
+// Update price display when workshop is selected
+document.addEventListener('DOMContentLoaded', function() {
+    const workshopSelect = document.getElementById('workshop-select');
+    const workshopPrice = document.getElementById('workshop-price');
+    const totalPrice = document.getElementById('total-price');
+
+    if (workshopSelect && workshopPrice && totalPrice) {
+        workshopSelect.addEventListener('change', function() {
+            const selectedOption = this.options[this.selectedIndex];
+            const price = selectedOption.getAttribute('data-price') || 0;
+            const formattedPrice = new Intl.NumberFormat('cs-CZ').format(price) + ' Kč';
+
+            workshopPrice.textContent = formattedPrice;
+            totalPrice.textContent = formattedPrice;
+        });
+    }
+});
+</script>

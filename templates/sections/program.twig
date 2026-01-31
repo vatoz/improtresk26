@@ -1,0 +1,61 @@
+<!-- Program Page -->
+<div class="container">
+    <h1>Program festivalu</h1>
+
+    {% if program_items is empty %}
+        <div class="card">
+            <div class="card__body">
+                <p>Program festivalu bude brzy zveřejněn. Sledujte naše stránky pro aktualizace.</p>
+            </div>
+        </div>
+    {% else %}
+        <div class="program-grid">
+            {% for date, items in program_items %}
+                <div class="program-day">
+                    <h2 class="program-day-title">{{ date|date('j. n. Y') }}</h2>
+
+                    {% for item in items %}
+                        <div class="program-item">
+                            <div class="program-time">
+                                {{ item.start_time[:5] }} - {{ item.end_time[:5] }}
+                            </div>
+                            <div class="program-content">
+                                <div class="program-header">
+                                    <h3 class="program-title">{{ item.title }}</h3>
+                                    <span class="program-type badge badge-{{ item.type }}">
+                                        {% if item.type == 'performance' %}Představení
+                                        {% elseif item.type == 'workshop' %}Workshop
+                                        {% elseif item.type == 'discussion' %}Diskuse
+                                        {% elseif item.type == 'party' %}Párty
+                                        {% else %}{{ item.type }}
+                                        {% endif %}
+                                    </span>
+                                </div>
+
+                                {% if item.performer %}
+                                    <div class="program-performer">{{ item.performer }}</div>
+                                {% endif %}
+
+                                {% if item.description %}
+                                    <p class="program-description">{{ item.description }}</p>
+                                {% endif %}
+
+                                <div class="program-details">
+                                    {% if item.location %}
+                                        <span class="program-location">📍 {{ item.location }}</span>
+                                    {% endif %}
+                                    {% if item.is_free %}
+                                        <span class="program-free">🎫 Vstup zdarma</span>
+                                    {% endif %}
+                                    {% if item.max_capacity %}
+                                        <span class="program-capacity">👥 Kapacita: {{ item.max_capacity }}</span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+</div>

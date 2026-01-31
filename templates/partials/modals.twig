@@ -1,0 +1,74 @@
+<!-- Modals -->
+<!-- Login Modal -->
+<div id="login-modal" class="modal hidden">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>Přihlášení</h3>
+            <button class="modal-close">&times;</button>
+        </div>
+        <form id="login-form">
+            <div class="form-group">
+                <label class="form-label">Email:</label>
+                <input type="email" id="login-email" class="form-control" required>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Heslo:</label>
+                <input type="password" id="login-password" class="form-control" required>
+            </div>
+            <div class="form-actions">
+                <button type="submit" class="btn btn--primary">Přihlásit se</button>
+                <button type="button" id="forgot-password-btn" class="btn btn--outline">Zapomenuté heslo</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Register Modal -->
+<div id="register-modal" class="modal hidden">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>Registrace</h3>
+            <button class="modal-close">&times;</button>
+        </div>
+        <form id="register-form">
+            <div class="form-group">
+                <label class="form-label">Jméno:</label>
+                <input type="text" id="register-name" class="form-control" required>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Email:</label>
+                <input type="email" id="register-email" class="form-control" required>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Heslo:</label>
+                <input type="password" id="register-password" class="form-control" required>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Potvrdit heslo:</label>
+                <input type="password" id="register-password-confirm" class="form-control" required>
+            </div>
+            <div class="form-actions">
+                <button type="submit" class="btn btn--primary">Registrovat se</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Password Reset Modal -->
+<div id="password-reset-modal" class="modal hidden">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>Obnova hesla</h3>
+            <button class="modal-close">&times;</button>
+        </div>
+        <form id="password-reset-form">
+            <div class="form-group">
+                <label class="form-label">Email:</label>
+                <input type="email" id="reset-email" class="form-control" required>
+            </div>
+            <div class="form-actions">
+                <button type="submit" class="btn btn--primary">Odeslat odkaz</button>
+            </div>
+        </form>
+    </div>
+</div>

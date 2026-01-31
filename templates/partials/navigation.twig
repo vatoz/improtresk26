@@ -1,0 +1,35 @@
+<!-- Navigation -->
+<nav class="navbar">
+    <div class="container">
+        <div class="navbar-content">
+            <div class="navbar-brand">
+                <a href="/">
+                    <h2>Improtřesk 2026</h2>
+                </a>
+            </div>
+            <div class="navbar-menu">
+                <button id="menu-toggle" class="menu-toggle">☰</button>
+                <div class="navbar-links" id="navbar-links">
+                    <a href="/" {% if active_page == 'home' or not active_page %}class="active"{% endif %}>Domů</a>
+                    <a href="/program" {% if active_page == 'program' %}class="active"{% endif %}>Program</a>
+                    <a href="/workshops" {% if active_page == 'workshops' %}class="active"{% endif %}>Workshopy</a>
+                    <a href="/info" {% if active_page == 'info' %}class="active"{% endif %}>Informace</a>
+                    <a href="/faq" {% if active_page == 'faq' %}class="active"{% endif %}>FAQ</a>
+                    <a href="/contact" {% if active_page == 'contact' %}class="active"{% endif %}>Kontakt</a>
+                    <div class="auth-buttons">
+                        {% if user %}
+                            <a href="/dashboard" class="btn btn--outline btn--sm">{{ user.name }}</a>
+                            {% if user.role == 'admin' %}
+                                <a href="/admin" class="btn btn--secondary btn--sm">Admin</a>
+                            {% endif %}
+                            <a href="/logout" class="btn btn--outline btn--sm">Odhlásit</a>
+                        {% else %}
+                            <button id="login-btn" class="btn btn--outline btn--sm">Přihlásit se</button>
+                            <button id="register-btn" class="btn btn--primary btn--sm">Registrovat</button>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</nav>

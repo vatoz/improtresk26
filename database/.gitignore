@@ -1,0 +1,5 @@
+# Ignore any database dumps or backups
+*.dump
+*.backup
+*.bak
+backup/

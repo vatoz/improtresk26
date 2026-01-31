@@ -6,18 +6,34 @@ use AltoRouter;
 
 // Router
 $router = new AltoRouter();
-$router->setBasePath('/'); // pokud je v subdiru, tady nastavit
+//$router->setBasePath('/'); // pokud je v subdiru, tady nastavit
 
-$router->map('GET', '/', 'HomeController#index', 'home');
+// Default pages
+$router->map('GET', '/', 'DefaultController#index', 'home');
+$router->map('GET', '/program', 'DefaultController#program', 'program');
+$router->map('GET', '/info', 'DefaultController#info', 'info');
+$router->map('GET', '/faq', 'DefaultController#faq', 'faq');
+$router->map('GET', '/contact', 'DefaultController#contact', 'contact');
+
+// Auth
 $router->map('GET|POST', '/login', 'AuthController#login', 'login');
 $router->map('GET|POST', '/register', 'AuthController#register', 'register');
 $router->map('GET', '/logout', 'AuthController#logout', 'logout');
+
+// Workshops
 $router->map('GET', '/workshops', 'WorkshopController#index', 'workshops');
-$router->map('GET|POST', '/profile', 'UserController#profile', 'profile');
+$router->map('GET|POST', '/workshop/register', 'WorkshopController#register', 'workshop_register');
+
+// User dashboard
+$router->map('GET', '/dashboard', 'DashboardController#index', 'dashboard');
+$router->map('GET', '/profile', 'DashboardController#index', 'profile');
+
+// Payment
+$router->map('GET', '/payment', 'PaymentController#index', 'payment');
 
 // Admin
-$router->map('GET', '/admin', 'AdminController#index', 'admin_dashboard');
-$router->map('GET|POST', '/admin/payments', 'AdminController#payments', 'admin_payments');
+$router->map('GET', '/admin', 'AdminController#index', 'admin');
+$router->map('GET', '/admin/export-csv', 'AdminController#exportCsv', 'admin_export_csv');
 
 $match = $router->match();
 
@@ -29,7 +45,7 @@ if ($match) {
         call_user_func_array([$c, $action], $match['params']);
     } else {
         header("HTTP/1.0 404 Not Found");
-        echo "Controller not found.";
+        echo "Controller ". $controller." not found.";
     }
 } else {
     header("HTTP/1.0 404 Not Found");
