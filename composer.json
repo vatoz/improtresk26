@@ -1,0 +1,7 @@
+{
+    "require": {
+        "altorouter/altorouter": "^2.0",
+        "twig/twig": "^3.22",
+        "vlucas/phpdotenv": "^5.6"
+    }
+}
