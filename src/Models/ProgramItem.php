@@ -53,7 +53,7 @@ class ProgramItem
             SELECT *
             FROM program_items
             WHERE is_active = 1
-            ORDER BY date, start_time
+            ORDER BY date, start_time, track
         ");
         $items = $stmt->fetchAll();
 
@@ -64,6 +64,55 @@ class ProgramItem
                 $grouped[$date] = [];
             }
             $grouped[$date][] = $item;
+        }
+
+        return $grouped;
+    }
+
+    /**
+     * Get program items grouped by date with track support
+     * Returns structure: [date => [time_slot => ['full_width' => item, 'track_a' => item, 'track_b' => item]]]
+     *
+     * @param PDO $db
+     * @return array
+     */
+    public static function getGroupedByDateAndTrack(PDO $db): array
+    {
+        $stmt = $db->query("
+            SELECT *
+            FROM program_items
+            WHERE is_active = 1
+            ORDER BY date, start_time, track
+        ");
+        $items = $stmt->fetchAll();
+
+        $grouped = [];
+        foreach ($items as $item) {
+            $date = $item['date'];
+            $timeSlot = $item['start_time'] . '-' . $item['end_time'];
+
+            if (!isset($grouped[$date])) {
+                $grouped[$date] = [];
+            }
+
+            if (!isset($grouped[$date][$timeSlot])) {
+                $grouped[$date][$timeSlot] = [
+                    'start_time' => $item['start_time'],
+                    'end_time' => $item['end_time'],
+                    'full_width' => null,
+                    'track_a' => null,
+                    'track_b' => null
+                ];
+            }
+
+            // Assign item to appropriate track
+            if ($item['track'] === null) {
+                $grouped[$date][$timeSlot]['full_width'] = $item;
+            } elseif ($item['track'] === 'A') {
+                $grouped[$date][$timeSlot]['track_a'] = $item;
+            } elseif ($item['track'] === 'B') {
+                $grouped[$date][$timeSlot]['track_b'] = $item;
+            }
         }
 
         return $grouped;

@@ -746,6 +746,83 @@ a:hover {
   color: var(--color-text-secondary);
 }
 
+/* Program - Concurrent Tracks */
+.program-timeslot {
+  margin-bottom: var(--space-24);
+}
+
+.program-time-label {
+  font-weight: var(--font-weight-bold);
+  color: var(--color-primary);
+  margin-bottom: var(--space-16);
+  font-size: var(--font-size-lg);
+  padding: var(--space-8) 0;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.program-tracks {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--space-20);
+  align-items: start;
+}
+
+.program-track {
+  display: flex;
+  flex-direction: column;
+  min-height: 100%;
+}
+
+.program-track-label {
+  font-weight: var(--font-weight-bold);
+  background: var(--color-primary);
+  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-active) 100%);
+  padding: var(--space-12) var(--space-16);
+  border-radius: var(--radius-base) var(--radius-base) 0 0;
+  text-align: center;
+  font-size: var(--font-size-base);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: white;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.program-track .program-item {
+  display: block;
+  margin-bottom: 0;
+  border-radius: 0 0 var(--radius-base) var(--radius-base);
+  border-top: none;
+  flex-grow: 1;
+  height: 100%;
+}
+
+.program-item--full {
+  display: block;
+  background: var(--color-surface);
+  padding: var(--space-20);
+  border-radius: var(--radius-base);
+  border: 2px solid var(--color-primary);
+  margin-bottom: var(--space-12);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.program-item--empty {
+  background: var(--color-background);
+  border-style: dashed;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 120px;
+  opacity: 0.6;
+}
+
+.program-empty-text {
+  color: var(--color-text-secondary);
+  font-style: italic;
+  margin: 0;
+  font-size: var(--font-size-sm);
+}
+
 /* ========================================
    FAQ
    ======================================== */
@@ -1016,6 +1093,19 @@ a:hover {
 
   .program-time {
     min-width: auto;
+  }
+
+  .program-tracks {
+    grid-template-columns: 1fr;
+    gap: var(--space-16);
+  }
+
+  .program-track {
+    width: 100%;
+  }
+
+  .program-track-label {
+    border-radius: var(--radius-base) var(--radius-base) 0 0;
   }
 
   .info-sections,

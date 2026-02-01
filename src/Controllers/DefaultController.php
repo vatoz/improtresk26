@@ -16,8 +16,8 @@ class DefaultController extends BaseController
 
     public function program()
     {
-        // Get program items grouped by date
-        $programItems = ProgramItem::getGroupedByDate($this->db);
+        // Get program items grouped by date and track for concurrent display
+        $programItems = ProgramItem::getGroupedByDateAndTrack($this->db);
 
         echo $this->twig->render('pages/program.twig', [
             'user' => $this->getCurrentUser(),
