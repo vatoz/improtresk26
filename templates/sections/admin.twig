@@ -1,0 +1,44 @@
+<!-- Admin Panel -->
+<div class="container">
+        <h1>Administrace</h1>
+        <div class="admin-tabs">
+            <button class="tab-btn active" data-tab="participants">Účastníci</button>
+            <button class="tab-btn" data-tab="workshops-admin">Workshopy</button>
+            <button class="tab-btn" data-tab="export">Export</button>
+        </div>
+
+        <div class="tab-content">
+            <div id="participants-tab" class="tab-pane active">
+                <div class="card">
+                    <div class="card__body">
+                        <h3>Přehled účastníků</h3>
+                        <div id="participants-list">
+                            <!-- Participants will be listed here -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="workshops-admin-tab" class="tab-pane">
+                <div class="card">
+                    <div class="card__body">
+                        <h3>Správa workshopů</h3>
+                        <div id="admin-workshops-list">
+                            <!-- Workshop admin will be here -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="export-tab" class="tab-pane">
+                <div class="card">
+                    <div class="card__body">
+                        <h3>Export dat</h3>
+                        <button id="export-csv" class="btn btn--primary">Stáhnout CSV</button>
+                        <button id="export-excel" class="btn btn--secondary">Stáhnout Excel</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

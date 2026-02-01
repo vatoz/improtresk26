@@ -1,0 +1,61 @@
+<!-- FAQ Page -->
+<div class="container">
+    <h1>Často kladené otázky</h1>
+
+    {% if faq_items is empty %}
+        <div class="card">
+            <div class="card__body">
+                <p>Momentálně nejsou k dispozici žádné FAQ. Pokud máte dotazy, kontaktujte nás.</p>
+            </div>
+        </div>
+    {% else %}
+        <div class="faq-list">
+            {% for category, items in faq_items %}
+                <div class="faq-category">
+                    <h2 class="faq-category-title">{{ category|title }}</h2>
+
+                    {% for item in items %}
+                        <div class="faq-item">
+                            <div class="faq-question">
+                                <h3>{{ item.question }}</h3>
+                                <span class="faq-toggle">+</span>
+                            </div>
+                            <div class="faq-answer">
+                                <p>{{ item.answer|nl2br }}</p>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+</div>
+
+<script>
+// FAQ toggle functionality
+document.addEventListener('DOMContentLoaded', function() {
+    const faqItems = document.querySelectorAll('.faq-item');
+
+    faqItems.forEach(item => {
+        const question = item.querySelector('.faq-question');
+        const answer = item.querySelector('.faq-answer');
+        const toggle = item.querySelector('.faq-toggle');
+
+        question.addEventListener('click', function() {
+            const isOpen = item.classList.contains('open');
+
+            // Close all other items
+            faqItems.forEach(otherItem => {
+                otherItem.classList.remove('open');
+                otherItem.querySelector('.faq-toggle').textContent = '+';
+            });
+
+            // Toggle current item
+            if (!isOpen) {
+                item.classList.add('open');
+                toggle.textContent = '−';
+            }
+        });
+    });
+});
+</script>

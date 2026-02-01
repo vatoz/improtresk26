@@ -1,0 +1,89 @@
+<!-- Workshops Page -->
+<div class="container">
+    <h1>Workshopy</h1>
+
+    {% if workshops is empty %}
+        <div class="card">
+            <div class="card__body">
+                <p>Momentálně nejsou k dispozici žádné workshopy. Zkuste to prosím později.</p>
+            </div>
+        </div>
+    {% else %}
+        <div class="workshops-grid">
+            {% for workshop in workshops %}
+                {% set isFull = workshop.available_spots <= 0 %}
+                {% set progressPercent = (workshop.enrolled_count / workshop.capacity * 100)|round %}
+
+                <div class="workshop-card {{ isFull ? 'full' : '' }}" data-workshop-id="{{ workshop.id }}">
+                    <div class="workshop-header">
+                        <h3 class="workshop-title">{{ workshop.name }}</h3>
+                        {% if workshop.instructor %}
+                            <div class="workshop-instructor">Lektor: {{ workshop.instructor }}</div>
+                        {% endif %}
+                    </div>
+
+                    <div class="workshop-body">
+                        {% if workshop.description %}
+                            <p class="workshop-description">{{ workshop.description }}</p>
+                        {% endif %}
+
+                        <div class="workshop-details">
+                            <div class="workshop-detail-item">
+                                <strong>Datum:</strong> {{ workshop.date|date('j.n.Y') }}
+                            </div>
+                            <div class="workshop-detail-item">
+                                <strong>Čas:</strong> {{ workshop.time[:5] }}
+                            </div>
+                            <div class="workshop-detail-item">
+                                <strong>Délka:</strong> {{ workshop.duration_minutes }} min
+                            </div>
+                            {% if workshop.location %}
+                                <div class="workshop-detail-item">
+                                    <strong>Místo:</strong> {{ workshop.location }}
+                                </div>
+                            {% endif %}
+                            <div class="workshop-detail-item">
+                                <strong>Úroveň:</strong>
+                                <span class="badge badge-{{ workshop.level }}">
+                                    {% if workshop.level == 'beginner' %}Začátečníci
+                                    {% elseif workshop.level == 'intermediate' %}Mírně pokročilí
+                                    {% elseif workshop.level == 'advanced' %}Pokročilí
+                                    {% else %}Všechny úrovně
+                                    {% endif %}
+                                </span>
+                            </div>
+                        </div>
+
+                        <div class="workshop-info">
+                            <div class="workshop-price">{{ workshop.price|number_format(0, ',', ' ') }} Kč</div>
+                            <div class="capacity-info {{ isFull ? 'capacity-full' : '' }}">
+                                {{ workshop.enrolled_count }}/{{ workshop.capacity }} míst
+                                {% if isFull %}
+                                    <span class="full-badge">PLNÉ</span>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <div class="capacity-bar">
+                            <div class="capacity-fill" style="width: {{ progressPercent }}%"></div>
+                        </div>
+
+                        {% if user %}
+                            {% if isFull %}
+                                <button class="btn btn--secondary btn--block" disabled>Workshop je plný</button>
+                            {% else %}
+                                <a href="/workshop/register?workshop_id={{ workshop.id }}" class="btn btn--primary btn--block">
+                                    Registrovat se
+                                </a>
+                            {% endif %}
+                        {% else %}
+                            <a href="#" onclick="document.getElementById('login-btn').click(); return false;" class="btn btn--primary btn--block">
+                                Přihlaste se pro registraci
+                            </a>
+                        {% endif %}
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+</div>

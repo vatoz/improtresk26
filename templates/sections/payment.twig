@@ -1,0 +1,35 @@
+<!-- Payment Page -->
+<div class="container">
+    <h1>Platební údaje</h1>
+    <div class="payment-info">
+        <div class="card">
+            <div class="card__body">
+                <h3>Vaše registrace</h3>
+                <div id="payment-summary">
+                    {% if registration %}
+                        <p><strong>Workshop:</strong> {{ registration.workshop_name }}</p>
+                        <p><strong>Cena:</strong> {{ registration.price }} Kč</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        <div class="card">
+            <div class="card__body">
+                <h3>Platba</h3>
+                <div class="payment-details">
+                    <div class="qr-section">
+                        <div id="qr-code"></div>
+                        <p>QR kód pro platbu</p>
+                    </div>
+                    <div class="bank-details">
+                        {% if payment %}
+                            <p><strong>Číslo účtu:</strong> <span id="account-number">{{ payment.account_number }}</span></p>
+                            <p><strong>Variabilní symbol:</strong> <span id="variable-symbol">{{ payment.variable_symbol }}</span></p>
+                            <p><strong>Částka:</strong> <span id="payment-amount">{{ payment.amount }}</span> Kč</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
