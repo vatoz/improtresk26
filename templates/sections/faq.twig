@@ -1,7 +1,9 @@
 <!-- FAQ Page -->
 <div class="container">
     <h1>Často kladené otázky</h1>
-
+    <div class="card">
+     {% include 'partials/disclaimer.twig' %}
+    </div>
     {% if faq_items is empty %}
         <div class="card">
             <div class="card__body">
