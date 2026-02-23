@@ -9,19 +9,18 @@
     <link href="https://fonts.googleapis.com/css2?family=Roboto+Flex:opsz,wght,XOPQ,XTRA,YOPQ,YTDE,YTFI,YTLC,YTUC@8..144,100..1000,96,468,79,-203,738,514,712&family=Sancreek&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="/style.css">
     <link rel="icon" type="image/x-icon" href="/sysimg/favicon.ico">
+    <script src="https://code.jquery.com/jquery-4.0.0.min.js"></script>
     {% block stylesheets %}{% endblock %}
 
 </head>
 <body>
     {% include 'partials/navigation.twig' %}
-
+    
     <main class="main-content">
         {% block content %}{% endblock %}
     </main>
     {% include 'partials/disclaimer.twig' %}
-    {% include 'partials/modals.twig' %}
     {% include 'partials/notification.twig' %}
-
     <script src="/js/app.js"></script>
     {% block javascripts %}{% endblock %}
 </body>

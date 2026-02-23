@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vítej na Improtřesku 2026!</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .container {
+            background-color: #f9f9f9;
+            border-radius: 8px;
+            padding: 30px;
+            border: 1px solid #ddd;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .header h1 {
+            color: #d32f2f;
+            margin: 0;
+            font-size: 28px;
+        }
+        .content {
+            background-color: white;
+            padding: 25px;
+            border-radius: 5px;
+        }
+        .button {
+            display: inline-block;
+            padding: 12px 30px;
+            background-color: #d32f2f;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            margin: 20px 0;
+            font-weight: bold;
+        }
+        .info-box {
+            background-color: #e8f5e9;
+            border-left: 4px solid #43a047;
+            padding: 12px;
+            margin: 20px 0;
+        }
+        .footer {
+            margin-top: 30px;
+            text-align: center;
+            font-size: 12px;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Improtřesk 2026</h1>
+            <p>Festival improvizačního divadla</p>
+        </div>
+
+        <div class="content">
+            <h2>Vítej, {{ name }}!</h2>
+
+            <p>Ahoj,</p>
+
+            <p>tvůj účet na Improtřesku 2026 byl úspěšně vytvořen. Těšíme se na tebe!</p>
+
+            <div class="info-box">
+                <strong>Tvoje přihlašovací údaje:</strong><br>
+                E-mail: <strong>{{ email }}</strong>
+            </div>
+
+            <p>Nyní se můžeš přihlásit a vybrat si workshopy, na které se chceš přihlásit.</p>
+
+            <div style="text-align: center;">
+                <a href="{{ loginUrl }}" class="button">Přihlásit se</a>
+            </div>
+
+            <p>S pozdravem,<br>
+            Tým Improtřesk &amp; Vašek Černý</p>
+        </div>
+
+        <div class="footer">
+            <p>Tento e-mail byl odeslán automaticky, neodpovídej na něj.<br>
+            Pro dotazy nás kontaktuj na <a href="mailto:improtresk@improlab.art">improtresk@improlab.art</a></p>
+        </div>
+    </div>
+</body>
+</html>
