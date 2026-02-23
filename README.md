@@ -6,7 +6,7 @@
 
 **Cíl projektu:** Vytvořit web malého festivalu s možností online registrace účastníků na workshopy a doprovodný program.
 
-**Primární publikum:** Účastníci festivalu (cca stovky lidí), organizátor (1 administrátor).
+**Primární publikum:** Účastníci festivalu (cca stovky lidí), organizátor (jednotky administrátor).
 
 **Použití:** Web má být využit i pro další ročníky.
 
@@ -25,10 +25,10 @@
 
 ### 2.2 Uživatelská část (po přihlášení)
 
-- **Registrace účtu:** jméno, e-mail, heslo (s možností obnovy)
+- **Registrace účtu:** jméno, e-mail, heslo (s možností obnovy) 
 - **Přihlášení**
 - **Přihláška na festival:**
-  - výběr 1 workshopu (max. kapacita 12 účastníků na workshop)
+  - výběr z workshopů  tak aby se nekryly timesloty, a wsp nebyl přeplněn
   - možnost označit doprovodný program (volitelně, až bude připraven)
 - **Platební údaje:** vygenerovaný QR kód pro platbu (bankovní převod), textově i číslo účtu/variabilní symbol
 - **Profil účastníka:** přehled vybraných možností, možnost úprav
@@ -41,7 +41,8 @@
 - Přehled a správa účastníků
 - Přidávání a editace workshopů a programu
 - Nastavení kapacit workshopů
-- Export účastníků do CSV/Excelu
+- Generování slevových kuponů pro garanty/dobrovolníky
+- Export účastníků do CSV/Excelu?
 - Správu provádí pouze **1 administrátor**
 
 ---
