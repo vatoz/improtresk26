@@ -2,8 +2,6 @@
 require_once __DIR__ . '/../vendor/autoload.php';
 require_once __DIR__ . '/../src/bootstrap.php';
 
-use AltoRouter;
-
 // Router
 $router = new AltoRouter();
 //$router->setBasePath('/'); // pokud je v subdiru, tady nastavit
@@ -19,6 +17,9 @@ $router->map('GET', '/contact', 'DefaultController#contact', 'contact');
 $router->map('GET|POST', '/login', 'AuthController#login', 'login');
 $router->map('GET|POST', '/register', 'AuthController#register', 'register');
 $router->map('GET', '/logout', 'AuthController#logout', 'logout');
+$router->map('GET', '/reset-password', 'AuthController#showResetPasswordForm', 'show_reset_password');
+$router->map('POST', '/reset-password', 'AuthController#resetPassword', 'reset_password');
+$router->map('POST', '/request-password-reset', 'AuthController#requestPasswordReset', 'request_password_reset');
 
 // Workshops
 $router->map('GET', '/workshops', 'WorkshopController#index', 'workshops');

@@ -15,7 +15,6 @@ class User
     public static function findByEmail(PDO $db, string $email)
     {
         $stmt = $db->prepare("SELECT * FROM users WHERE email = ? LIMIT 1");
-        error_log($email);
         $stmt->execute([$email]);
         return $stmt->fetch();
     }

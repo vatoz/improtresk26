@@ -1,0 +1,131 @@
+<?php
+namespace App\Models;
+
+use PDO;
+
+class MailQueue
+{
+    /**
+     * Queue a mail using a Twig template.
+     *
+     * @param PDO $db
+     * @param string $to
+     * @param string $subject
+     * @param string $template  Template path relative to templates/emails/ (e.g. 'password-reset.twig')
+     * @param array  $vars      Variables passed to the template
+     * @return int Inserted row ID
+     */
+    public static function addWithTemplate(PDO $db, string $to, string $subject, string $template, array $vars = []): int
+    {
+        $stmt = $db->prepare("
+            INSERT INTO mail_queue (to_email, subject, template, vars, body, status, queued_at)
+            VALUES (?, ?, ?, ?, NULL, 'pending', NOW())
+        ");
+        $stmt->execute([$to, $subject, $template, json_encode($vars, JSON_UNESCAPED_UNICODE)]);
+        return (int) $db->lastInsertId();
+    }
+
+    /**
+     * Queue a mail with a pre-rendered or plain body (no template).
+     *
+     * @param PDO    $db
+     * @param string $to
+     * @param string $subject
+     * @param string $body     HTML or plain-text body
+     * @return int Inserted row ID
+     */
+    public static function addWithBody(PDO $db, string $to, string $subject, string $body): int
+    {
+        $stmt = $db->prepare("
+            INSERT INTO mail_queue (to_email, subject, template, vars, body, status, queued_at)
+            VALUES (?, ?, NULL, NULL, ?, 'pending', NOW())
+        ");
+        $stmt->execute([$to, $subject, $body]);
+        return (int) $db->lastInsertId();
+    }
+
+    /**
+     * Get all pending mails ordered by queue time (oldest first).
+     *
+     * @param PDO $db
+     * @param int $limit
+     * @return array
+     */
+    public static function getPending(PDO $db, int $limit = 50): array
+    {
+        $stmt = $db->prepare("
+            SELECT * FROM mail_queue
+            WHERE status = 'pending'
+            ORDER BY queued_at ASC
+            LIMIT ?
+        ");
+        $stmt->execute([$limit]);
+        return $stmt->fetchAll();
+    }
+
+    /**
+     * Find a queued mail by ID.
+     *
+     * @param PDO $db
+     * @param int $id
+     * @return array|false
+     */
+    public static function findById(PDO $db, int $id)
+    {
+        $stmt = $db->prepare("SELECT * FROM mail_queue WHERE id = ? LIMIT 1");
+        $stmt->execute([$id]);
+        return $stmt->fetch();
+    }
+
+    /**
+     * Mark a queued mail as sent.
+     *
+     * @param PDO $db
+     * @param int $id
+     * @return bool
+     */
+    public static function markAsSent(PDO $db, int $id): bool
+    {
+        $stmt = $db->prepare("
+            UPDATE mail_queue
+            SET status = 'sent', sent_at = NOW()
+            WHERE id = ?
+        ");
+        return $stmt->execute([$id]);
+    }
+
+    /**
+     * Mark a queued mail as failed.
+     *
+     * @param PDO $db
+     * @param int $id
+     * @return bool
+     */
+    public static function markAsFailed(PDO $db, int $id): bool
+    {
+        $stmt = $db->prepare("
+            UPDATE mail_queue
+            SET status = 'failed'
+            WHERE id = ?
+        ");
+        return $stmt->execute([$id]);
+    }
+
+    /**
+     * Delete sent and failed mails older than the given number of days.
+     *
+     * @param PDO $db
+     * @param int $days
+     * @return int Number of deleted rows
+     */
+    public static function cleanup(PDO $db, int $days = 30): int
+    {
+        $stmt = $db->prepare("
+            DELETE FROM mail_queue
+            WHERE status IN ('sent', 'failed')
+            AND queued_at < DATE_SUB(NOW(), INTERVAL ? DAY)
+        ");
+        $stmt->execute([$days]);
+        return $stmt->rowCount();
+    }
+}

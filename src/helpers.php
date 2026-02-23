@@ -71,3 +71,32 @@ function payment_config(): array
         'default_fee' => env('DEFAULT_WORKSHOP_FEE', 1200.00),
     ];
 }
+
+/**
+ * Send email using Twig template
+ *
+ * @param string $to Recipient email
+ * @param string $subject Email subject
+ * @param string $templatePath Path to Twig template
+ * @param array $data Data to pass to template
+ * @return bool
+ */
+function send_email(string $to, string $subject, string $templatePath, array $data = []): bool
+{
+    global $twig;
+
+    // Render email template
+    $htmlBody = $twig->render($templatePath, $data);
+
+    // Email headers
+    $headers = [
+        'MIME-Version: 1.0',
+        'Content-type: text/html; charset=utf-8',
+        'From: ' . env('MAIL_FROM_ADDRESS', 'noreply@improtresk.cz'),
+        'Reply-To: ' . env('MAIL_REPLY_TO', 'info@improtresk.cz'),
+        'X-Mailer: PHP/' . phpversion()
+    ];
+
+    // Send email
+    return mail($to, $subject, $htmlBody, implode("\r\n", $headers));
+}

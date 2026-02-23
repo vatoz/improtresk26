@@ -2,6 +2,7 @@
 namespace App\Controllers;
 
 
+use App\Models\MailQueue;
 use App\Models\User;
 
 
@@ -18,9 +19,12 @@ class AuthController extends BaseController
                 $error = 'Neplatný CSRF token';
             } else {
                 $email = trim($_POST['email'] ?? '');
+                if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+                    $error='Nejde o email.';
+                    exit;
+                }
                 $password = $_POST['password'] ?? '';
                 $user = User::findByEmail($this->db, $email);
-                $error="all okdfsdfsdf";
                 if ($user && password_verify($password, $user['password'])) {
                     $_SESSION['user'] = [
                     'id' => (int)$user['id'],
@@ -31,10 +35,8 @@ class AuthController extends BaseController
                     header('Location: /profile');
                     
                     exit;
-                } elseif($user){
-                    $error = 'Nenalezen.';    
-                }
-                $error = 'Nesprávný  e-mail nebo heslo.'.$email;
+                } 
+                $error = 'Nesprávný  e-mail nebo heslo.';
             }
         }else{
             //$error="neplatná metoda";
@@ -74,6 +76,18 @@ class AuthController extends BaseController
                         'email' => $email,
                         'role' => 'user',
                     ];
+
+                    $loginUrl = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? 'https' : 'http')
+                        . '://' . $_SERVER['HTTP_HOST'] . '/login';
+
+                    MailQueue::addWithTemplate(
+                        $this->db,
+                        $email,
+                        'Vítej na Improtřesku 2026!',
+                        'emails/registration.twig',
+                        ['name' => $name, 'email' => $email, 'loginUrl' => $loginUrl]
+                    );
+
                     header('Location: /profile');
                     exit;
                 }
@@ -122,20 +136,16 @@ class AuthController extends BaseController
             $resetUrl = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? 'https' : 'http')
                 . '://' . $_SERVER['HTTP_HOST'] . '/reset-password?token=' . $token;
 
-            $emailSent = send_email(
-                $email,
-                'Obnova hesla - Improtřesk 2026',
-                'emails/password-reset.twig',
-                [
-                    'resetUrl' => $resetUrl,
-                    'email' => $email
-                ]
-            );
-
-            if (!$emailSent) {
-                echo json_encode(['success' => false, 'message' => 'Chyba při odesílání e-mailu']);
-                exit;
-            }
+            MailQueue::addWithTemplate(
+                        $this->db,
+                        $email,
+                        'Obnova hesla - Improtřesk 2026',
+                    'emails/password-reset.twig',
+                    [
+                        'resetUrl' => $resetUrl,
+                        'email' => $email
+                    ]
+                    ); 
         }
 
         // Always return success to prevent email enumeration
@@ -147,30 +157,33 @@ class AuthController extends BaseController
     }
 
     /**
-     * Show reset password form
+     * Show reset password form.
+     * Without ?token  → email-entry form (step 1).
+     * With ?token     → new-password form (step 2).
      */
     public function showResetPasswordForm()
     {
         $token = $_GET['token'] ?? '';
 
         if (empty($token)) {
-            header('Location: /');
-            exit;
-        }
-
-        // Verify token is valid
-        $email = User::verifyPasswordResetToken($this->db, $token);
-
-        if (!$email) {
-            echo $this->twig->render('pages/reset-password.twig', [
-                'error' => 'Neplatný nebo expirovaný odkaz na obnovu hesla.'
+            echo $this->twig->render('pages/reset-password2.twig', [
+                'csrf' => csrf_token('request_reset'),
             ]);
             exit;
         }
 
-        echo $this->twig->render('pages/reset-password.twig', [
+        $email = User::verifyPasswordResetToken($this->db, $token);
+
+        if (!$email) {
+            echo $this->twig->render('pages/reset-password2.twig', [
+                'error' => 'Neplatný nebo expirovaný odkaz na obnovu hesla.',
+            ]);
+            exit;
+        }
+
+        echo $this->twig->render('pages/reset-password2.twig', [
             'token' => $token,
-            'email' => $email
+            'email' => $email,
         ]);
     }
 
