@@ -3,43 +3,31 @@
 /**
  * Complete Database Setup Script
  *
- * Runs migrations and seeds in one command
+ * Runs migrations (version-aware) and seeds in one command.
  * Usage: php database/setup.php
  */
 
 require_once __DIR__ . '/../vendor/autoload.php';
 require_once __DIR__ . '/../src/bootstrap.php';
+require_once __DIR__ . '/migration_helpers.php';
 
 echo "═══════════════════════════════════════════════════════\n";
 echo "  Improtřesk 2026 - Database Setup\n";
 echo "═══════════════════════════════════════════════════════\n\n";
 
-// Run migrations
+// ── Step 1: Migrations ──────────────────────────────────────
 echo "STEP 1: Running migrations...\n";
 echo "───────────────────────────────────────────────────────\n";
 
-$migrationsPath = __DIR__ . '/migrations';
-$files = glob($migrationsPath . '/*.sql');
-sort($files);
-
-foreach ($files as $file) {
-    $filename = basename($file);
-    echo "  → {$filename}... ";
-
-    try {
-        $sql = file_get_contents($file);
-        $db->exec($sql);
-        echo "✓\n";
-    } catch (PDOException $e) {
-        echo "✗\n";
-        echo "  Error: " . $e->getMessage() . "\n";
-        exit(1);
-    }
+try {
+    $applied = runMigrations($db, __DIR__ . '/migrations');
+    echo "\n✓ Migrations completed" . ($applied > 0 ? " ({$applied} applied)." : " (already up to date).") . "\n\n";
+} catch (Exception $e) {
+    echo "Migration failed: " . $e->getMessage() . "\n";
+    exit(1);
 }
 
-echo "\n✓ Migrations completed!\n\n";
-
-// Run seeds
+// ── Step 2: Seeds ───────────────────────────────────────────
 echo "STEP 2: Running seeds...\n";
 echo "───────────────────────────────────────────────────────\n";
 
@@ -58,8 +46,7 @@ foreach ($files as $file) {
     } catch (PDOException $e) {
         echo "✗\n";
         echo "  Warning: " . $e->getMessage() . "\n";
-        // Continue with other seeds
-        continue;
+        // Non-fatal – continue with remaining seeds
     }
 }
 
