@@ -107,9 +107,9 @@ class Workshop
         $stmt = $db->prepare("
             INSERT INTO workshops (
                 name, description, instructor, date, time,
-                duration_minutes, price, capacity, location, level, is_active
+                duration_minutes, price, capacity, location, level, is_active, timeslot
             )
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         ");
 
         $stmt->execute([
@@ -123,7 +123,8 @@ class Workshop
             $data['capacity'] ?? 20,
             $data['location'] ?? null,
             $data['level'] ?? 'all',
-            $data['is_active'] ?? true
+            $data['is_active'] ?? true,
+            $data['timeslot'] ?? null
         ]);
 
         return (int) $db->lastInsertId();
@@ -144,7 +145,7 @@ class Workshop
 
         $allowedFields = [
             'name', 'description', 'instructor', 'date', 'time',
-            'duration_minutes', 'price', 'capacity', 'location', 'level', 'is_active'
+            'duration_minutes', 'price', 'capacity', 'location', 'level', 'is_active', 'timeslot'
         ];
 
         foreach ($data as $key => $value) {
@@ -235,5 +236,84 @@ class Workshop
     {
         $dateObj = new \DateTime($date . ' ' . $time);
         return $dateObj->format('j.n.Y H:i');
+    }
+
+    /**
+     * Check if two timeslots overlap
+     * E.g., "abc" and "bcd" overlap on "bc"
+     *
+     * @param string|null $timeslot1
+     * @param string|null $timeslot2
+     * @return bool
+     */
+    public static function timeslotsOverlap(?string $timeslot1, ?string $timeslot2): bool
+    {
+        if (empty($timeslot1) || empty($timeslot2)) {
+            return false;
+        }
+
+        $chars1 = str_split($timeslot1);
+        $chars2 = str_split($timeslot2);
+
+        return !empty(array_intersect($chars1, $chars2));
+    }
+
+    /**
+     * Get workshops by timeslot filter
+     * Returns workshops that have at least one matching timeslot character
+     *
+     * @param PDO $db
+     * @param string $timeslot
+     * @return array
+     */
+    public static function getByTimeslot(PDO $db, string $timeslot): array
+    {
+        $chars = str_split($timeslot);
+        $placeholders = implode(',', array_fill(0, count($chars), '?'));
+
+        $stmt = $db->prepare("
+            SELECT
+                w.*,
+                COUNT(r.id) as enrolled_count,
+                (w.capacity - COUNT(r.id)) as available_spots
+            FROM workshops w
+            LEFT JOIN registrations r ON w.id = r.workshop_id AND r.payment_status != 'cancelled'
+            WHERE w.is_active = 1
+            AND w.timeslot REGEXP CONCAT('[', ?, ']')
+            GROUP BY w.id
+            ORDER BY w.date, w.time
+        ");
+
+        $stmt->execute([$timeslot]);
+        return $stmt->fetchAll();
+    }
+
+    /**
+     * Get conflicting workshops for a user based on timeslot
+     * Returns workshops user is registered for that share timeslot characters
+     *
+     * @param PDO $db
+     * @param int $userId
+     * @param string $timeslot
+     * @return array
+     */
+    public static function getUserConflicts(PDO $db, int $userId, string $timeslot): array
+    {
+        if (empty($timeslot)) {
+            return [];
+        }
+
+        $stmt = $db->prepare("
+            SELECT w.*
+            FROM workshops w
+            INNER JOIN registrations r ON w.id = r.workshop_id
+            WHERE r.user_id = ?
+            AND r.payment_status != 'cancelled'
+            AND w.timeslot IS NOT NULL
+            AND w.timeslot REGEXP CONCAT('[', ?, ']')
+        ");
+
+        $stmt->execute([$userId, $timeslot]);
+        return $stmt->fetchAll();
     }
 }

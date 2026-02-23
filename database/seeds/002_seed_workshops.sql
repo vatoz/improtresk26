@@ -1,6 +1,6 @@
 -- Seed: Sample workshops
 
-INSERT INTO `workshops` (`name`, `description`, `instructor`, `date`, `time`, `duration_minutes`, `price`, `capacity`, `location`, `level`, `is_active`)
+INSERT INTO `workshops` (`name`, `description`, `instructor`, `date`, `time`, `duration_minutes`, `price`, `capacity`, `location`, `level`, `is_active`, `timeslot`)
 VALUES
     (
         'Improvizace pro začátečníky',
@@ -13,7 +13,8 @@ VALUES
         20,
         'Studio A',
         'beginner',
-        TRUE
+        TRUE,
+        'abc'
     ),
     (
         'Long-form improvizace',
@@ -26,7 +27,8 @@ VALUES
         15,
         'Studio B',
         'advanced',
-        TRUE
+        TRUE,
+        'bcd'
     ),
     (
         'Improvizace a hudba',
@@ -39,7 +41,8 @@ VALUES
         18,
         'Hlavní sál',
         'intermediate',
-        TRUE
+        TRUE,
+        'abc'
     ),
     (
         'Status a hra',
@@ -52,7 +55,8 @@ VALUES
         25,
         'Studio A',
         'all',
-        TRUE
+        TRUE,
+        'd'
     ),
     (
         'Improvizační stand-up',
@@ -65,6 +69,7 @@ VALUES
         20,
         'Hlavní sál',
         'intermediate',
-        TRUE
+        TRUE,
+        'bc'
     )
 ON DUPLICATE KEY UPDATE `updated_at` = NOW();
