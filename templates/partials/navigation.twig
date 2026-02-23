@@ -22,16 +22,19 @@
                     <a href="/contact" {% if active_page == 'contact' %}class="active"{% endif %}>Kontakt</a>
                     <div class="auth-buttons">
                         {% if user %}
-                            <a href="/dashboard" class="btn btn--outline btn--sm">{{ user.name }}</a>
+                            <a href="/dashboard" class="btn btn--outline btn--sm">U:{{ user.name }}</a>
                             {% if user.role == 'admin' %}
                                 <a href="/admin" class="btn btn--secondary btn--sm">Admin</a>
                             {% endif %}
                             <a href="/logout" class="btn btn--outline btn--sm">Odhlásit</a>
                         {% else %}
-                            <button id="login-btn" class="btn btn--outline btn--sm">Přihlásit se - testovací verze</button>
-                            <button id="register-btn" class="btn btn--primary btn--sm">Registrovat - testovací verze</button>
+                           <a href="/login" id="login-btn" class="btn btn--outline btn--sm">Přihlásit se</a>
+                           <a href="/register" id="register-btn" class="btn btn--primary btn--sm">Registrovat</a>                            
                         {% endif %}
                     </div>
+                    <div><div class="info-item">
+                    <a href="https://www.facebook.com/events/1919076465165143/" >FB</a> 
+                </div></div>
                 </div>
             </div>
         </div>

@@ -9,7 +9,10 @@ class AuthController extends BaseController
 {
     public function login()
     {
+        $email='';
+
         $error = null;
+        
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             if (!csrf_validate('login', $_POST['_csrf'] ?? null)) {
                 $error = 'Neplatný CSRF token';
@@ -17,6 +20,7 @@ class AuthController extends BaseController
                 $email = trim($_POST['email'] ?? '');
                 $password = $_POST['password'] ?? '';
                 $user = User::findByEmail($this->db, $email);
+                $error="all okdfsdfsdf";
                 if ($user && password_verify($password, $user['password'])) {
                     $_SESSION['user'] = [
                     'id' => (int)$user['id'],
@@ -25,13 +29,19 @@ class AuthController extends BaseController
                     'role' => $user['role'],
                     ];
                     header('Location: /profile');
+                    
                     exit;
+                } elseif($user){
+                    $error = 'Nenalezen.';    
                 }
-                $error = 'Nesprávný e-mail nebo heslo.';
+                $error = 'Nesprávný  e-mail nebo heslo.'.$email;
             }
+        }else{
+            //$error="neplatná metoda";
         }
-        echo $this->twig->render('login.html.twig', [
+        echo $this->twig->render('pages/login.twig', [
         'error' => $error,
+        'email' =>   $email,
         'csrf' => csrf_token('login')
         ]);
     }
@@ -69,7 +79,7 @@ class AuthController extends BaseController
                 }
             }
         }
-        echo $this->twig->render('register.html.twig', [
+        echo $this->twig->render('pages/registration.twig', [
         'error' => $error,
         'csrf' => csrf_token('register')
         ]);
@@ -81,5 +91,145 @@ class AuthController extends BaseController
         session_destroy();
         header('Location: /');
         exit;
+    }
+
+    /**
+     * Request password reset - sends email with reset link
+     */
+    public function requestPasswordReset()
+    {
+        header('Content-Type: application/json');
+
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            http_response_code(405);
+            echo json_encode(['success' => false, 'message' => 'Neplatná metoda']);
+            exit;
+        }
+
+        $data = json_decode(file_get_contents('php://input'), true);
+        $email = trim($data['email'] ?? '');
+
+        if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            echo json_encode(['success' => false, 'message' => 'Neplatný e-mail']);
+            exit;
+        }
+
+        // Generate token (returns false if user not found)
+        $token = User::createPasswordResetToken($this->db, $email);
+
+        if ($token) {
+            // Send email with reset link
+            $resetUrl = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? 'https' : 'http')
+                . '://' . $_SERVER['HTTP_HOST'] . '/reset-password?token=' . $token;
+
+            $emailSent = send_email(
+                $email,
+                'Obnova hesla - Improtřesk 2026',
+                'emails/password-reset.twig',
+                [
+                    'resetUrl' => $resetUrl,
+                    'email' => $email
+                ]
+            );
+
+            if (!$emailSent) {
+                echo json_encode(['success' => false, 'message' => 'Chyba při odesílání e-mailu']);
+                exit;
+            }
+        }
+
+        // Always return success to prevent email enumeration
+        echo json_encode([
+            'success' => true,
+            'message' => 'Pokud e-mail existuje v systému, byl odeslán odkaz na obnovu hesla.'
+        ]);
+        exit;
+    }
+
+    /**
+     * Show reset password form
+     */
+    public function showResetPasswordForm()
+    {
+        $token = $_GET['token'] ?? '';
+
+        if (empty($token)) {
+            header('Location: /');
+            exit;
+        }
+
+        // Verify token is valid
+        $email = User::verifyPasswordResetToken($this->db, $token);
+
+        if (!$email) {
+            echo $this->twig->render('pages/reset-password.twig', [
+                'error' => 'Neplatný nebo expirovaný odkaz na obnovu hesla.'
+            ]);
+            exit;
+        }
+
+        echo $this->twig->render('pages/reset-password.twig', [
+            'token' => $token,
+            'email' => $email
+        ]);
+    }
+
+    /**
+     * Process password reset
+     */
+    public function resetPassword()
+    {
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            header('Location: /');
+            exit;
+        }
+
+        $token = $_POST['token'] ?? '';
+        $password = $_POST['password'] ?? '';
+        $passwordConfirm = $_POST['password_confirm'] ?? '';
+
+        // Validate input
+        if (empty($token) || empty($password)) {
+            echo $this->twig->render('pages/reset-password.twig', [
+                'token' => $token,
+                'error' => 'Všechna pole jsou povinná.'
+            ]);
+            exit;
+        }
+
+        if (strlen($password) < 6) {
+            $email = User::verifyPasswordResetToken($this->db, $token);
+            echo $this->twig->render('pages/reset-password.twig', [
+                'token' => $token,
+                'email' => $email,
+                'error' => 'Heslo musí mít alespoň 6 znaků.'
+            ]);
+            exit;
+        }
+
+        if ($password !== $passwordConfirm) {
+            $email = User::verifyPasswordResetToken($this->db, $token);
+            echo $this->twig->render('pages/reset-password.twig', [
+                'token' => $token,
+                'email' => $email,
+                'error' => 'Hesla se neshodují.'
+            ]);
+            exit;
+        }
+
+        // Reset password
+        $success = User::resetPassword($this->db, $token, $password);
+
+        if (!$success) {
+            echo $this->twig->render('pages/reset-password.twig', [
+                'error' => 'Neplatný nebo expirovaný odkaz na obnovu hesla.'
+            ]);
+            exit;
+        }
+
+        // Success - redirect to login
+        echo $this->twig->render('pages/login.twig', [
+            'success' => 'Heslo bylo úspěšně změněno. Nyní se můžete přihlásit.'
+        ]);
     }
 }
