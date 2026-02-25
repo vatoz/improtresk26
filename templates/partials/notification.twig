@@ -1,7 +1,12 @@
 <!-- Notification -->
-<div id="notification" class="notification hidden">
+  {% if error %}
+                            <p class="workshop-description">{{ workshop.description }}</p>
+             
+<div id="notification" class="notification">
     <div class="notification-content">
-        <span id="notification-message"></span>
+        <span id="notification-message"> {{ error }}</span>
         <button id="notification-close">&times;</button>
     </div>
 </div>
+
+           {% endif %}

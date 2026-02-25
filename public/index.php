@@ -24,10 +24,12 @@ $router->map('POST', '/request-password-reset', 'AuthController#requestPasswordR
 // Workshops
 $router->map('GET', '/workshops', 'WorkshopController#index', 'workshops');
 $router->map('GET|POST', '/workshop/register', 'WorkshopController#register', 'workshop_register');
+$router->map('GET|POST', '/choose-workshops', 'WorkshopController#chooseWorkshops', 'choose_workshops');
 
 // User dashboard
 $router->map('GET', '/dashboard', 'DashboardController#index', 'dashboard');
 $router->map('GET', '/profile', 'DashboardController#index', 'profile');
+$router->map('POST', '/dashboard/cancel-registration', 'DashboardController#cancelRegistration', 'cancel_registration');
 
 // Payment
 $router->map('GET', '/payment', 'PaymentController#index', 'payment');

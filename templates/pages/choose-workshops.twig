@@ -1,0 +1,184 @@
+{% extends 'base.twig' %}
+
+{% block title %}Výběr workshopů – Improtřesk 2026{% endblock %}
+
+{% block content %}
+<section class="section">
+    <div class="container">
+        <h1>Výběr workshopů</h1>
+
+        {% if error %}
+            <div class="alert alert-error">{{ error }}</div>
+        {% endif %}
+        {% if success %}
+            <div class="alert alert-success">{{ success }}</div>
+        {% endif %}
+
+        {% if timeslots is empty %}
+            <div class="card">
+                <div class="card__body">
+                    <p>Zatím nejsou definovány žádné časové bloky.</p>
+                </div>
+            </div>
+        {% else %}
+            {% for ts in timeslots %}
+                {% set isLocked = locked_codes[ts.code] is defined %}
+                {% set workshops = workshops_by_timeslot[ts.code] ?? [] %}
+
+                {# Skip blocks that are locked AND have no workshops the user registered for #}
+                {% if not isLocked or (isLocked and workshops is not empty) or isLocked %}
+
+                <div class="card choose-timeslot-block{% if isLocked %} choose-timeslot-block--locked{% endif %}">
+                    <div class="card__header choose-timeslot-header">
+                        <h2 class="choose-timeslot-title">
+                            {{ ts.name }}
+                            <span class="choose-timeslot-code">({{ ts.code }})</span>
+                        </h2>
+                        {% if isLocked %}
+                            <span class="choose-badge choose-badge--locked">
+                                Obsazeno – překryv s vaší registrací
+                            </span>
+                        {% endif %}
+                    </div>
+
+                    <div class="card__body">
+                        {% if isLocked %}
+                            <p class="choose-locked-note">
+                                Tento časový blok se překrývá s workshopem, na který jste již přihlášeni.
+                                Nelze přidat další registraci do překrývajícího se bloku.
+                            </p>
+                        {% elseif workshops is empty %}
+                            <p class="choose-empty-note">V tomto bloku nejsou momentálně volná místa.</p>
+                        {% else %}
+                            <div class="choose-workshop-list">
+                                {% for workshop in workshops %}
+                                    {% set alreadyRegistered = workshop.id in user_registered_ids %}
+                                    <div class="choose-workshop-item{% if alreadyRegistered %} choose-workshop-item--registered{% endif %}">
+                                        <div class="choose-workshop-info">
+                                            <strong class="choose-workshop-name">{{ workshop.name }}</strong>
+                                            {% if workshop.instructor %}
+                                                <span class="choose-workshop-meta">{{ workshop.instructor }}</span>
+                                            {% endif %}
+                                            <span class="choose-workshop-meta">
+                                                {{ workshop.date|date('j.n.Y') }}
+                                                {% if workshop.time %}{{ workshop.time|slice(0, 5) }}{% endif %}
+                                                {% if workshop.duration_minutes %}
+                                                    &nbsp;·&nbsp;{{ workshop.duration_minutes }} min
+                                                {% endif %}
+                                            </span>
+                                            <span class="choose-workshop-meta">
+                                                Volná místa: {{ workshop.capacity - workshop.registered }}
+                                                &nbsp;·&nbsp;
+                                                {{ workshop.price|number_format(0, ',', ' ') }} Kč
+                                            </span>
+                                        </div>
+
+                                        <div class="choose-workshop-action">
+                                            {% if alreadyRegistered %}
+                                                <span class="choose-badge choose-badge--registered">Přihlášen/a</span>
+                                            {% else %}
+                                                <form method="POST" action="/choose-workshops">
+                                                    <input type="hidden" name="_csrf" value="{{ csrf }}">
+                                                    <input type="hidden" name="workshop_id" value="{{ workshop.id }}">
+                                                    <button type="submit" class="btn btn--primary btn--sm">
+                                                        Registrovat
+                                                    </button>
+                                                </form>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                {% endif %}
+            {% endfor %}
+        {% endif %}
+    </div>
+</section>
+{% endblock %}
+
+{% block stylesheets %}
+<style>
+.choose-timeslot-block {
+    margin-bottom: 1.5rem;
+}
+.choose-timeslot-block--locked {
+    opacity: 0.6;
+}
+.choose-timeslot-header {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+    padding: 1rem 1.25rem;
+    border-bottom: 1px solid var(--color-border, #e0e0e0);
+}
+.choose-timeslot-title {
+    margin: 0;
+    font-size: 1.25rem;
+}
+.choose-timeslot-code {
+    font-size: 0.85rem;
+    font-weight: normal;
+    color: var(--color-muted, #777);
+}
+.choose-badge {
+    display: inline-block;
+    padding: 0.2rem 0.6rem;
+    border-radius: 999px;
+    font-size: 0.8rem;
+    font-weight: 600;
+}
+.choose-badge--locked {
+    background: #f5e6e6;
+    color: #c0392b;
+}
+.choose-badge--registered {
+    background: #e6f5ec;
+    color: #27ae60;
+}
+.choose-locked-note,
+.choose-empty-note {
+    color: var(--color-muted, #777);
+    margin: 0;
+}
+.choose-workshop-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+.choose-workshop-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 0.75rem 0;
+    border-bottom: 1px solid var(--color-border, #e0e0e0);
+    flex-wrap: wrap;
+}
+.choose-workshop-item:last-child {
+    border-bottom: none;
+}
+.choose-workshop-item--registered {
+    background: #f7fdf9;
+}
+.choose-workshop-info {
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+}
+.choose-workshop-name {
+    font-size: 1rem;
+}
+.choose-workshop-meta {
+    font-size: 0.85rem;
+    color: var(--color-muted, #777);
+}
+.choose-workshop-action {
+    flex-shrink: 0;
+}
+</style>
+{% endblock %}

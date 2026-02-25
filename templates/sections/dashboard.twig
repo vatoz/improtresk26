@@ -1,22 +1,119 @@
 <!-- User Dashboard -->
 <div class="container">
     <h1>Můj profil</h1>
+
+    {% if error %}
+        <div class="alert alert-error">{{ error }}</div>
+    {% endif %}
+    {% if success %}
+        <div class="alert alert-success">{{ success }}</div>
+    {% endif %}
+
     <div class="dashboard-content">
         <div class="card">
             <div class="card__body">
                 <h3>Základní informace</h3>
                 <div id="user-info">
-                    <!-- User info will be inserted here -->
+                    <p><strong>Jméno:</strong> {{ user.name }}</p>
+                    <p><strong>Email:</strong> {{ user.email }}</p>
                 </div>
             </div>
         </div>
+
         <div class="card">
             <div class="card__body">
                 <h3>Má registrace</h3>
                 <div id="user-registration">
-                    <!-- Registration info will be inserted here -->
+                    {% if registrations is empty %}
+                        <p>Zatím nemáte žádné aktivní registrace.
+                            <a href="/choose-workshops">Vybrat workshop</a>
+                        </p>
+                    {% else %}
+                        <table class="dashboard-registrations-table">
+                            <thead>
+                                <tr>
+                                    <th>Workshop</th>
+                                    <th>Datum</th>
+                                    <th>Cena</th>
+                                    <th>Stav platby</th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for reg in registrations %}
+                                    <tr>
+                                        <td>{{ reg.workshop_name }}</td>
+                                        <td>
+                                            {% if reg.date %}
+                                                {{ reg.date|date('j.n.Y') }}
+                                                {% if reg.time %}{{ reg.time|slice(0,5) }}{% endif %}
+                                            {% else %}
+                                                –
+                                            {% endif %}
+                                        </td>
+                                        <td>{{ reg.price|number_format(0, ',', ' ') }} Kč</td>
+                                        <td>
+                                            {% if reg.payment_status == 'paid' %}
+                                                <span class="dashboard-status dashboard-status--paid">Zaplaceno</span>
+                                            {% elseif reg.payment_status == 'pending' %}
+                                                <span class="dashboard-status dashboard-status--pending">Čeká na platbu</span>
+                                            {% else %}
+                                                <span class="dashboard-status">{{ reg.payment_status }}</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            {% if reg.payment_status == 'pending' %}
+                                                <form method="POST" action="/dashboard/cancel-registration"
+                                                      onsubmit="return confirm('Opravdu chcete zrušit tuto registraci?')">
+                                                    <input type="hidden" name="_csrf" value="{{ csrf }}">
+                                                    <input type="hidden" name="registration_id" value="{{ reg.id }}">
+                                                    <button type="submit" class="btn btn--danger btn--sm">Zrušit</button>
+                                                </form>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    {% endif %}
                 </div>
             </div>
         </div>
     </div>
 </div>
+
+<style>
+.dashboard-registrations-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.95rem;
+}
+.dashboard-registrations-table th,
+.dashboard-registrations-table td {
+    text-align: left;
+    padding: 0.55rem 0.75rem;
+    border-bottom: 1px solid var(--color-border, #e0e0e0);
+}
+.dashboard-registrations-table th {
+    font-weight: 600;
+    color: var(--color-muted, #555);
+}
+.dashboard-registrations-table tbody tr:last-child td {
+    border-bottom: none;
+}
+.dashboard-status {
+    display: inline-block;
+    padding: 0.2rem 0.55rem;
+    border-radius: 999px;
+    font-size: 0.8rem;
+    font-weight: 600;
+}
+.dashboard-status--paid {
+    background: #e6f5ec;
+    color: #27ae60;
+}
+.dashboard-status--pending {
+    background: #fef9e7;
+    color: #d68910;
+}
+</style>
