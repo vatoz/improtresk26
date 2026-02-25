@@ -107,9 +107,9 @@ class Workshop
         $stmt = $db->prepare("
             INSERT INTO workshops (
                 name, description, instructor, date, time,
-                duration_minutes, price, capacity, location, level, is_active, timeslot
+                duration_minutes, price, capacity, location, level, is_active, timeslot, registered
             )
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         ");
 
         $stmt->execute([
@@ -124,7 +124,8 @@ class Workshop
             $data['location'] ?? null,
             $data['level'] ?? 'all',
             $data['is_active'] ?? true,
-            $data['timeslot'] ?? null
+            $data['timeslot'] ?? null,
+            $data['registered'] ?? 0
         ]);
 
         return (int) $db->lastInsertId();
@@ -145,7 +146,7 @@ class Workshop
 
         $allowedFields = [
             'name', 'description', 'instructor', 'date', 'time',
-            'duration_minutes', 'price', 'capacity', 'location', 'level', 'is_active', 'timeslot'
+            'duration_minutes', 'price', 'capacity', 'location', 'level', 'is_active', 'timeslot', 'registered'
         ];
 
         foreach ($data as $key => $value) {
@@ -175,6 +176,32 @@ class Workshop
     public static function delete(PDO $db, int $id): bool
     {
         $stmt = $db->prepare("DELETE FROM workshops WHERE id = ?");
+        return $stmt->execute([$id]);
+    }
+
+    /**
+     * Increment registered count by 1
+     *
+     * @param PDO $db
+     * @param int $id
+     * @return bool
+     */
+    public static function incrementRegistered(PDO $db, int $id): bool
+    {
+        $stmt = $db->prepare("UPDATE workshops SET registered = registered + 1 WHERE id = ?");
+        return $stmt->execute([$id]);
+    }
+
+    /**
+     * Decrement registered count by 1 (floor at 0)
+     *
+     * @param PDO $db
+     * @param int $id
+     * @return bool
+     */
+    public static function decrementRegistered(PDO $db, int $id): bool
+    {
+        $stmt = $db->prepare("UPDATE workshops SET registered = GREATEST(0, registered - 1) WHERE id = ?");
         return $stmt->execute([$id]);
     }
 
@@ -256,6 +283,52 @@ class Workshop
         $chars2 = str_split($timeslot2);
 
         return !empty(array_intersect($chars1, $chars2));
+    }
+
+    /**
+     * Get available workshops (capacity > registered) grouped by their timeslot code
+     *
+     * @param PDO $db
+     * @return array  map of timeslot_code => workshop[]
+     */
+    public static function getAvailableGroupedByTimeslot(PDO $db): array
+    {
+        $stmt = $db->query("
+            SELECT *
+            FROM workshops
+            WHERE is_active = 1
+              AND timeslot IS NOT NULL
+              AND capacity > registered
+            ORDER BY timeslot, date, time
+        ");
+        $rows = $stmt->fetchAll();
+
+        $grouped = [];
+        foreach ($rows as $row) {
+            $grouped[$row['timeslot']][] = $row;
+        }
+        return $grouped;
+    }
+
+    /**
+     * Return distinct timeslot codes from workshops a user is currently registered for
+     *
+     * @param PDO $db
+     * @param int $userId
+     * @return string[]
+     */
+    public static function getUserRegisteredTimeslots(PDO $db, int $userId): array
+    {
+        $stmt = $db->prepare("
+            SELECT DISTINCT w.timeslot
+            FROM workshops w
+            INNER JOIN registrations r ON w.id = r.workshop_id
+            WHERE r.user_id = ?
+              AND r.payment_status != 'cancelled'
+              AND w.timeslot IS NOT NULL
+        ");
+        $stmt->execute([$userId]);
+        return array_column($stmt->fetchAll(), 'timeslot');
     }
 
     /**
