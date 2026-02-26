@@ -1,3 +1,36 @@
+// Registration countdown
+(function () {
+    const el = document.getElementById('countdown');
+    if (!el) return;
+
+    const target = new Date(el.dataset.target.replace(' ', 'T'));
+    if (isNaN(target)) return;
+
+    const days    = document.getElementById('cd-days');
+    const hours   = document.getElementById('cd-hours');
+    const minutes = document.getElementById('cd-minutes');
+    const seconds = document.getElementById('cd-seconds');
+
+    function pad(n) { return String(n).padStart(2, '0'); }
+
+    function tick() {
+        const diff = target - Date.now();
+        if (diff <= 0) {
+            days.textContent = hours.textContent = minutes.textContent = seconds.textContent = '00';
+            clearInterval(timer);
+            return;
+        }
+        const totalSeconds = Math.floor(diff / 1000);
+        days.textContent    = pad(Math.floor(totalSeconds / 86400));
+        hours.textContent   = pad(Math.floor((totalSeconds % 86400) / 3600));
+        minutes.textContent = pad(Math.floor((totalSeconds % 3600) / 60));
+        seconds.textContent = pad(totalSeconds % 60);
+    }
+
+    tick();
+    const timer = setInterval(tick, 1000);
+}());
+
 function showModal(modalId) {
     const modal = document.getElementById(modalId);
     if (modal) {

@@ -8,9 +8,11 @@ class DefaultController extends BaseController
 {
     public function index()
     {
+        $registrationStart = $_ENV['REGISTRATION_START'] ?? null;
         echo $this->twig->render('pages/home.twig', [
             'user' => $this->getCurrentUser(),
-            'active_page' => 'home'
+            'active_page' => 'home',
+            'registration_start' => $registrationStart,
         ]);
     }
 
