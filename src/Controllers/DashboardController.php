@@ -70,11 +70,20 @@ class DashboardController extends BaseController
             exit;
         }
 
-        // Cancel the registration
-        $stmt = $this->db->prepare("
-            UPDATE registrations SET payment_status = 'cancelled' WHERE id = ?
-        ");
-        $stmt->execute([$registrationId]);
+        // Cancel the registration; on integrity constraint violation delete the row
+        try {
+            $stmt = $this->db->prepare("
+                UPDATE registrations SET payment_status = 'cancelled' WHERE id = ?
+            ");
+            $stmt->execute([$registrationId]);
+        } catch (\PDOException $e) {
+            if (str_starts_with($e->getCode(), '23')) {
+                $this->db->prepare("DELETE FROM registrations WHERE id = ?")
+                         ->execute([$registrationId]);
+            } else {
+                throw $e;
+            }
+        }
 
         // Decrement the workshop's registered counter
         Workshop::decrementRegistered($this->db, $registration['workshop_id']);

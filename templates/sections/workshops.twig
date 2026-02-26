@@ -108,9 +108,7 @@
                 {% if isFull %}
                     <button class="btn btn--secondary btn--block" disabled>Workshop je plný</button>
                 {% else %}
-                    <a href="/workshop/register?workshop_id={{ workshop.id }}" class="btn btn--primary btn--block">
-                        Registrovat se
-                    </a>
+                    <!-- Bylo tu tlačítko registrovat -->
                 {% endif %}
             {% else %}
                 <a href="#" onclick="document.getElementById('login-btn').click(); return false;" class="btn btn--primary btn--block">
