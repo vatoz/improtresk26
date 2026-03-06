@@ -1,0 +1,31 @@
+<div class="card">
+    <div class="card__body">
+        <h3>Přehled účastníků</h3>
+        {% if participants is empty %}
+            <p>Žádní účastníci.</p>
+        {% else %}
+            <table class="admin-table">
+                <thead>
+                    <tr>
+                        <th>Jméno</th>
+                        <th>E-mail</th>
+                        <th>Workshop</th>
+                        <th>Stav platby</th>
+                        <th>Registrováno</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for p in participants %}
+                        <tr>
+                            <td>{{ p.name }}</td>
+                            <td>{{ p.email }}</td>
+                            <td>{{ p.workshop_name ?? '–' }}</td>
+                            <td><span class="badge badge--{{ p.payment_status }}">{{ p.payment_status }}</span></td>
+                            <td>{{ p.created_at }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% endif %}
+    </div>
+</div>

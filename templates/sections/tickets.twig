@@ -1,0 +1,102 @@
+<div class="container">
+    <h1>Vstupenky</h1>
+    <a href="/dashboard" class="btn btn--primary btn--block">Vrátit se na přehled</a>
+    {% if tickets is empty %}
+        <div class="card">
+            <div class="card__body">
+                <p>Momentálně nejsou k dispozici žádné vstupenky. Zkuste to prosím později.</p>
+            </div>
+        </div>
+    {% else %}
+        <div class="shop-grid">
+            {% for ticket in tickets %}
+                {% set alreadyOrdered = ticket.id in user_purchased_ids %}
+                <div class="shop-card">
+                    <div class="shop-card__body">
+                        <h3 class="shop-card__name">{{ ticket.name }}</h3>
+
+                        {% if ticket.description %}
+                            <p class="shop-card__desc">{{ ticket.description }}</p>
+                        {% endif %}
+
+                        <div class="shop-card__meta">
+                            {% if ticket.date %}
+                                <span>📅 {{ ticket.date|date('j.n.Y') }}{% if ticket.time %} v {{ ticket.time|slice(0,5) }}{% endif %}</span>
+                            {% endif %}
+                            {% if ticket.capacity %}
+                                <span>👥 Kapacita: {{ ticket.capacity }}</span>
+                            {% endif %}
+                        </div>
+
+                        <div class="shop-card__footer">
+                            <span class="shop-card__price">{{ ticket.price|number_format(0, ',', ' ') }} Kč</span>
+
+                            {% if user %}
+                                {% if alreadyOrdered %}
+                                    <button class="btn btn--success btn--sm" disabled>✓ Objednáno</button>
+                                {% else %}
+                                    <form method="POST" action="/shop/buy">
+                                        <input type="hidden" name="_csrf"      value="{{ csrf }}">
+                                        <input type="hidden" name="item_type" value="ticket">
+                                        <input type="hidden" name="item_id"   value="{{ ticket.id }}">
+                                        <button type="submit" class="btn btn--primary btn--sm">Objednat</button>
+                                    </form>
+                                {% endif %}
+                            {% else %}
+                                <a href="/login" class="btn btn--outline btn--sm">Přihlásit se</a>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+</div>
+
+<style>
+.shop-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1.25rem;
+    margin-top: 1.5rem;
+}
+.shop-card {
+    background: var(--color-card-bg, #fff);
+    border: 1px solid var(--color-border, #e0e0e0);
+    border-radius: 8px;
+    overflow: hidden;
+}
+.shop-card__body {
+    padding: 1.25rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+}
+.shop-card__name {
+    margin: 0;
+    font-size: 1.1rem;
+}
+.shop-card__desc {
+    margin: 0;
+    font-size: 0.9rem;
+    color: var(--color-muted, #666);
+}
+.shop-card__meta {
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+    font-size: 0.85rem;
+    color: var(--color-muted, #666);
+}
+.shop-card__footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 0.5rem;
+}
+.shop-card__price {
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: var(--color-primary, #c0392b);
+}
+</style>

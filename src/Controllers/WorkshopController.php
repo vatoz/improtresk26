@@ -119,12 +119,6 @@ class WorkshopController extends BaseController
                 exit;
             }
 
-            if ($workshop['capacity'] - $workshop['registered'] <= 0) {
-                $_SESSION['error'] = 'Tento workshop je již plný.';
-                header('Location: /choose-workshops');
-                exit;
-            }
-
             // Duplicate registration check
             $stmt = $this->db->prepare("
                 SELECT id FROM registrations WHERE user_id = ? AND workshop_id = ? and payment_status <> 'cancelled'
@@ -136,23 +130,11 @@ class WorkshopController extends BaseController
                 exit;
             }
 
-            // Timeslot conflict check
-            if ($workshop['timeslot']) {
-                $conflicts = Workshop::getUserConflicts($this->db, $user['id'], $workshop['timeslot']);
-                if (!empty($conflicts)) {
-                    $_SESSION['error'] = 'Tento časový blok se překrývá s vaší stávající registrací.';
-                    header('Location: /choose-workshops');
-                    exit;
-                }
-            }
-
             // Create registration
             $stmt = $this->db->prepare("
                 INSERT INTO registrations (user_id, workshop_id, payment_status) VALUES (?, ?, 'pending')
             ");
             $stmt->execute([$user['id'], $workshopId]);
-
-            Workshop::incrementRegistered($this->db, $workshopId);
 
             $_SESSION['success'] = 'Byli jste úspěšně přihlášeni na workshop.';
             header('Location: /choose-workshops');
@@ -162,18 +144,6 @@ class WorkshopController extends BaseController
         // Build data for the view
         $timeslots = Timeslot::getAll($this->db);
         $workshopsByTimeslot = Workshop::getAvailableGroupedByTimeslot($this->db);
-        $userTimeslots = Workshop::getUserRegisteredTimeslots($this->db, $user['id']);
-
-        // Which timeslot codes are blocked by the user's existing registrations
-        $lockedCodes = [];
-        foreach ($timeslots as $ts) {
-            foreach ($userTimeslots as $ut) {
-                if (Workshop::timeslotsOverlap($ts['code'], $ut)) {
-                    $lockedCodes[$ts['code']] = true;
-                    break;
-                }
-            }
-        }
 
         // IDs of workshops the user is already registered for
         $stmt = $this->db->prepare("
@@ -190,7 +160,6 @@ class WorkshopController extends BaseController
             'active_page'           => 'choose_workshops',
             'timeslots'             => $timeslots,
             'workshops_by_timeslot' => $workshopsByTimeslot,
-            'locked_codes'          => $lockedCodes,
             'user_registered_ids'   => $userRegisteredIds,
             'csrf'                  => csrf_token('choose_workshops'),
             'error'                 => $session['error'],

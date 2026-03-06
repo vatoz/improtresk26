@@ -1,0 +1,35 @@
+<div class="card">
+    <div class="card__body">
+        <h3>Správa workshopů</h3>
+        {% if workshops is empty %}
+            <p>Žádné workshopy.</p>
+        {% else %}
+            <table class="admin-table">
+                <thead>
+                    <tr>
+                        <th>Název</th>
+                        <th>Lektor</th>
+                        <th>Datum</th>
+                        <th>Kapacita</th>
+                        <th>Přihlášeno</th>
+                        <th>Zaplaceno</th>
+                        <th>Aktivní</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for w in workshops %}
+                        <tr>
+                            <td>{{ w.name }}</td>
+                            <td>{{ w.instructor ?? '–' }}</td>
+                            <td>{{ w.date ?? '–' }}</td>
+                            <td>{{ w.capacity }}</td>
+                            <td>{{ w.registered_count }}</td>
+                            <td>{{ w.paid_count }}</td>
+                            <td>{{ w.is_active ? 'Ano' : 'Ne' }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% endif %}
+    </div>
+</div>

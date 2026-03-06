@@ -1,0 +1,82 @@
+<div class="card">
+    <div class="card__body">
+        <div class="card__header">
+            <h3>Přehled transakcí</h3>
+            <form method="post" action="/admin/sync-fio">
+                <button type="submit" class="btn btn--primary">Načíst transakce z Fio</button>
+            </form>
+        </div>
+        {% if error is defined and error %}
+            <p class="notice notice--error">Chyba synchronizace: {{ error }}</p>
+        {% elseif sync_result is defined %}
+            <p class="notice notice--success">
+                Synchronizace dokončena: přidáno <strong>{{ sync_result.inserted }}</strong>,
+                přeskočeno <strong>{{ sync_result.skipped }}</strong>.
+            </p>
+        {% endif %}
+        {% if transactions is empty %}
+            <p>Žádné transakce. Spusťte synchronizaci s Fio bankou.</p>
+        {% else %}
+            <table class="admin-table">
+                <thead>
+                    <tr>
+                        <th>Datum</th>
+                        <th>Objem</th>
+                        <th>Měna</th>
+                        <th>Variabilní symbol</th>
+                        <th>Uživatel</th>
+                        <th>Čekající workshopy</th>
+                        <th>Protiúčet</th>
+                        <th>Název protiúčtu</th>
+                        <th>Zpráva</th>
+                        <th>Typ</th>
+                        <th>Importováno</th>
+                        <th>Akce</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for t in transactions %}
+                        <tr>
+                            <td>{{ t.date }}</td>
+                            <td class="amount {% if t.amount starts with '-' %}amount--out{% else %}amount--in{% endif %}">
+                                {{ t.amount_int }}
+                            </td>
+                            <td>{{ t.currency }}</td>
+                            <td>{{ t.variable_symbol ?? '–' }}</td>
+                            <td>
+                                {% if t.matched_user %}
+                                    {{ t.matched_user.name }}<br>
+                                    <small>{{ t.matched_user.email }}</small>
+                                {% else %}
+                                    –
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if t.pending_sum is not null %}
+                                    <span class="{% if t.can_mark_paid %}match--ok{% else %}match--fail{% endif %}">
+                                        {{ t.pending_sum }}
+                                    </span>
+                                {% else %}
+                                    –
+                                {% endif %}
+                            </td>
+                            <td>{{ t.counter_account ?? '–' }}</td>
+                            <td>{{ t.counter_account_name ?? '–' }}</td>
+                            <td>{{ t.message ?? '–' }}</td>
+                            <td>{{ t.type ?? '–' }}</td>
+                            <td>{{ t.imported_at }}</td>
+                            <td>
+                                {% if t.can_mark_paid %}
+                                    <form method="post" action="/admin/payments/mark-paid">
+                                        <input type="hidden" name="transaction_id" value="{{ t.id }}">
+                                        <button type="submit" class="btn btn--success btn--sm">Označit jako zaplaceno</button>
+                                    </form>
+                                {% endif %}
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% endif %}
+    </div>
+</div>

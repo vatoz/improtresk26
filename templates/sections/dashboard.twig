@@ -25,44 +25,94 @@
                 <h3>Má registrace</h3>
                 <div id="user-registration">
                     {% if registrations is empty %}
-                        <p>Zatím nemáte žádné aktivní registrace.
+                        <p>Zatím nemáte žádné registrace.
                             <a href="/choose-workshops">Vybrat workshop</a>
                         </p>
                     {% else %}
+                        {% set showDrag = registrations|length > 1 %}
+
+                        {% if showDrag %}
+                            <p class="reorder-hint">
+                                Přetažením řádků upravte pořadí priorit registrací. 
+                                Systém se sám pokusí váš workshop změnit na lepší, když zjistí, že se uvolnilo místo.<br>
+                                Pokud už v daném časovém okně něco máte, už se to nepřeplánuje třeba z clodenního workshopu na dva půldenní.
+
+                            </p>
+                        {% endif %}
+
+                        {% set colCount = showDrag ? 7 : 6 %}
                         <table class="dashboard-registrations-table">
                             <thead>
                                 <tr>
+                                    {% if showDrag %}<th class="drag-col"></th>{% endif %}
+                                    <th>#</th>
                                     <th>Workshop</th>
                                     <th>Datum</th>
                                     <th>Cena</th>
-                                    <th>Stav platby</th>
+                                    <th>Stav</th>
                                     <th></th>
                                 </tr>
                             </thead>
-                            <tbody>
+                            <tbody id="registrations-tbody">
+                                {% set currentTimeslot = null %}
                                 {% for reg in registrations %}
-                                    <tr>
-                                        <td>{{ reg.workshop_name }}</td>
+                                    {% if reg.timeslot != currentTimeslot %}
+                                        <tr class="timeslot-group-row">
+                                            <td colspan="{{ colCount }}">
+                                                <h3 class="timeslot-group-label">
+                                                    {{ reg.timeslot_name ?? reg.timeslot ?? 'Ostatní' }}
+                                                </h3>
+                                            </td>
+                                        </tr>
+                                        {% set currentTimeslot = reg.timeslot %}
+                                    {% endif %}
+                                    <tr class="reg-row reg-row--status-{{ reg.payment_status }}"
+                                        data-id="{{ reg.id }}"
+                                        {% if showDrag %}draggable="true"{% endif %}>
+
+                                        {# drag handle column #}
+                                        {% if showDrag %}
+                                            <td><span class="drag-handle" title="Přetáhněte pro změnu pořadí">⠿</span></td>
+                                        {% endif %}
+
+                                        {# priority / index column #}
+                                        <td class="priority-cell">{{ loop.index }} |  {{ reg.priority }}</td>
+
+                                        <td>{{ reg.workshop_name ?? '–' }}</td>
+
                                         <td>
                                             {% if reg.date %}
                                                 {{ reg.date|date('j.n.Y') }}
-                                                {% if reg.time %}{{ reg.time|slice(0,5) }}{% endif %}
+                                                {% if reg.time %}<br><span class="time-muted">{{ reg.time|slice(0,5) }}</span>{% endif %}
                                             {% else %}
                                                 –
                                             {% endif %}
                                         </td>
-                                        <td>{{ reg.price|number_format(0, ',', ' ') }} Kč</td>
+
+                                        <td>{{ reg.price is not null ? reg.price|number_format(0, ',', ' ') ~ ' Kč' : '–' }}</td>
+
                                         <td>
-                                            {% if reg.payment_status == 'paid' %}
+                                            {% if reg.payment_status == 'pending' %}
+                                                <span class="dashboard-status dashboard-status--pending">Čeká na losování</span>
+                                            {% elseif reg.payment_status == 'upgradable' %}
+                                                <span class="dashboard-status dashboard-status--upgradable">Nabídnut upgrade</span>
+                                            {% elseif reg.payment_status == 'approved' %}
+                                                <span class="dashboard-status dashboard-status--approved">Vylosováno, čeká na platbu</span>
+                                            {% elseif reg.payment_status == 'paid' %}
                                                 <span class="dashboard-status dashboard-status--paid">Zaplaceno</span>
-                                            {% elseif reg.payment_status == 'pending' %}
-                                                <span class="dashboard-status dashboard-status--pending">Čeká na platbu</span>
+                                            {% elseif reg.payment_status == 'notpaid' %}
+                                                <span class="dashboard-status dashboard-status--notpaid">Nezaplaceno, zrušeno</span>
+                                            {% elseif reg.payment_status == 'cancelled' %}
+                                                <span class="dashboard-status dashboard-status--cancelled">Zrušeno</span>
+                                            {% elseif reg.payment_status == 'refunded' %}
+                                                <span class="dashboard-status dashboard-status--refunded">Vráceno</span>
                                             {% else %}
                                                 <span class="dashboard-status">{{ reg.payment_status }}</span>
                                             {% endif %}
                                         </td>
+
                                         <td>
-                                            {% if reg.payment_status == 'pending' %}
+                                            {% if reg.payment_status in ['pending', 'upgradable'] %}
                                                 <form method="POST" action="/dashboard/cancel-registration"
                                                       onsubmit="return confirm('Opravdu chcete zrušit tuto registraci?')">
                                                     <input type="hidden" name="_csrf" value="{{ csrf }}">
@@ -75,19 +125,131 @@
                                 {% endfor %}
                             </tbody>
                         </table>
-                         <p>
-                          
-        
+
+                        <p>
                             <a href="/choose-workshops" class="btn btn--primary btn--block">Vybrat další workshop</a>
                         </p>
                     {% endif %}
                 </div>
             </div>
         </div>
+        <div class="card">
+            <div class="card__body">
+                <div class="purchases-header">
+                    <h3>Moje nákupy</h3>
+                    <div class="shop-links">
+                        <a href="/tickets" class="btn btn--outline btn--sm">Vstupenky</a>
+                        <a href="/merch"   class="btn btn--outline btn--sm">Merch</a>
+                    </div>
+                </div>
+
+                {% if purchases is empty %}
+                    <p>Zatím nemáte žádné nákupy.</p>
+                {% else %}
+                    <table class="dashboard-registrations-table">
+                        <thead>
+                            <tr>
+                                <th>Položka</th>
+                                <th>Typ</th>
+                                <th>Ks</th>
+                                <th>Cena</th>
+                                <th>Stav</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for p in purchases %}
+                                <tr class="reg-row--status-{{ p.payment_status }}">
+                                    <td>
+                                        {{ p.item_name }}
+                                        {% if p.item_type == 'ticket' and p.date %}
+                                            <br><span class="time-muted">{{ p.date|date('j.n.Y') }}{% if p.time %} {{ p.time|slice(0,5) }}{% endif %}</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if p.item_type == 'ticket' %}
+                                            <span class="type-badge type-badge--ticket">Vstupenka</span>
+                                        {% else %}
+                                            <span class="type-badge type-badge--merch">Merch</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ p.quantity }}</td>
+                                    <td>{{ p.price is not null ? p.price|number_format(0, ',', ' ') ~ ' Kč' : '–' }}</td>
+                                    <td>
+                                        {% if p.payment_status == 'pending' %}
+                                            <span class="dashboard-status dashboard-status--pending">Čeká na platbu</span>
+                                        {% elseif p.payment_status == 'paid' %}
+                                            <span class="dashboard-status dashboard-status--paid">Zaplaceno</span>
+                                        {% elseif p.payment_status == 'cancelled' %}
+                                            <span class="dashboard-status dashboard-status--cancelled">Zrušeno</span>
+                                        {% else %}
+                                            <span class="dashboard-status">{{ p.payment_status }}</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if p.payment_status == 'pending' %}
+                                            <form method="POST" action="/shop/cancel-purchase"
+                                                  onsubmit="return confirm('Opravdu chcete zrušit tuto objednávku?')">
+                                                <input type="hidden" name="_csrf"        value="{{ csrf }}">
+                                                <input type="hidden" name="purchase_id" value="{{ p.id }}">
+                                                <button type="submit" class="btn btn--danger btn--sm">Zrušit</button>
+                                            </form>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                {% endif %}
+            </div>
+        </div>
     </div>
 </div>
 
 <style>
+.reorder-hint {
+    font-size: 0.85rem;
+    color: var(--color-muted, #777);
+    margin-bottom: 0.75rem;
+}
+.drag-col {
+    width: 2rem;
+}
+.drag-handle {
+    cursor: grab;
+    color: var(--color-muted, #bbb);
+    font-size: 1.1rem;
+    user-select: none;
+    display: inline-block;
+}
+.reg-row.drag-over {
+    outline: 2px dashed var(--color-primary, #3498db);
+}
+.reg-row.dragging {
+    opacity: 0.4;
+}
+.priority-cell {
+    font-weight: 600;
+    color: var(--color-muted, #888);
+    width: 2rem;
+}
+.timeslot-group-row td {
+    padding: 0.9rem 0.75rem 0.3rem;
+    border-bottom: none;
+}
+.timeslot-group-label {
+    margin: 0;
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--color-primary, #2980b9);
+    border-bottom: 2px solid var(--color-primary, #2980b9);
+    padding-bottom: 0.25rem;
+    display: inline-block;
+}
+.time-muted {
+    font-size: 0.8rem;
+    color: var(--color-muted, #888);
+}
 .dashboard-registrations-table {
     width: 100%;
     border-collapse: collapse;
@@ -98,6 +260,7 @@
     text-align: left;
     padding: 0.55rem 0.75rem;
     border-bottom: 1px solid var(--color-border, #e0e0e0);
+    vertical-align: middle;
 }
 .dashboard-registrations-table th {
     font-weight: 600;
@@ -106,19 +269,122 @@
 .dashboard-registrations-table tbody tr:last-child td {
     border-bottom: none;
 }
+.reg-row--status-cancelled td,
+.reg-row--status-notpaid td {
+    opacity: 0.55;
+}
+.reg-row--status-upgradable td {
+    background: #faf5ff;
+}
 .dashboard-status {
     display: inline-block;
     padding: 0.2rem 0.55rem;
     border-radius: 999px;
     font-size: 0.8rem;
     font-weight: 600;
+    white-space: nowrap;
 }
-.dashboard-status--paid {
-    background: #e6f5ec;
-    color: #27ae60;
+.purchases-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
 }
-.dashboard-status--pending {
-    background: #fef9e7;
-    color: #d68910;
+.purchases-header h3 {
+    margin: 0;
 }
+.shop-links {
+    display: flex;
+    gap: 0.5rem;
+}
+.type-badge {
+    display: inline-block;
+    padding: 0.1rem 0.5rem;
+    border-radius: 4px;
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+}
+.type-badge--ticket { background: #e8f4fd; color: #2980b9; }
+.type-badge--merch  { background: #fef9e7; color: #d68910; }
+.dashboard-status--pending    { background: #fef9e7; color: #d68910; }
+.dashboard-status--upgradable { background: #f0e6ff; color: #7d3c98; }
+.dashboard-status--approved   { background: #e8f4fd; color: #2980b9; }
+.dashboard-status--paid      { background: #e6f5ec; color: #27ae60; }
+.dashboard-status--notpaid   { background: #fdecea; color: #c0392b; }
+.dashboard-status--cancelled { background: #f2f2f2; color: #888; }
+.dashboard-status--refunded  { background: #f5f0ff; color: #8e44ad; }
 </style>
+
+<script>
+(function () {
+    const tbody = document.getElementById('registrations-tbody');
+    if (!tbody) return;
+
+    const draggableRows = () => Array.from(tbody.querySelectorAll('.reg-row[draggable="true"]'));
+    if (draggableRows().length < 2) return;
+
+    let dragSrc = null;
+
+    tbody.addEventListener('dragstart', function (e) {
+        const row = e.target.closest('.reg-row[draggable]');
+        if (!row) return;
+        dragSrc = row;
+        row.classList.add('dragging');
+        e.dataTransfer.effectAllowed = 'move';
+    });
+
+    tbody.addEventListener('dragend', function (e) {
+        const row = e.target.closest('.reg-row[draggable]');
+        if (row) row.classList.remove('dragging');
+        draggableRows().forEach(r => r.classList.remove('drag-over'));
+        dragSrc = null;
+    });
+
+    tbody.addEventListener('dragover', function (e) {
+        const row = e.target.closest('.reg-row[draggable]');
+        if (!row || row === dragSrc) return;
+        e.preventDefault();
+        e.dataTransfer.dropEffect = 'move';
+        draggableRows().forEach(r => r.classList.remove('drag-over'));
+        row.classList.add('drag-over');
+    });
+
+    tbody.addEventListener('dragleave', function (e) {
+        const row = e.target.closest('.reg-row[draggable]');
+        if (row) row.classList.remove('drag-over');
+    });
+
+    tbody.addEventListener('drop', function (e) {
+        const target = e.target.closest('.reg-row[draggable]');
+        if (!target || target === dragSrc) return;
+        e.preventDefault();
+
+        const rect = target.getBoundingClientRect();
+        const after = e.clientY > rect.top + rect.height / 2;
+        tbody.insertBefore(dragSrc, after ? target.nextSibling : target);
+
+        draggableRows().forEach(r => r.classList.remove('drag-over'));
+        updatePriorityLabels();
+        saveOrder();
+    });
+
+    function updatePriorityLabels() {
+        draggableRows().forEach((row, i) => {
+            const cell = row.querySelector('.priority-cell');
+            if (cell) cell.textContent = i + 1;
+        });
+    }
+
+    function saveOrder() {
+        const ids = draggableRows().map(r => parseInt(r.dataset.id, 10));
+        fetch('/dashboard/reorder-registrations', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ ids })
+        }).catch(function () {});
+    }
+})();
+</script>

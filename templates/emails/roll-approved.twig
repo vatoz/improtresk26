@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Uvolnilo se místo – Improtřesk 2026</title>
+    <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px; }
+        .container { background-color: #f9f9f9; border-radius: 8px; padding: 30px; border: 1px solid #ddd; }
+        .header { text-align: center; margin-bottom: 30px; }
+        .header h1 { color: #d32f2f; margin: 0; font-size: 28px; }
+        .content { background-color: white; padding: 25px; border-radius: 5px; }
+        .workshop-box { background: #e8f5e9; border-left: 4px solid #43a047; padding: 14px 16px; margin: 20px 0; border-radius: 4px; }
+        .workshop-box h3 { margin: 0 0 6px; color: #2e7d32; font-size: 17px; }
+        .workshop-meta { font-size: 13px; color: #555; margin: 3px 0; }
+        .price { font-size: 18px; font-weight: bold; color: #2e7d32; margin-top: 8px; }
+        .info-box { background-color: #e8f4fd; border-left: 4px solid #2980b9; padding: 12px; margin: 20px 0; font-size: 14px; }
+        .button { display: inline-block; padding: 12px 30px; background-color: #d32f2f; color: white; text-decoration: none; border-radius: 5px; margin: 20px 0; font-weight: bold; }
+        .footer { margin-top: 30px; text-align: center; font-size: 12px; color: #666; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Improtřesk 2026</h1>
+            <p>Festival improvizačního divadla</p>
+        </div>
+
+        <div class="content">
+            <h2>Ahoj, {{ name }}!</h2>
+
+            <p>
+                Uvolnilo se místo na workshop, o který jsi měl/a zájem a který byl dříve plný.
+                Tvoje přihláška byla <strong>schválena</strong>.
+            </p>
+
+            <div class="workshop-box">
+                <h3>{{ workshop.name }}</h3>
+                {% if workshop.date %}
+                    <p class="workshop-meta">
+                        Datum: {{ workshop.date|date('j.n.Y') }}
+                        {% if workshop.time %} v {{ workshop.time|slice(0,5) }}{% endif %}
+                    </p>
+                {% endif %}
+                <p class="price">Cena: {{ workshop.price|number_format(0, ',', ' ') }} Kč</p>
+            </div>
+
+            <div class="info-box">
+                Pro potvrzení místa je nutné dokončit platbu do <strong>5 dnů</strong>.
+                Po uplynutí této lhůty bude místo uvolněno dalšímu zájemci.
+                Přihlas se do svého profilu a zjisti platební instrukce.
+            </div>
+
+            <div style="text-align: center;">
+                <a href="{{ app_url ?? 'https://improtresk.cz' }}/dashboard" class="button">Přejít do profilu</a>
+            </div>
+
+            <p>S pozdravem,<br>Tým Improtřesk</p>
+        </div>
+
+        <div class="footer">
+            <p>Tento e-mail byl odeslán automaticky, neodpovídej na něj.<br>
+            Pro dotazy nás kontaktuj na <a href="mailto:improtresk@improlab.art">improtresk@improlab.art</a></p>
+        </div>
+    </div>
+</body>
+</html>

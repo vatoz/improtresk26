@@ -1,0 +1,168 @@
+{% extends 'base.twig' %}
+
+{% block title %}Losování – Admin{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h1>Administrace</h1>
+    {% include 'sections/admin_navigation.twig' with { active_tab: 'lottery' } %}
+
+    <div class="card" style="margin-top: 1.5rem;">
+        <div class="card__body">
+            <h3>Losování workshopů</h3>
+
+            <p>
+                Losování projde všechny uživatele s čekajícími registracemi v náhodném pořadí.
+                Pro každého uživatele zkontroluje registrace (seřazené dle priority) a přiřadí
+                místa na workshopy podle dostupné kapacity a časových překryvů.
+                Po skončení losování jsou všem uživatelům zařazeny e-maily s výsledky.
+            </p>
+
+            {% if results is null %}
+                <div class="lottery-warning">
+                    <strong>Pozor:</strong> Losování je nevratná akce. Všechny čekající přihlášky budou
+                    buď schváleny, nebo zrušeny. Ujistěte se, že jste připraveni spustit losování.
+                </div>
+
+                <form method="POST" action="/admin/lottery/run"
+                      onsubmit="return confirm('Opravdu chcete spustit losování? Tato akce je nevratná.')">
+                    <button type="submit" class="btn btn--danger">Spustit losování</button>
+                </form>
+            {% else %}
+                <div class="lottery-done">
+                    Losování proběhlo. Celkem zpracováno uživatelů: <strong>{{ results|length }}</strong>.
+                    E-maily s výsledky byly zařazeny do fronty.
+                </div>
+
+                {% if results is empty %}
+                    <p>Žádní uživatelé s čekajícími registracemi nebyli nalezeni.</p>
+                {% else %}
+                    <table class="admin-table lottery-results-table">
+                        <thead>
+                            <tr>
+                                <th>Uživatel</th>
+                                <th>E-mail</th>
+                                <th>Schválené workshopy</th>
+                                <th>Zrušené přihlášky</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for row in results %}
+                                <tr>
+                                    <td>{{ row.user.name }}</td>
+                                    <td>{{ row.user.email }}</td>
+                                    <td>
+                                        {% if row.approved is empty %}
+                                            <span class="lottery-none">–</span>
+                                        {% else %}
+                                            <ul class="lottery-workshop-list">
+                                                {% for w in row.approved %}
+                                                    <li>
+                                                        <span class="badge badge--approved">✓</span>
+                                                        {{ w.workshop_name }}
+                                                        {% if w.date %}
+                                                            <span class="lottery-date">
+                                                                {{ w.date|date('j.n.') }}{% if w.time %} {{ w.time|slice(0,5) }}{% endif %}
+                                                            </span>
+                                                        {% endif %}
+                                                    </li>
+                                                {% endfor %}
+                                            </ul>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if row.cancelled is empty %}
+                                            <span class="lottery-none">–</span>
+                                        {% else %}
+                                            <ul class="lottery-workshop-list">
+                                                {% for w in row.cancelled %}
+                                                    <li>
+                                                        <span class="badge badge--cancelled">✗</span>
+                                                        {{ w.workshop_name }}
+                                                    </li>
+                                                {% endfor %}
+                                            </ul>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                {% endif %}
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<style>
+.lottery-warning {
+    background: #fef9e7;
+    border-left: 4px solid #f39c12;
+    padding: 0.85rem 1rem;
+    margin-bottom: 1.25rem;
+    font-size: 0.95rem;
+}
+.lottery-done {
+    background: #e6f5ec;
+    border-left: 4px solid #27ae60;
+    padding: 0.85rem 1rem;
+    margin-bottom: 1.25rem;
+    font-size: 0.95rem;
+}
+.lottery-results-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.9rem;
+    margin-top: 1rem;
+}
+.lottery-results-table th,
+.lottery-results-table td {
+    text-align: left;
+    padding: 0.55rem 0.75rem;
+    border-bottom: 1px solid var(--color-border, #e0e0e0);
+    vertical-align: top;
+}
+.lottery-results-table th {
+    font-weight: 600;
+    color: var(--color-muted, #555);
+}
+.lottery-workshop-list {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+}
+.lottery-workshop-list li {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+}
+.lottery-date {
+    font-size: 0.8rem;
+    color: var(--color-muted, #777);
+}
+.lottery-none {
+    color: var(--color-muted, #bbb);
+}
+.badge--approved {
+    display: inline-block;
+    padding: 0.1rem 0.45rem;
+    border-radius: 999px;
+    background: #e6f5ec;
+    color: #27ae60;
+    font-size: 0.8rem;
+    font-weight: 700;
+}
+.badge--cancelled {
+    display: inline-block;
+    padding: 0.1rem 0.45rem;
+    border-radius: 999px;
+    background: #fdecea;
+    color: #c0392b;
+    font-size: 0.8rem;
+    font-weight: 700;
+}
+</style>
+{% endblock %}

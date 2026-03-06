@@ -2,6 +2,16 @@
 require_once __DIR__ . '/../vendor/autoload.php';
 require_once __DIR__ . '/../src/bootstrap.php';
 
+// Probability-based pseudo-cron (2 % of requests)
+if (mt_rand(1, 100) <= 2) {
+    register_shutdown_function(function () use ($db, $twig) {
+        if (function_exists('fastcgi_finish_request')) {
+            fastcgi_finish_request();   // flush response to browser before running cron
+        }
+        (new \App\Services\CronService($db, $twig))->run();
+    });
+}
+
 // Router
 $router = new AltoRouter();
 //$router->setBasePath('/'); // pokud je v subdiru, tady nastavit
@@ -30,12 +40,29 @@ $router->map('GET|POST', '/choose-workshops', 'WorkshopController#chooseWorkshop
 $router->map('GET', '/dashboard', 'DashboardController#index', 'dashboard');
 $router->map('GET', '/profile', 'DashboardController#index', 'profile');
 $router->map('POST', '/dashboard/cancel-registration', 'DashboardController#cancelRegistration', 'cancel_registration');
+$router->map('POST', '/dashboard/reorder-registrations', 'DashboardController#reorderRegistrations', 'reorder_registrations');
+
+// Shop
+$router->map('GET',  '/tickets',              'ShopController#tickets',       'tickets');
+$router->map('GET',  '/merch',                'ShopController#merch',         'merch');
+$router->map('POST', '/shop/buy',             'ShopController#buy',           'shop_buy');
+$router->map('POST', '/shop/cancel-purchase', 'ShopController#cancelPurchase','shop_cancel_purchase');
 
 // Payment
 $router->map('GET', '/payment', 'PaymentController#index', 'payment');
 
+// Cron
+$router->map('GET', '/cron', 'CronController#run', 'cron');
+
 // Admin
-$router->map('GET', '/admin', 'AdminController#index', 'admin');
+$router->map('GET', '/admin', 'AdminController#participants', 'admin');
+$router->map('GET', '/admin/workshops', 'AdminController#workshops', 'admin_workshops');
+$router->map('GET', '/admin/payments', 'AdminController#payments', 'admin_payments');
+$router->map('POST', '/admin/sync-fio', 'AdminController#syncFio', 'admin_sync_fio');
+$router->map('POST', '/admin/payments/mark-paid', 'AdminController#markPaid', 'admin_mark_paid');
+$router->map('GET', '/admin/lottery', 'AdminController#lottery', 'admin_lottery');
+$router->map('POST', '/admin/lottery/run', 'AdminController#runLottery', 'admin_run_lottery');
+$router->map('GET', '/admin/export', 'AdminController#export', 'admin_export');
 $router->map('GET', '/admin/export-csv', 'AdminController#exportCsv', 'admin_export_csv');
 
 $match = $router->match();

@@ -1,0 +1,11 @@
+{% extends 'base.twig' %}
+
+{% block title %}Administrace – Platby | Improtřesk 2026{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h1>Administrace</h1>
+    {% include 'sections/admin_navigation.twig' with { active_tab: 'payments' } %}
+    {% include 'sections/admin-payments.twig' %}
+</div>
+{% endblock %}

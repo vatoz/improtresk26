@@ -6,9 +6,6 @@
 <section class="section">
     <div class="container">
         <h1>Výběr workshopů</h1>
-         <a href="/dashboard"  class="btn btn--primary btn--block">
-            Zpátky na můj přehled
-        </a>
         {% if error %}
             <div class="alert alert-error">{{ error }}</div>
         {% endif %}
@@ -24,33 +21,19 @@
             </div>
         {% else %}
             {% for ts in timeslots %}
-                {% set isLocked = locked_codes[ts.code] is defined %}
                 {% set workshops = workshops_by_timeslot[ts.code] ?? [] %}
 
-                {# Skip blocks that are locked AND have no workshops the user registered for #}
-                {% if not isLocked or (isLocked and workshops is not empty) or isLocked %}
-
-                <div class="card choose-timeslot-block{% if isLocked %} choose-timeslot-block--locked{% endif %}">
+                <div class="card choose-timeslot-block">
                     <div class="card__header choose-timeslot-header">
                         <h2 class="choose-timeslot-title">
                             {{ ts.name }}
                             <span class="choose-timeslot-code">({{ ts.code }})</span>
                         </h2>
-                        {% if isLocked %}
-                            <span class="choose-badge choose-badge--locked">
-                                Obsazeno – překryv s vaší registrací
-                            </span>
-                        {% endif %}
                     </div>
 
                     <div class="card__body">
-                        {% if isLocked %}
-                            <p class="choose-locked-note">
-                                Tento časový blok se překrývá s workshopem, na který jste již přihlášeni.
-                                Nelze přidat další registraci do překrývajícího se bloku.
-                            </p>
-                        {% elseif workshops is empty %}
-                            <p class="choose-empty-note">V tomto bloku nejsou momentálně volná místa.</p>
+                        {% if workshops is empty %}
+                            <p class="choose-empty-note">V tomto bloku nejsou momentálně dostupné žádné workshopy.</p>
                         {% else %}
                             <div class="choose-workshop-list">
                                 {% for workshop in workshops %}
@@ -69,7 +52,7 @@
                                                 {% endif %}
                                             </span>
                                             <span class="choose-workshop-meta">
-                                                Volná místa: {{ workshop.capacity - workshop.registered }}
+                                                Volná místa: {{ workshop.available_spots }}
                                                 &nbsp;·&nbsp;
                                                 {{ workshop.price|number_format(0, ',', ' ') }} Kč
                                             </span>
@@ -95,9 +78,11 @@
                     </div>
                 </div>
 
-                {% endif %}
             {% endfor %}
         {% endif %}
+        <a href="/dashboard"  class="btn btn--primary btn--block" style="margin-top:20px">
+            Zpátky na můj přehled
+        </a>
     </div>
 </section>
 {% endblock %}
@@ -106,9 +91,6 @@
 <style>
 .choose-timeslot-block {
     margin-bottom: 1.5rem;
-}
-.choose-timeslot-block--locked {
-    opacity: 0.6;
 }
 .choose-timeslot-header {
     display: flex;
@@ -134,15 +116,10 @@
     font-size: 0.8rem;
     font-weight: 600;
 }
-.choose-badge--locked {
-    background: #f5e6e6;
-    color: #c0392b;
-}
 .choose-badge--registered {
     background: #e6f5ec;
     color: #27ae60;
 }
-.choose-locked-note,
 .choose-empty-note {
     color: var(--color-muted, #777);
     margin: 0;

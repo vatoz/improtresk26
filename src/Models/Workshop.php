@@ -294,12 +294,15 @@ class Workshop
     public static function getAvailableGroupedByTimeslot(PDO $db): array
     {
         $stmt = $db->query("
-            SELECT *
-            FROM workshops
-            WHERE is_active = 1
-              AND timeslot IS NOT NULL
-              AND capacity > registered
-            ORDER BY timeslot, date, time
+            SELECT w.*,
+                   COUNT(r.id) AS enrolled_count,
+                   (w.capacity - COUNT(r.id)) AS available_spots
+            FROM workshops w
+            LEFT JOIN registrations r ON w.id = r.workshop_id AND r.payment_status != 'cancelled'
+            WHERE w.is_active = 1
+              AND w.timeslot IS NOT NULL
+            GROUP BY w.id
+            ORDER BY w.timeslot, w.date, w.time
         ");
         $rows = $stmt->fetchAll();
 

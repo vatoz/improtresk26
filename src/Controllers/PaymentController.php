@@ -1,5 +1,6 @@
 <?php
 namespace App\Controllers;
+use vplacek\QRPlatba\QRPlatba;
 
 class PaymentController extends BaseController
 {
@@ -14,7 +15,7 @@ class PaymentController extends BaseController
             SELECT r.*, w.name as workshop_name, w.price
             FROM registrations r
             LEFT JOIN workshops w ON r.workshop_id = w.id
-            WHERE r.user_id = ? AND r.payment_status = 'pending'
+            WHERE r.user_id = ? AND r.payment_status = 'approved'
             ORDER BY r.created_at DESC LIMIT 1
         ");
         $stmt->execute([$user['id']]);
@@ -36,11 +37,21 @@ class PaymentController extends BaseController
             'message' => $paymentConfig['message']
         ];
 
+        
+    $qrPlatba = new QRPlatba();
+    $qrPlatba->setIban($paymentConfig['iban'])
+	->setAmount($registration['price'])
+	->setScale(5) //velikost QR kodu
+	->setVariableSymbol(str_pad($registration['id'], 10, '0', STR_PAD_LEFT));
+
+
+
         echo $this->twig->render('pages/payment.twig', [
             'user' => $user,
             'active_page' => 'payment',
             'registration' => $registration,
-            'payment' => $paymentDetails
+            'payment' => $paymentDetails,
+            'qr'=>"data:image/png;base64,". base64_encode($qrPlatba->generateQr())
         ]);
     }
 }
