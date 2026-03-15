@@ -15,7 +15,6 @@ use Twig\Environment as Twig;
  *   MailService    – 5 minutes   (key: cron_last_run_mail)
  *   FioService     – 1 hour      (key: cron_last_run_fio)
  *   UnpaidService  – 1 hour      (key: cron_last_run_unpaid)
- *   LotteryService – once per calendar day  (key: cron_last_run_lottery)
  *
  * Note: RollService is called directly by UnpaidService after each eviction,
  * so it does not need its own cron slot.
@@ -23,10 +22,9 @@ use Twig\Environment as Twig;
 class CronService
 {
     private const JOBS = [
-        'mail'    => ['key' => 'cron_last_run_mail',    'interval' => 300],    // 5 min
-        'fio'     => ['key' => 'cron_last_run_fio',     'interval' => 360],   // 1 hour
-        'unpaid'  => ['key' => 'cron_last_run_unpaid',  'interval' => 360],   // 1 hour
-        'lottery' => ['key' => 'cron_last_run_lottery', 'interval' => 3600 ], //má být 'daily'
+        'mail'    => ['key' => 'cron_last_run_mail',    'interval' => 3000],    // 5 min
+        'fio'     => ['key' => 'cron_last_run_fio',     'interval' => 3600],   // 1 hour má být 3600        
+        'unpaid'  => ['key' => 'cron_last_run_unpaid',  'interval' => 3600]    // 1 hour má být 3600        
     ];
 
     private PDO  $db;
@@ -55,16 +53,11 @@ class CronService
             $this->runFio();
             $this->saveLastRun('fio', $now);
         }
-
+        
         if ($this->isDue('unpaid', $lastRuns, $now)) {
             $this->runUnpaid();
             $this->saveLastRun('unpaid', $now);
-        }
-
-        if ($this->isDue('lottery', $lastRuns, $now)) {
-            $this->runLottery();
-            $this->saveLastRun('lottery', $now);
-        }
+        }        
     }
 
     // -------------------------------------------------------------------------
@@ -88,7 +81,7 @@ class CronService
             error_log('CronService [fio]: ' . $e->getMessage());
         }
     }
-
+    
     private function runUnpaid(): void
     {
         try {
@@ -98,15 +91,7 @@ class CronService
         }
     }
 
-    private function runLottery(): void
-    {
-        try {
-            (new LotteryService($this->db))->run();
-        } catch (\Throwable $e) {
-            error_log('CronService [lottery]: ' . $e->getMessage());
-        }
-    }
-
+    
     // -------------------------------------------------------------------------
     // Settings helpers
     // -------------------------------------------------------------------------
