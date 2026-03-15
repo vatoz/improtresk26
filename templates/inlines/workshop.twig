@@ -1,0 +1,24 @@
+    <strong class="wts-card__name">{{ workshop.name }}</strong>
+    {% if workshop.instructor %}
+        <span class="wts-card__meta">{{ workshop.instructor }}</span>
+    {% endif %}
+    <span class="wts-card__meta">
+        {{ workshop.date|date('j.n.Y') }}
+        {% if workshop.time %}&nbsp;{{ workshop.time|slice(0,5) }}<br>{% endif %}
+        {% if workshop.duration_minutes %}&nbsp;·&nbsp;{{ workshop.duration_minutes }} min<br>{% endif %}
+    </span>
+    <span class="wts-card__meta">
+        {{ workshop.price|number_format(0, ',', ' ') }} Kč<br>
+        &nbsp;·&nbsp;
+        {% if workshop.available_spots <= 0 %}
+            <span class="wts-badge wts-badge--full">Obsazeno</span><br>
+        {% else %}
+            volných míst: {{ workshop.available_spots }}<br>
+        {% endif %}
+         {% if workshop.location %}
+            <strong>Místo:</strong> {{ workshop.location }}
+        {% endif %}
+    </span>
+
+
+                                    

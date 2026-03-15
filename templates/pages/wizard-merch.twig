@@ -1,0 +1,196 @@
+{% extends 'base.twig' %}
+
+{% block title %}Průvodce registrací – Merch – Improtřesk 2026{% endblock %}
+
+{% block content %}
+<section class="section">
+    <div class="container">
+
+        {# Progress bar #}
+        <div class="wizard-progress">
+            <div class="wizard-step wizard-step--done">
+                <span class="wizard-step__num">✓</span>
+                <span class="wizard-step__label">Workshopy</span>
+            </div>
+            <div class="wizard-progress__line wizard-progress__line--done"></div>
+            <div class="wizard-step wizard-step--done">
+                <span class="wizard-step__num">✓</span>
+                <span class="wizard-step__label">Vstupenky</span>
+            </div>
+            <div class="wizard-progress__line wizard-progress__line--done"></div>
+            <div class="wizard-step wizard-step--active">
+                <span class="wizard-step__num">3</span>
+                <span class="wizard-step__label">Merch</span>
+            </div>
+            <div class="wizard-progress__line"></div>
+            <div class="wizard-step">
+                <span class="wizard-step__num">4</span>
+                <span class="wizard-step__label">Platba</span>
+            </div>
+        </div>
+
+        <h1>Krok 3: Merch</h1>
+        <p class="wizard-intro">Vyberte merch, který si přejete objednat. Krok můžete přeskočit.</p>
+
+        {% if error %}
+            <div class="alert alert-error">{{ error }}</div>
+        {% endif %}
+        {% if success %}
+            <div class="alert alert-success">{{ success }}</div>
+        {% endif %}
+
+        <form method="POST" action="/wizard/merch">
+            <input type="hidden" name="_csrf" value="{{ csrf }}">
+
+            {% if items is empty %}
+                <div class="card">
+                    <div class="card__body">
+                        <p>Momentálně není k dispozici žádný merch.</p>
+                    </div>
+                </div>
+            {% else %}
+                <div class="shop-grid">
+                    {% for item in items %}
+                        {% set alreadyOrdered = item.id in user_purchased_ids %}
+                        <div class="shop-card{% if alreadyOrdered %} shop-card--ordered{% endif %}">
+                            <div class="shop-card__body">
+                                <h3 class="shop-card__name">{{ item.name }}</h3>
+
+                                {% if item.description %}
+                                    <p class="shop-card__desc">{{ item.description }}</p>
+                                {% endif %}
+
+                                <div class="shop-card__footer">
+                                    <span class="shop-card__price">{{ item.price|number_format(0, ',', ' ') }} Kč</span>
+
+                                    <label class="wizard-checkbox-label">
+                                        <input type="checkbox" name="merch_ids[]" value="{{ item.id }}">
+                                        {% if alreadyOrdered %}Přidat další{% else %}Objednat{% endif %}
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+
+            <div class="wizard-nav">
+                <a href="/wizard/tickets" class="btn btn--outline">Zpět</a>
+                <button type="submit" class="btn btn--primary">Pokračovat</button>
+            </div>
+        </form>
+
+    </div>
+</section>
+{% endblock %}
+
+{% block stylesheets %}
+{{ parent() }}
+<style>
+.wizard-progress {
+    display: flex;
+    align-items: center;
+    margin-bottom: 2rem;
+}
+.wizard-step {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.3rem;
+    min-width: 60px;
+}
+.wizard-step__num {
+    width: 2rem;
+    height: 2rem;
+    border-radius: 50%;
+    background: var(--color-border, #e0e0e0);
+    color: #666;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 0.9rem;
+}
+.wizard-step--active .wizard-step__num {
+    background: var(--color-primary, #c0392b);
+    color: #fff;
+}
+.wizard-step--done .wizard-step__num {
+    background: #27ae60;
+    color: #fff;
+}
+.wizard-step__label {
+    font-size: 0.75rem;
+    color: var(--color-muted, #777);
+    white-space: nowrap;
+}
+.wizard-step--active .wizard-step__label {
+    color: var(--color-primary, #c0392b);
+    font-weight: 600;
+}
+.wizard-progress__line {
+    flex: 1;
+    height: 2px;
+    background: var(--color-border, #e0e0e0);
+    margin-bottom: 1.2rem;
+}
+.wizard-progress__line--done {
+    background: #27ae60;
+}
+.wizard-intro {
+    margin-bottom: 1.5rem;
+    color: var(--color-muted, #555);
+}
+.shop-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 1.25rem;
+    margin-bottom: 1.5rem;
+}
+.shop-card {
+    background: var(--color-card-bg, #fff);
+    border: 1px solid var(--color-border, #e0e0e0);
+    border-radius: 8px;
+    overflow: hidden;
+}
+.shop-card--ordered {
+    border-color: #27ae60;
+    background: #f7fdf9;
+}
+.shop-card__body {
+    padding: 1.25rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+}
+.shop-card__name { margin: 0; font-size: 1.1rem; }
+.shop-card__desc { margin: 0; font-size: 0.9rem; color: var(--color-muted, #666); }
+.shop-card__footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 0.5rem;
+}
+.shop-card__price {
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: var(--color-primary, #c0392b);
+}
+.wizard-checkbox-label {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    cursor: pointer;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--color-primary, #c0392b);
+}
+.wizard-nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 1.5rem;
+    gap: 1rem;
+}
+</style>
+{% endblock %}

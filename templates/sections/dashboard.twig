@@ -26,7 +26,8 @@
                 <div id="user-registration">
                     {% if registrations is empty %}
                         <p>Zatím nemáte žádné registrace.
-                            <a href="/choose-workshops">Vybrat workshop</a>
+                            <!--<a href="/choose-workshops">Vybrat workshop</a>-->
+                            <br><a href="/wizard" class="btn btn--primary"  class="btn btn--outline">Vybrat si workshopy</a>
                         </p>
                     {% else %}
                         {% set showDrag = registrations|length > 1 %}
@@ -125,10 +126,10 @@
                                 {% endfor %}
                             </tbody>
                         </table>
-
+<!--
                         <p>
                             <a href="/choose-workshops" class="btn btn--primary btn--block">Vybrat další workshop</a>
-                        </p>
+                        </p>-->                        
                     {% endif %}
                 </div>
             </div>

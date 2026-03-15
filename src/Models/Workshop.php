@@ -335,6 +335,25 @@ class Workshop
     }
 
     /**
+     * Return noncancelled user registrations
+     *
+     * @param PDO $db
+     * @param int $userId
+     * @return string[]
+     */
+    public static function getUserRegistrations(PDO $db, int $userId): array
+    {
+        $stmt = $db->prepare("
+            SELECT * FROM  registrations r 
+            WHERE r.user_id = ?
+              AND r.payment_status != 'cancelled'
+        ");
+        $stmt->execute([$userId]);
+        return $stmt->fetchAll();
+    }
+
+
+    /**
      * Get workshops by timeslot filter
      * Returns workshops that have at least one matching timeslot character
      *

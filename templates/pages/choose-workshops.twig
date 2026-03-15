@@ -40,22 +40,8 @@
                                     {% set alreadyRegistered = workshop.id in user_registered_ids %}
                                     <div class="choose-workshop-item{% if alreadyRegistered %} choose-workshop-item--registered{% endif %}">
                                         <div class="choose-workshop-info">
-                                            <strong class="choose-workshop-name">{{ workshop.name }}</strong>
-                                            {% if workshop.instructor %}
-                                                <span class="choose-workshop-meta">{{ workshop.instructor }}</span>
-                                            {% endif %}
-                                            <span class="choose-workshop-meta">
-                                                {{ workshop.date|date('j.n.Y') }}
-                                                {% if workshop.time %}{{ workshop.time|slice(0, 5) }}{% endif %}
-                                                {% if workshop.duration_minutes %}
-                                                    &nbsp;·&nbsp;{{ workshop.duration_minutes }} min
-                                                {% endif %}
-                                            </span>
-                                            <span class="choose-workshop-meta">
-                                                Volná místa: {{ workshop.available_spots }}
-                                                &nbsp;·&nbsp;
-                                                {{ workshop.price|number_format(0, ',', ' ') }} Kč
-                                            </span>
+                                          {{ include('inlines/workshop.twig') }}
+                                            
                                         </div>
 
                                         <div class="choose-workshop-action">

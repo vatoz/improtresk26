@@ -151,7 +151,7 @@ class AuthController extends BaseController
         // Always return success to prevent email enumeration
         echo json_encode([
             'success' => true,
-            'message' => 'Pokud e-mail existuje v systému, byl odeslán odkaz na obnovu hesla.'
+            'message' => 'Pokud e-mail existuje v systému, byl na něj odeslán odkaz na obnovu hesla.'
         ]);
         exit;
     }

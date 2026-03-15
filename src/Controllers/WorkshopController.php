@@ -44,19 +44,13 @@ class WorkshopController extends BaseController
                 exit;
             }
 
-            // Check if workshop is full
-            if (Workshop::isFull($this->db, $workshopId)) {
-                $_SESSION['error'] = 'Vybraný workshop je již plný.';
-                header('Location: /workshop/register');
-                exit;
-            }
 
             $user = $this->getCurrentUser();
 
             // Check if user already registered for this workshop
             $stmt = $this->db->prepare("
                 SELECT id FROM registrations
-                WHERE user_id = ? AND workshop_id = ?
+                WHERE user_id = ? AND workshop_id = ? and payment_status <> 'cancelled'
             ");
             $stmt->execute([$user['id'], $workshopId]);
 

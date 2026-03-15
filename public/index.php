@@ -22,6 +22,7 @@ $router->map('GET', '/program', 'DefaultController#program', 'program');
 $router->map('GET', '/info', 'DefaultController#info', 'info');
 $router->map('GET', '/faq', 'DefaultController#faq', 'faq');
 $router->map('GET', '/contact', 'DefaultController#contact', 'contact');
+$router->map('GET', '/medailonky', 'DefaultController#medailonky', 'medailonky');
 
 // Auth
 $router->map('GET|POST', '/login', 'AuthController#login', 'login');
@@ -47,6 +48,13 @@ $router->map('GET',  '/tickets',              'ShopController#tickets',       't
 $router->map('GET',  '/merch',                'ShopController#merch',         'merch');
 $router->map('POST', '/shop/buy',             'ShopController#buy',           'shop_buy');
 $router->map('POST', '/shop/cancel-purchase', 'ShopController#cancelPurchase','shop_cancel_purchase');
+
+// Registration wizard
+$router->map('GET|POST', '/wizard/workshops', 'WizardController#workshops', 'wizard_workshops');
+$router->map('GET|POST', '/wizard/tickets',   'WizardController#tickets',   'wizard_tickets');
+$router->map('GET|POST', '/wizard/merch',     'WizardController#merch',     'wizard_merch');
+$router->map('GET',      '/wizard/payment',   'WizardController#payment',   'wizard_payment');
+$router->map('GET', '/wizard', 'WizardController#workshops', 'wizard');
 
 // Payment
 $router->map('GET', '/payment', 'PaymentController#index', 'payment');

@@ -1,0 +1,297 @@
+{% extends 'base.twig' %}
+
+{% block title %}Průvodce registrací – Workshopy – Improtřesk 2026{% endblock %}
+
+{% block content %}
+<section class="section">
+    <div class="container">
+
+        {# ── Wizard step bar ── #}
+        <div class="wizard-progress">
+            <div class="wizard-step wizard-step--active">
+                <span class="wizard-step__num">1</span>
+                <span class="wizard-step__label">Workshopy</span>
+            </div>
+            <div class="wizard-progress__line"></div>
+            <div class="wizard-step">
+                <span class="wizard-step__num">2</span>
+                <span class="wizard-step__label">Vstupenky</span>
+            </div>
+            <div class="wizard-progress__line"></div>
+            <div class="wizard-step">
+                <span class="wizard-step__num">3</span>
+                <span class="wizard-step__label">Merch</span>
+            </div>
+            <div class="wizard-progress__line"></div>
+            <div class="wizard-step">
+                <span class="wizard-step__num">4</span>
+                <span class="wizard-step__label">Platba</span>
+            </div>
+        </div>
+
+        {# ── Timeslot sub-progress ── #}
+        <div class="wts-header">
+            <div class="wts-meta">
+                Blok {{ done_timeslots + 1 }} z {{ total_timeslots }}
+            </div>
+            <h1 class="wts-title">{{ timeslot.name }}</h1>
+            <p class="wts-hint">Vyberte workshopy, na které se chcete přihlásit (lze vybrat více), nebo pokračujte bez výběru. Systém nabízí i možnost přidat workshopy, které jsou již možná plné, pro případ že by se uvolnilo místo.</p>
+        </div>
+
+        {# ── Sub-progress dots ── #}
+        {% if total_timeslots > 1 %}
+        <div class="wts-dots">
+            {% for i in 1..total_timeslots %}
+                <span class="wts-dot{% if i <= done_timeslots %} wts-dot--done{% elseif i == done_timeslots + 1 %} wts-dot--active{% endif %}"></span>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        {% if error %}
+            <div class="alert alert-error">{{ error }}</div>
+        {% endif %}
+        {% if success %}
+            <div class="alert alert-success">{{ success }}</div>
+        {% endif %}
+
+     
+            {% if workshops is empty %}
+                <div class="card wts-empty-card">
+                    <div class="card__body">
+                        <p>V tomto bloku nejsou dostupné žádné workshopy.</p>
+                    </div>
+                </div>
+            {% else %}
+                <div class="wts-grid">
+                    {% for workshop in workshops %}
+                        <label class="wts-card" for="ws-{{ workshop.id }}">
+                        {{ workshop.alreadyRegistered }}
+                                <form method="POST" action="/wizard/workshops">
+                                    <input type="hidden" name="_csrf" value="{{ csrf }}">
+                                    
+                                    <input type="hidden" name="slot"  value="{{ timeslot.code }}">                                    
+                                    {% if workshop.alreadyRegistered %}
+                                    
+                                        {% if workshop.alreadyRegistered != 'paid' %}
+                                        <input  type="hidden" name="cancel_workshop_id" value="{{ workshop.id }}">
+                                        <button type="submit" class="btn btn--primary btn--sm">
+                                                Zrušit registraci  {{ workshop.id }}
+                                        </button>
+                                        {% else %}
+                                            Zaplaceno!
+                                        {% endif %}    
+                                    {% else %}
+                                        <input  type="hidden" name="workshop_id" value="{{ workshop.id }}">
+                                        <button type="submit" class="btn btn--primary btn--sm">
+                                                Registrovat
+                                        </button>
+                                    {% endif %}
+                                </form>
+                            
+                            <div class="wts-card__inner">
+                                <div class="wts-card__check">✓</div>
+                                <div class="wts-card__body">
+                                    {{ include('inlines/workshop.twig') }}
+        
+                                </div>
+                            </div>
+                        </label>
+                    {% endfor %}
+                </div>
+            {% endif %}
+
+            <div class="wizard-nav">
+                <a href="/dashboard" class="btn btn--outline">Zrušit</a>
+                <a href="/wizard/workshops?slot_done={{ timeslot.code }}"  class="btn btn--primary"  class="btn btn--outline">Pokračovat na další časové okno</a>
+                
+            </div>
+       
+    </div>
+</section>
+
+
+{% endblock %}
+
+{% block stylesheets %}
+{{ parent() }}
+<style>
+/* ── Wizard step bar ─────────────────────────────── */
+.wizard-progress {
+    display: flex;
+    align-items: center;
+    margin-bottom: 2rem;
+}
+.wizard-step {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.3rem;
+    min-width: 60px;
+}
+.wizard-step__num {
+    width: 2rem;
+    height: 2rem;
+    border-radius: 50%;
+    background: var(--color-border, #e0e0e0);
+    color: #666;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 0.9rem;
+}
+.wizard-step--active .wizard-step__num {
+    background: var(--color-primary, #c0392b);
+    color: #fff;
+}
+.wizard-step__label {
+    font-size: 0.75rem;
+    color: var(--color-muted, #777);
+    white-space: nowrap;
+}
+.wizard-step--active .wizard-step__label {
+    color: var(--color-primary, #c0392b);
+    font-weight: 600;
+}
+.wizard-progress__line {
+    flex: 1;
+    height: 2px;
+    background: var(--color-border, #e0e0e0);
+    margin-bottom: 1.2rem;
+}
+
+/* ── Timeslot header ─────────────────────────────── */
+.wts-header {
+    margin-bottom: 0.75rem;
+}
+.wts-meta {
+    font-size: 0.8rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--color-primary, #c0392b);
+    margin-bottom: 0.3rem;
+}
+.wts-title {
+    margin: 0 0 0.4rem;
+    font-size: 1.6rem;
+}
+.wts-hint {
+    margin: 0;
+    font-size: 0.9rem;
+    color: var(--color-muted, #666);
+}
+
+/* ── Timeslot progress dots ──────────────────────── */
+.wts-dots {
+    display: flex;
+    gap: 0.4rem;
+    margin-bottom: 1.5rem;
+    flex-wrap: wrap;
+}
+.wts-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: var(--color-border, #ddd);
+    flex-shrink: 0;
+}
+.wts-dot--done   { background: #27ae60; }
+.wts-dot--active { background: var(--color-primary, #c0392b); }
+
+/* ── Workshop toggle cards ───────────────────────── */
+.wts-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+    margin-bottom: 1.5rem;
+}
+.wts-card {
+    display: block;
+    cursor: pointer;
+    border: 2px solid var(--color-border, #e0e0e0);
+    border-radius: 8px;
+    transition: border-color 0.15s, background 0.15s;
+    background: #fff;
+    user-select: none;
+}
+.wts-card:has(.wts-checkbox:disabled) {
+    opacity: 0.55;
+    cursor: not-allowed;
+}
+.wts-card:has(.wts-checkbox:checked) {
+    border-color: var(--color-primary, #c0392b);
+    background: #fdf4f3;
+}
+.wts-card:not(:has(.wts-checkbox:disabled)):hover {
+    border-color: #bbb;
+}
+.wts-checkbox {
+    position: absolute;
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+.wts-card__inner {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.85rem;
+    padding: 0.85rem 1rem;
+}
+.wts-card__check {
+    flex-shrink: 0;
+    width: 1.5rem;
+    height: 1.5rem;
+    border-radius: 4px;
+    border: 2px solid var(--color-border, #ccc);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: transparent;
+    background: #fff;
+    transition: border-color 0.15s, background 0.15s, color 0.15s;
+    margin-top: 0.1rem;
+}
+.wts-card:has(.wts-checkbox:checked) .wts-card__check {
+    border-color: var(--color-primary, #c0392b);
+    background: var(--color-primary, #c0392b);
+    color: #fff;
+}
+.wts-card__body {
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+}
+.wts-card__name {
+    font-size: 1rem;
+}
+.wts-card__meta {
+    font-size: 0.82rem;
+    color: var(--color-muted, #777);
+}
+.wts-badge {
+    display: inline-block;
+    padding: 0.1rem 0.45rem;
+    border-radius: 999px;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+.wts-badge--full {
+    background: #fdecea;
+    color: #c0392b;
+}
+.wts-empty-card {
+    margin-bottom: 1.5rem;
+}
+
+/* ── Nav ─────────────────────────────────────────── */
+.wizard-nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+}
+</style>
+{% endblock %}
