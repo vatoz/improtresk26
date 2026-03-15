@@ -4,7 +4,8 @@
         "twig/twig": "^3.22",
         "vlucas/phpdotenv": "^5.6",
         "phpmailer/phpmailer": "^7.0",
-        "4vplacek/qr-platba": "^1.0"
+        "4vplacek/qr-platba": "^1.0",
+        "ext-SimpleXML": "*"
     },
     "autoload": {
         "psr-4": {

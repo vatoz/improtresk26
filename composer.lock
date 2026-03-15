@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "a0a1000c5905a0bff7bad2902e74f23b",
+    "content-hash": "c9cb7760eb536e168bf317d97e96b402",
     "packages": [
         {
             "name": "4vplacek/qr-platba",
@@ -1049,7 +1049,9 @@
     "stability-flags": [],
     "prefer-stable": false,
     "prefer-lowest": false,
-    "platform": [],
+    "platform": {
+        "ext-simplexml": "*"
+    },
     "platform-dev": [],
     "plugin-api-version": "2.6.0"
 }

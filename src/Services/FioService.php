@@ -42,7 +42,7 @@ class FioService
     private function downloadXml(string $token): string
     {
         $url = sprintf(self::API_URL, urlencode($token));
-
+        error_log($url);
         $ctx = stream_context_create([
             'http' => [
                 'method'  => 'GET',
@@ -51,7 +51,8 @@ class FioService
             ],
         ]);
 
-        $body = @file_get_contents($url, false, $ctx);
+        //$body = @file_get_contents($url, false, $ctx);
+        $body = file_get_contents($url);
 
         if ($body === false) {
             throw new \RuntimeException('FioService: Failed to download XML from Fio API.');
