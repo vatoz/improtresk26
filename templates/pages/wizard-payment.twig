@@ -50,10 +50,14 @@
                                     <span class="wizard-status wizard-status--{{ r.payment_status }}">
                                         {% if r.payment_status == 'pending' %}čeká na platbu
                                         {% elseif r.payment_status == 'approved' %}schváleno
+                                        {% elseif r.payment_status == 'timeblock' %}Překryv
                                         {% else %}{{ r.payment_status }}{% endif %}
                                     </span>
                                 </td>
-                                <td class="wizard-summary-price">{{ r.price|number_format(0, ',', ' ') }} Kč</td>
+                                <td>{{ r.timeslot_name }}</td>
+                                <td class="wizard-summary-price">
+                                {% if r.price> 0 %}{{ r.price|number_format(0, ',', ' ') }} Kč{% endif %}
+                                </td>
                             </tr>
                             {% endfor %}
                         </table>
@@ -122,6 +126,7 @@
 
                     <p class="wizard-payment-note">
                         Po připsání platby vás budeme informovat e-mailem. Registrace jsou platné po úhradě.
+                        
                     </p>
                 </div>
             </div>

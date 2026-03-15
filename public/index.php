@@ -56,9 +56,6 @@ $router->map('GET|POST', '/wizard/merch',     'WizardController#merch',     'wiz
 $router->map('GET',      '/wizard/payment',   'WizardController#payment',   'wizard_payment');
 $router->map('GET', '/wizard', 'WizardController#workshops', 'wizard');
 
-// Payment
-$router->map('GET', '/payment', 'PaymentController#index', 'payment');
-
 // Cron
 $router->map('GET', '/cron', 'CronController#run', 'cron');
 
@@ -68,8 +65,6 @@ $router->map('GET', '/admin/workshops', 'AdminController#workshops', 'admin_work
 $router->map('GET', '/admin/payments', 'AdminController#payments', 'admin_payments');
 $router->map('POST', '/admin/sync-fio', 'AdminController#syncFio', 'admin_sync_fio');
 $router->map('POST', '/admin/payments/mark-paid', 'AdminController#markPaid', 'admin_mark_paid');
-$router->map('GET', '/admin/lottery', 'AdminController#lottery', 'admin_lottery');
-$router->map('POST', '/admin/lottery/run', 'AdminController#runLottery', 'admin_run_lottery');
 $router->map('GET', '/admin/export', 'AdminController#export', 'admin_export');
 $router->map('GET', '/admin/export-csv', 'AdminController#exportCsv', 'admin_export_csv');
 

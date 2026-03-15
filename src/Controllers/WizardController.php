@@ -90,6 +90,20 @@ class WizardController extends BaseController
             fn($ts) => !in_array($ts['code'], $userRegisteredTimeslots, true)
                     && !in_array($ts['code'], $skipped, true)
         ));
+        
+
+        foreach($userRegisteredTimeslots as $rTimeslot){
+            foreach($freeTimeslots as $ft=>$FTimeslot){
+                if(Workshop::timeslotsOverlap($FTimeslot['code'], $rTimeslot)){
+                    //error_log("Odebírám překryvný timeslot (".$rTimeslot.", ".$FTimeslot['code'].")" );
+                    unset($freeTimeslots[$ft]);                    
+                }
+            }
+        }
+        $freeTimeslots = array_values($freeTimeslots);
+        //error_log(var_export($freeTimeslots,true)) ;
+    
+
 
         // No slot requested → redirect to first free, or move on
        
@@ -112,7 +126,8 @@ class WizardController extends BaseController
             }
         }
         if (!$currentTimeslot) {
-            header('Location: /wizard/workshops?nevyšlotimeslot');
+            unset($_SESSION['wizard_skipped_slots']);
+            header('Location: /wizard/tickets');
             exit;
         }
 
@@ -306,7 +321,7 @@ class WizardController extends BaseController
 
         $stmt = $this->db->prepare("
             SELECT item_id FROM purchases
-            WHERE user_id = ? AND item_type = 'merch' AND payment_status != 'cancelled'
+            WHERE user_id = ? AND item_type = 'merch' AND payment_status != 'cancelled' AND payment_status != 'paid'
         ");
         $stmt->execute([$user['id']]);
         $userPurchasedIds = array_column($stmt->fetchAll(), 'item_id');
@@ -336,7 +351,7 @@ class WizardController extends BaseController
         // All pending/approved workshop registrations
         $stmt = $this->db->prepare("
             SELECT r.*, w.name AS workshop_name, w.price,
-                   ts.name AS timeslot_name
+                   ts.name AS timeslot_name, ts.code AS timeslot_code
             FROM registrations r
             LEFT JOIN workshops w ON r.workshop_id = w.id
             LEFT JOIN timeslots ts ON ts.code = w.timeslot
@@ -366,10 +381,20 @@ class WizardController extends BaseController
         }
 
         // Calculate total
+        $timeslots_taken=[];
         $total = 0;
-        foreach ($registrations as $r) {
+        foreach ($registrations as $i=>$r) {
+            foreach($timeslots_taken as $slot){
+                if(Workshop::timeslotsOverlap($slot,$r['timeslot_code'] )){
+                    $r['price']=0;
+                    $registrations[$i]['payment_status']="timeblock";
+                    $registrations[$i]['price']=0;
+                }
+            }
             $total += (float)$r['price'];
+            $timeslots_taken[]=$r['timeslot_code'];
         }
+
         foreach ($purchases as $p) {
             $total += (float)$p['item_price'] * (int)$p['quantity'];
         }

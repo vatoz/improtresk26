@@ -70,7 +70,7 @@ class WorkshopController extends BaseController
             ");
             $stmt->execute([$user['id'], $workshopId, $companionProgram]);
 
-            $_SESSION['success'] = 'Registrace byla úspěšná. Prosím dokončete platbu.';
+            $_SESSION['success'] = 'Registrace byla úspěšná.';
             header('Location: /payment');
             exit;
         }

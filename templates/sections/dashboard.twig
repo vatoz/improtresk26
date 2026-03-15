@@ -94,9 +94,9 @@
 
                                         <td>
                                             {% if reg.payment_status == 'pending' %}
-                                                <span class="dashboard-status dashboard-status--pending">Čeká na losování</span>
+                                                <span class="dashboard-status dashboard-status--pending">Čeká na platbu</span>
                                             {% elseif reg.payment_status == 'upgradable' %}
-                                                <span class="dashboard-status dashboard-status--upgradable">Nabídnut upgrade</span>
+                                                <span class="dashboard-status dashboard-status--upgradable">Možný upgrade</span>
                                             {% elseif reg.payment_status == 'approved' %}
                                                 <span class="dashboard-status dashboard-status--approved">Vylosováno, čeká na platbu</span>
                                             {% elseif reg.payment_status == 'paid' %}
@@ -106,12 +106,12 @@
                                             {% elseif reg.payment_status == 'cancelled' %}
                                                 <span class="dashboard-status dashboard-status--cancelled">Zrušeno</span>
                                             {% elseif reg.payment_status == 'refunded' %}
-                                                <span class="dashboard-status dashboard-status--refunded">Vráceno</span>
+                                                <span class="dashboard-status dashboard-status--refunded">Platba vrácena</span>
                                             {% else %}
                                                 <span class="dashboard-status">{{ reg.payment_status }}</span>
                                             {% endif %}
                                         </td>
-
+                                        
                                         <td>
                                             {% if reg.payment_status in ['pending', 'upgradable'] %}
                                                 <form method="POST" action="/dashboard/cancel-registration"
@@ -204,6 +204,12 @@
                 {% endif %}
             </div>
         </div>
+         <div class="card">
+            <div class="card__body">
+                <a href="/wizard/payment" class="btn btn--primary"  class="btn btn--outline">Platební detaily</a>
+                <a href="/wizard/choose-workshops" class="btn btn--primary"  class="btn btn--outline">Přidat/ubrat workshopy</a>
+            </div>
+        </div>    
     </div>
 </div>
 

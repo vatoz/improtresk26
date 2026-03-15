@@ -17,7 +17,7 @@ class Workshop
             SELECT
                 w.*,
                 COUNT(r.id) as enrolled_count,
-                (w.capacity - COUNT(r.id)) as available_spots
+                (w.capacity - w.registered) as available_spots
             FROM workshops w
             LEFT JOIN registrations r ON w.id = r.workshop_id AND r.payment_status != 'cancelled'
             WHERE w.is_active = 1
