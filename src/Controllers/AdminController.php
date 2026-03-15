@@ -3,7 +3,6 @@ namespace App\Controllers;
 
 use App\Models\TransactionList;
 use App\Services\FioService;
-use App\Services\LotteryService;
 
 class AdminController extends BaseController
 {
@@ -158,30 +157,6 @@ class AdminController extends BaseController
         return $transactions;
     }
 
-    public function lottery()
-    {
-        $this->requireAdmin();
-
-        echo $this->twig->render('pages/admin-lottery.twig', [
-            'user'        => $this->getCurrentUser(),
-            'active_page' => 'admin',
-            'results'     => null,
-        ]);
-    }
-
-    public function runLottery()
-    {
-        $this->requireAdmin();
-
-        $lottery = new LotteryService($this->db);
-        $results = $lottery->run();
-
-        echo $this->twig->render('pages/admin-lottery.twig', [
-            'user'        => $this->getCurrentUser(),
-            'active_page' => 'admin',
-            'results'     => $results,
-        ]);
-    }
 
     public function export()
     {

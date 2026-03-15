@@ -37,6 +37,21 @@ class FioService
         return array_merge(['file' => $logFile], $stats);
     }
 
+    public function importFiles()
+    {               
+        return false;
+        $photo = [];
+        foreach (scandir($this::LOG_DIR ) as $file) {
+            $path = $this::LOG_DIR . '/' . $file;
+            if (is_file($path)) {
+                 $this->parseAndStore(file_get_contents( $path),$file);
+            }
+        }
+
+   
+    }
+ 
+
     // -------------------------------------------------------------------------
 
     private function downloadXml(string $token): string
@@ -82,7 +97,7 @@ class FioService
      *
      * @return array{inserted: int, skipped: int}
      */
-    private function parseAndStore(string $xml): array
+    private function parseAndStore(string $xml,$file="LIVE"): array
     {
         libxml_use_internal_errors(true);
         $doc = simplexml_load_string($xml);
@@ -90,7 +105,7 @@ class FioService
         if ($doc === false) {
             $errors = array_map(fn($e) => $e->message, libxml_get_errors());
             libxml_clear_errors();
-            throw new \RuntimeException('FioService: XML parse error – ' . implode('; ', $errors));
+            throw new \RuntimeException('FioService: XML parse error - '.$file.' – ' . implode('; ', $errors));
         }
 
         $inserted = 0;

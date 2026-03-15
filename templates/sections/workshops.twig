@@ -48,13 +48,11 @@
 
 {% macro workshopCard(workshop, user) %}
     {% set isFull = workshop.available_spots <= 0 %}
-    {% set progressPercent = (workshop.enrolled_count / workshop.capacity * 100)|round %}
+    {% set progressPercent = (workshop.registered / workshop.capacity * 100)|round %}
     
-    <div class="workshop-card {{ isFull ? 'full' : '' }}" data-workshop-id="{{ workshop.id }}">
+    <div class="workshop-card {{ isFull ? 'full' : '' }}" data-workshop-id="{{ workshop.id }}" id="workshop-{{ workshop.id }}">
         <div class="workshop-header">
-            <h3 class="workshop-title">{{ workshop.name }}
-            
-            </h3>
+            <h3 class="workshop-title">{{ workshop.name }} </h3>
             {% if workshop.instructor %}
                 <div class="workshop-instructor">Lektor: {{ workshop.instructor }}</div>
             {% endif %}
@@ -64,7 +62,7 @@
             {% if workshop.description %}
                 <p class="workshop-description">{{ workshop.description }}</p>
             {% endif %}
-            <a name="workshop-{{ workshop.id}}" />
+            
             <div class="workshop-details">
                 <div class="workshop-detail-item">
                     <strong>Datum:</strong> {{ workshop.date|date('j.n.Y') }}
@@ -95,7 +93,8 @@
             <div class="workshop-info">
                 <div class="workshop-price">{{ workshop.price|number_format(0, ',', ' ') }} Kč</div>
                 <div class="capacity-info {{ isFull ? 'capacity-full' : '' }}">
-                    {{ workshop.enrolled_count }}/{{ workshop.capacity }} míst
+                    {{ workshop.registered }}/{{ workshop.capacity }} míst<br>
+                    Eviduji {{ workshop.enrolled_count }} registrací
                     {% if isFull %}
                         <span class="full-badge">PLNÉ</span>
                     {% endif %}
@@ -109,7 +108,7 @@
             {% if user %}
                 {% if isFull %}
                     <button class="btn btn--secondary btn--block" disabled>Workshop je plný</button>
-                {% else %}
+                {% else %}          
                     <!-- Bylo tu tlačítko registrovat -->
                 {% endif %}
             {% else %}
