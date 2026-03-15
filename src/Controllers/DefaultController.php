@@ -3,6 +3,7 @@ namespace App\Controllers;
 
 use App\Models\ProgramItem;
 use App\Models\FAQ;
+use App\Models\Person;
 
 class DefaultController extends BaseController
 {
@@ -53,6 +54,17 @@ class DefaultController extends BaseController
         echo $this->twig->render('pages/contact.twig', [
             'user' => $this->getCurrentUser(),
             'active_page' => 'contact'
+        ]);
+    }
+
+    public function medailonky()
+    {
+        $people = Person::getGroupedBySection($this->db);
+
+        echo $this->twig->render('pages/medailonky.twig', [
+            'user' => $this->getCurrentUser(),
+            'active_page' => 'medailonky',
+            'people' => $people,
         ]);
     }
 }

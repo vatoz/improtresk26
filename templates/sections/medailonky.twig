@@ -1,0 +1,54 @@
+<div class="container">
+    <h1>Medailonky</h1>
+
+    {% if people is empty %}
+        <div class="card">
+            <div class="card__body">
+                <p>Momentálně nejsou k dispozici žádné medailonky.</p>
+            </div>
+        </div>
+    {% else %}
+        {% for section, members in people %}
+            <section class="people-section">
+                <h2 class="people-section__title">{{ section }}</h2>
+                <div class="people-grid">
+                    {% for person in members %}
+                        <div class="person-card card">
+                            <div class="card__body">
+                                <h3 class="person-card__name">{{ person.name }}</h3>
+
+                                {% if person.description %}
+                                    <p class="person-card__description">{{ person.description }}</p>
+                                {% endif %}
+
+                                {% if person.workshop_id %}
+                                    <a href="/workshops#workshop-{{ person.workshop_id }}" class="btn btn--sm btn--outline person-card__workshop-link">
+                                        Workshop
+                                    </a>
+                                {% endif %}
+
+                                <div class="person-card__links">
+                                    {% if person.weblink %}
+                                        <a href="{{ person.weblink }}" target="_blank" rel="noopener noreferrer" class="person-card__link person-card__link--web" title="Web">
+                                            Web
+                                        </a>
+                                    {% endif %}
+                                    {% if person.fblink %}
+                                        <a href="{{ person.fblink }}" target="_blank" rel="noopener noreferrer" class="person-card__link person-card__link--fb" title="Facebook">
+                                            FB
+                                        </a>
+                                    {% endif %}
+                                    {% if person.instagramlink %}
+                                        <a href="{{ person.instagramlink }}" target="_blank" rel="noopener noreferrer" class="person-card__link person-card__link--ig" title="Instagram">
+                                            IG
+                                        </a>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            </section>
+        {% endfor %}
+    {% endif %}
+</div>
