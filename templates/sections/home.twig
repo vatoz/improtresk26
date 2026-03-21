@@ -2,13 +2,11 @@
 <div class="hero">
     <div class="container">
         <div class="hero-content">
-            <h1>Improtřesk 2026</h1>
-            <p class="hero-subtitle"><img src="/sysimg/logo.png" alt="Logo festivalu" width=400></p>
+            <h1 style="font-size:120px"><span style="color:#a85f31ff">I</span><span style="color:#ecb737ff">M</span><span style="color:#d45842ff">P</span><span style="color:#47a8afff">R</span><span style="color:#98a239ff">O</span><span style="color:#3c66a6ff">T</span><span style="color:#7e4994ff">Ř</span><span style="color:#a44c7dff">E</span><span style="color:#768f89ff">S</span><span style="color:#7e8845ff">K</span></h1>
             <p class="hero-subtitle">Mezinárodní festival improvizačního divadla</p>
             <div class="hero-info">
                 <div class="info-item">
-                    <strong>Kdy:</strong> 7.-10. květen 2026
-                   
+                    <strong>Kdy:</strong> 7.-10. květen 2026                   
                 </div>
                 <div class="info-item">
                     <strong>Kde:</strong>  Praha
@@ -30,7 +28,7 @@
 {% if registration_start and registration_start|date('U') > "now"|date('U') %}
 <div class="countdown-section">
     <div class="container">
-        <p class="countdown-label">Registrace možná začínají {{ registration_start|date('j. n. Y') }} v {{ registration_start|date('H:i') }}</p>
+        <p class="countdown-label">Registrace začínají {{ registration_start|date('j. n. Y') }} v {{ registration_start|date('H:i') }}</p>
         <div class="countdown" id="countdown" data-target="{{ registration_start }}">
             <div class="countdown-unit">
                 <span class="countdown-value" id="cd-days">--</span>

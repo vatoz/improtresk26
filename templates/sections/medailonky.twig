@@ -22,7 +22,7 @@
                                 <h3 class="person-card__name">{{ person.name }}</h3>
 
                                 {% if person.description %}
-                                    <p class="person-card__description">{{ person.description }}</p>
+                                    <p class="person-card__description">{{ person.description |nl2br  }}</p>
                                 {% endif %}
 
                                 {% if person.workshop_id %}
