@@ -4,20 +4,20 @@
     <div class="info-sections">
         <div class="card">
             <div class="card__body">
-                <h3>Místo konání</h3>
-                <p> Praha<br>
-                Náměstí Pražanů ?<br>
-                110 00 Praha 1</p>
+                <h3>Místo konání večerního programu</h3>
+                <p> Žižkostel<br>
+                náměstí Barikád 1520/1<br>  Praha 3 - Žižkov, Česko</p>
             </div>
         </div>
         <div class="card">
             <div class="card__body">
                 <h3>Doprava</h3>
-                <p>Metro: Stanice Praha (linka A)<br>
-                Autobus: Linky 1,2,3,4,5<br>
-                Parkování: Placené parkoviště 200m od centra</p>
+                <p>
+                <img src="/sysimg/bus.png" style="height:20px;"/>  Autobus: Černínova - 136,133,207 <br>
+                <img src="/sysimg/tram.png" style="height:20px;"/>Tram: Ohrada - 1 , 2,5,7,9,11,15,25,36</p>
             </div>
         </div>
+        <!--
         <div class="card">
             <div class="card__body">
                 <h3>Ubytování</h3>
@@ -27,6 +27,7 @@
                 - Hostel Students (1km)</p>
             </div>
         </div>
+        
         <div class="card">
             <div class="card__body">
                 <h3>Ceny vstupného</h3>
@@ -35,7 +36,68 @@
                 Slevy pro studenty: 0%</p>
             </div>
         </div>
+        --!>
 
+        <div class="card">
+            <div class="card__body">
+                <div id=map style="height:400px;"></map>
+            </div>
+        </div>
+
+
+
+        
 
     </div>
 </div>
+
+{% block stylesheets %}
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+     integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+     crossorigin=""/>
+{% endblock %}
+
+{% block javascripts %}
+    <script src="{{ asset_url }}" type="text/javascript"></script>    
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+     integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+     crossorigin=""></script>
+        <script >
+        var map = L.map('map').setView([50.0877244,14.4611761], 15);
+
+L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+}).addTo(map);
+
+L.marker([50.0878733, 14.4610983]).addTo(map);
+    //.bindPopup('A pretty CSS popup.<br> Easily customizable.')
+    //.openPopup();
+
+    var busIcon = L.icon({
+    iconUrl: '/sysimg/bus.png',
+    //shadowUrl: 'leaf-shadow.png',
+    iconSize:     [29, 31], // size of the icon
+    //shadowSize:   [50, 64], // size of the shadow
+    iconAnchor:   [15, 15], // point of the icon which will correspond to marker's location
+    //shadowAnchor: [4, 62],  // the same for the shadow
+    //popupAnchor:  [-3, -76] // point from which the popup should open relative to the iconAnchor
+    });
+    L.marker([50.0890367, 14.4623269], {icon: busIcon}).addTo(map);
+
+
+    var tramIcon = L.icon({
+    iconUrl: '/sysimg/tram.png',
+    //shadowUrl: 'leaf-shadow.png',
+
+    iconSize:     [29, 31], // size of the icon
+    //shadowSize:   [50, 64], // size of the shadow
+    iconAnchor:   [15, 15], // point of the icon which will correspond to marker's location
+    //shadowAnchor: [4, 62],  // the same for the shadow
+    //popupAnchor:  [-3, -76] // point from which the popup should open relative to the iconAnchor
+    });
+    L.marker([50.0902739, 14.4679192], {icon: tramIcon}).addTo(map);
+
+
+        </script>
+
+{% endblock %}
