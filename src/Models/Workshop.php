@@ -396,7 +396,7 @@ class Workshop
         return $stmt->fetchAll();
     }
 
-    public static function register(PDO $db,$workshopId,$userId){
+    public static function register(PDO $db,$userId,$workshopId){
         
             $workshop = Workshop::findById($db, $workshopId);
             if (!$workshop || !$workshop['is_active']) {
@@ -424,18 +424,18 @@ class Workshop
             return true;
     }
 
-    public static function unregister(PDO $db,$workshopId,$userId){
+    public static function unregister(PDO $db,int $userId,int $workshopId){
         $workshop = Workshop::findById($db, $workshopId);
-            if (!$workshop || !$workshop['is_active']) {
-                $_SESSION['error'] = 'Workshop nebyl nalezen.';
-               return false;
-            }
-        
+        if (!$workshop || !$workshop['is_active']) {
+            $_SESSION['error'] = 'Workshop '.$workshopId.' nebyl nalezen.';
+            return false;
+        }
+    
                 
         // Load the registration and verify it belongs to this user
         $stmt = $db->prepare("
             SELECT * FROM registrations WHERE workshop_id = ? AND user_id = ?
-            and payment_status<>'paid' and payment_status<>'cancelled'
+            and payment_status<>'paid' and payment_status<> 'cancelled'
         ");
         $stmt->execute([$workshopId, $userId]);
         $registration = $stmt->fetch();

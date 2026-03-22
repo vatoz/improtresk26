@@ -152,6 +152,8 @@ a:hover {
   color: var(--color-primary-hover);
 }
 
+.hero-content h1 {font-size:120px;}
+
 /* ========================================
    Layout
    ======================================== */
@@ -239,7 +241,13 @@ a:hover {
   gap: var(--space-8);
   margin-top: var(--space-16);
 }
+@media print {
+  .navbar,.countdown-section{
+    display: none !important;
+  }
 
+
+}
 @media (min-width: 768px) {
   .menu-toggle {
     display: none;
@@ -547,7 +555,7 @@ a:hover {
 }
 
 .hero-content h1 {
-  font-size: var(--font-size-4xl);
+  font-size: 140px;
   margin-bottom: var(--space-16);
 }
 
@@ -1183,6 +1191,7 @@ a:hover {
   .admin-tabs {
     flex-wrap: wrap;
   }
+  .hero-content h1 {font-size:40px;}
 }
 
 blockquote {
@@ -1196,6 +1205,7 @@ blockquote {
     line-height: 1.6;
     font-style: italic;
     color: #222;
+    width:80%;
 }
 
 blockquote::before {

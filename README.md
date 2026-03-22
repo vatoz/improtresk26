@@ -6,7 +6,7 @@
 
 **Cíl projektu:** Vytvořit web malého festivalu s možností online registrace účastníků na workshopy a doprovodný program.
 
-**Primární publikum:** Účastníci festivalu (cca stovky lidí), organizátor (jednotky administrátor).
+**Primární publikum:** Účastníci festivalu (cca stovka lidí), organizátor (jednotky administrátor).
 
 **Použití:** Web má být využit i pro další ročníky.
 
@@ -20,6 +20,7 @@
 - **Program festivalu:** přehled hlavních akcí a časového harmonogramu
 - **Workshopy:** seznam cca 10 workshopů (popis, lektor, kapacita, obsazenost)
 - **Informace:** místo konání, doprava, ubytování, ceny vstupného
+- **Medailonky lektorů** 
 - **FAQ**
 - **Kontakty**
 
@@ -29,7 +30,7 @@
 - **Přihlášení**
 - **Přihláška na festival:**
   - výběr z workshopů  tak aby se nekryly timesloty, a wsp nebyl přeplněn
-  - možnost označit doprovodný program (volitelně, až bude připraven)
+  
 - **Platební údaje:** vygenerovaný QR kód pro platbu (bankovní převod), textově i číslo účtu/variabilní symbol
 - **Profil účastníka:** přehled vybraných možností, možnost úprav
 - **Notifikace:** potvrzení registrace e-mailem
@@ -67,7 +68,7 @@
 
 ## 6. Rozpočet
 
-Vytváří organizátor sám (s využitím AI), rozpočet na web = **0 Kč**.
+Vytváří organizátor sám (s využitím AI), rozpočet na web zatím asi tisícovka
 
 ---
 

@@ -37,40 +37,17 @@ class WizardController extends BaseController
             }
 
             $selectedWorkshopId =intval(  $_POST['workshop_id'] ?? 0);
-            if($selectedWorkshopId){                    
-                  $workshop = Workshop::findById($this->db, $selectedWorkshopId);
-                    if ($workshop && $workshop['is_active']) {
-                        
-
-                        error_log("kontrol");
-                    $stmt = $this->db->prepare("
-                        SELECT id FROM registrations
-                        WHERE user_id = ? AND workshop_id = ? 
-                        AND payment_status != 'cancelled'
-                    ");
-                    $stmt->execute([$user['id'], $selectedWorkshopId]);
-                    if (!$stmt->fetch()) {
-                        error_log("přidej");
-                        $this->db->prepare("
-                        INSERT INTO registrations (user_id, workshop_id, payment_status) VALUES (?, ?, 'pending')
-                    ")->execute([$user['id'], $selectedWorkshopId]); 
-
-
-                    }                        
-
-                }                  
-            }
+            if($selectedWorkshopId){           
+                $w=new Workshop();
+                $w->register($this->db,$user['id'], $selectedWorkshopId);                    
+            }                        
                 
             $canceledWorkshopId =intval(  $_POST['cancel_workshop_id'] ?? 0);
             if($canceledWorkshopId){
-                
-                $this->db->prepare("
-                        delete from registrations where user_id = ? AND workshop_id =? and payment_status!='paid'
-                    ")->execute([$user['id'], $canceledWorkshopId]);
+                $w=new Workshop();
+                $w->unregister($this->db,$user['id'], $canceledWorkshopId);                                    
             }
             
-
-
             if(!$selectedWorkshopId && !$canceledWorkshopId ){
                 // User explicitly skipped this slot
                 if ($requestedSlot && !in_array($requestedSlot, $_SESSION['wizard_skipped_slots'], true)) {
@@ -95,15 +72,12 @@ class WizardController extends BaseController
         foreach($userRegisteredTimeslots as $rTimeslot){
             foreach($freeTimeslots as $ft=>$FTimeslot){
                 if(Workshop::timeslotsOverlap($FTimeslot['code'], $rTimeslot)){
-                    //error_log("Odebírám překryvný timeslot (".$rTimeslot.", ".$FTimeslot['code'].")" );
                     unset($freeTimeslots[$ft]);                    
                 }
             }
         }
         $freeTimeslots = array_values($freeTimeslots);
-        //error_log(var_export($freeTimeslots,true)) ;
-    
-
+   
 
         // No slot requested → redirect to first free, or move on
        
