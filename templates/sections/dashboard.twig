@@ -19,6 +19,94 @@
                 </div>
             </div>
         </div>
+        
+        {% if questions is not empty %}
+        <div class="card">
+            <div class="card__body">
+                <h3>Doplňující informace</h3>
+
+                {# Answered questions — compact summary #}
+                {% set answered = questions|filter(q => q.value is not null) %}
+                {% if answered is not empty %}
+                    <table class="dashboard-registrations-table uq-answered-table">
+                        <tbody>
+                            {% for q in answered %}
+                                <tr>
+                                    <td class="uq-name" title="{{ q.description }}">{{ q.question_name }}</td>
+                                    <td class="uq-value">
+                                        {% if q.type == 'yes_no' %}
+                                            {{ q.value == 'yes' ? 'Ano' : 'Ne' }}
+                                        {% else %}
+                                            {{ q.value }}
+                                        {% endif %}
+                                    </td>
+                                    <td class="uq-edit-cell">
+                                        <button class="btn btn--outline btn--sm uq-edit-btn"
+                                                data-qid="{{ q.id }}"
+                                                type="button">Upravit</button>
+                                    </td>
+                                </tr>
+                                {# Hidden edit form, toggled by JS #}
+                                <tr class="uq-edit-row" id="uq-edit-{{ q.id }}" style="display:none">
+                                    <td colspan="3">
+                                        <form method="POST" action="/dashboard/save-answer" class="uq-form">
+                                            <input type="hidden" name="_csrf"        value="{{ csrf }}">
+                                            <input type="hidden" name="question_id" value="{{ q.id }}">
+                                            {% if q.type == 'yes_no' %}
+                                                <label class="uq-radio">
+                                                    <input type="radio" name="value" value="yes" {{ q.value == 'yes' ? 'checked' : '' }}> Ano
+                                                </label>
+                                                <label class="uq-radio">
+                                                    <input type="radio" name="value" value="no"  {{ q.value == 'no'  ? 'checked' : '' }}> Ne
+                                                </label>
+                                            {% elseif q.type == 'phone' %}
+                                                <input type="tel" name="value" value="{{ q.value }}" class="uq-input" placeholder="+420 ...">
+                                            {% else %}
+                                                <input type="text" name="value" value="{{ q.value }}" class="uq-input">
+                                            {% endif %}
+                                            <button type="submit" class="btn btn--primary btn--sm">Uložit</button>
+                                            <button type="button" class="btn btn--outline btn--sm uq-cancel-btn" data-qid="{{ q.id }}">Zrušit</button>
+                                        </form>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                {% endif %}
+
+                {# Unanswered questions — form to fill in #}
+                {% set unanswered = questions|filter(q => q.value is null) %}
+                {% if unanswered is not empty %}
+                    {% for q in unanswered %}
+                        <div class="uq-question-block">
+                            <p class="uq-question-text"><strong>{{ q.question }}</strong></p>
+                            {% if q.description %}
+                                <p class="uq-description">{{ q.description |nl2br}}</p>
+                            {% endif %}
+                            <form method="POST" action="/dashboard/save-answer" class="uq-form">
+                                <input type="hidden" name="_csrf"        value="{{ csrf }}">
+                                <input type="hidden" name="question_id" value="{{ q.id }}">
+                                {% if q.type == 'yes_no' %}
+                                    <label class="uq-radio">
+                                        <input type="radio" name="value" value="yes"> Ano
+                                    </label>
+                                    <label class="uq-radio">
+                                        <input type="radio" name="value" value="no"> Ne
+                                    </label>
+                                {% elseif q.type == 'phone' %}
+                                    <input type="tel" name="value" class="uq-input" placeholder="+420 ...">
+                                {% else %}
+                                    <input type="text" name="value" class="uq-input">
+                                {% endif %}
+                                <button type="submit" class="btn btn--primary btn--sm">Uložit</button>
+                            </form>
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
+
 
         <div class="card">
             <div class="card__body">
@@ -204,12 +292,13 @@
                 {% endif %}
             </div>
         </div>
+        
          <div class="card">
             <div class="card__body">
                 <a href="/wizard/payment" class="btn btn--primary"  class="btn btn--outline">Platební detaily</a>
-                <a href="/wizard/choose-workshops" class="btn btn--primary"  class="btn btn--outline">Přidat/ubrat workshopy</a>
+                <a href="/choose-workshops" class="btn btn--primary"  class="btn btn--outline">Přidat/ubrat workshopy</a>
             </div>
-        </div>    
+        </div>
     </div>
 </div>
 
@@ -323,6 +412,25 @@
 .dashboard-status--notpaid   { background: #fdecea; color: #c0392b; }
 .dashboard-status--cancelled { background: #f2f2f2; color: #888; }
 .dashboard-status--refunded  { background: #f5f0ff; color: #8e44ad; }
+
+/* User questions */
+.uq-answered-table { margin-bottom: 1rem; }
+.uq-name  { font-weight: 600; width: 40%; }
+.uq-value { color: var(--color-text, #333); }
+.uq-edit-cell { text-align: right; white-space: nowrap; }
+.uq-question-block {
+    border: 1px solid var(--color-border, #e0e0e0);
+    border-radius: 6px;
+    padding: 1rem;
+    margin-bottom: 0.75rem;
+    background: #fafbfc;
+}
+.uq-question-text { margin: 0 0 0.25rem; font-size: 1rem; }
+.uq-description { margin: 0 0 0.6rem; font-size: 0.88rem; color: var(--color-muted, #777); }
+.uq-form { display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; margin-top: 0.5rem; }
+.uq-input { flex: 1; min-width: 180px; padding: 0.35rem 0.6rem; border: 1px solid var(--color-border, #ccc); border-radius: 4px; font-size: 0.95rem; }
+.uq-radio { display: inline-flex; align-items: center; gap: 0.25rem; font-size: 0.95rem; cursor: pointer; }
+.uq-edit-row td { padding-top: 0; padding-bottom: 0.6rem; }
 </style>
 
 <script>
@@ -384,6 +492,23 @@
             if (cell) cell.textContent = i + 1;
         });
     }
+
+    // Toggle edit rows for answered questions
+    document.querySelectorAll('.uq-edit-btn').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+            var row = document.getElementById('uq-edit-' + btn.dataset.qid);
+            if (row) row.style.display = '';
+            btn.closest('tr').style.display = 'none';
+        });
+    });
+    document.querySelectorAll('.uq-cancel-btn').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+            var editRow    = document.getElementById('uq-edit-' + btn.dataset.qid);
+            var summaryRow = editRow ? editRow.previousElementSibling : null;
+            if (editRow)    editRow.style.display    = 'none';
+            if (summaryRow) summaryRow.style.display = '';
+        });
+    });
 
     function saveOrder() {
         const ids = draggableRows().map(r => parseInt(r.dataset.id, 10));

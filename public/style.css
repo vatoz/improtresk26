@@ -88,7 +88,7 @@
   --container-xl: 1280px;
 }
 
-/* Dark Mode */
+/* Dark Mode *//*
 @media (prefers-color-scheme: dark) {
   :root {
     --color-background: var(--color-charcoal-700);
@@ -102,7 +102,7 @@
     --color-success: var(--color-teal-300);
     --color-warning: var(--color-orange-400);
   }
-}
+}*/
 
 /* ========================================
    Base Styles
@@ -1183,4 +1183,27 @@ a:hover {
   .admin-tabs {
     flex-wrap: wrap;
   }
+}
+
+blockquote {
+    position: relative;
+    margin: 40px 0;
+    padding: 30px 25px 25px 25px;
+    background: #ffffff;
+    border-radius: 12px;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+    font-size: 1.15rem;
+    line-height: 1.6;
+    font-style: italic;
+    color: #222;
+}
+
+blockquote::before {
+    content: "“";
+    position: absolute;
+    top: -10px;
+    left: 15px;
+    font-size: 60px;
+    color: #4f46e5;
+    opacity: 0.2;
 }

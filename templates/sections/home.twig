@@ -10,15 +10,11 @@
                 </div>
                 <div class="info-item">
                     <strong>Kde:</strong>  Praha
-                </div>
-                <div class="info-item">
-                    <strong>Vstupné:</strong> ???? Kč
-                </div>
+                </div>                
                 <div class="info-item">
                     <a href="https://www.facebook.com/events/1919076465165143/" >Facebook</a> 
                 </div>
 
-                
             </div>
             <a href="/register" class="btn btn--primary btn--lg">Zaregistruj se</a>
         </div>
@@ -28,7 +24,7 @@
 {% if registration_start and registration_start|date('U') > "now"|date('U') %}
 <div class="countdown-section">
     <div class="container">
-        <p class="countdown-label">Registrace začínají {{ registration_start|date('j. n. Y') }} v {{ registration_start|date('H:i') }}</p>
+        <p class="countdown-label">Výběry workshopů se spouští {{ registration_start|date('j. n. Y') }} v {{ registration_start|date('H:i') }}</p>
         <div class="countdown" id="countdown" data-target="{{ registration_start }}">
             <div class="countdown-unit">
                 <span class="countdown-value" id="cd-days">--</span>

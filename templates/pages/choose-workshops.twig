@@ -47,15 +47,22 @@
                                         <div class="choose-workshop-action">
                                             {% if alreadyRegistered %}
                                                 <span class="choose-badge choose-badge--registered">Přihlášen/a</span>
+                                                <form method="POST" action="/workshop/unregister">
                                             {% else %}
-                                                <form method="POST" action="/choose-workshops">
-                                                    <input type="hidden" name="_csrf" value="{{ csrf }}">
-                                                    <input type="hidden" name="workshop_id" value="{{ workshop.id }}">
-                                                    <button type="submit" class="btn btn--primary btn--sm">
-                                                        Registrovat
-                                                    </button>
-                                                </form>
+                                                <form method="POST" action="/workshop/register">
                                             {% endif %}
+                                            <form method="POST" action="/workshop/register">
+                                                <input type="hidden" name="_csrf" value="{{ csrf }}">
+                                                <input type="hidden" name="workshop_id" value="{{ workshop.id }}">
+                                                <button type="submit" class="btn btn--primary btn--sm">
+                                                {% if alreadyRegistered %}
+                                                    Zrušit registraci
+                                                {% else %}
+                                                    Registrovat
+                                                {% endif %}
+                                                </button>
+                                            </form>
+                                        
                                         </div>
                                     </div>
                                 {% endfor %}

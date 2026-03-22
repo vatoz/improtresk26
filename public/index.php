@@ -35,6 +35,7 @@ $router->map('POST', '/request-password-reset', 'AuthController#requestPasswordR
 // Workshops
 $router->map('GET', '/workshops', 'WorkshopController#index', 'workshops');
 $router->map('GET|POST', '/workshop/register', 'WorkshopController#register', 'workshop_register');
+$router->map('GET|POST', '/workshop/unregister', 'WorkshopController#unregister', 'workshop_unregister');
 $router->map('GET|POST', '/choose-workshops', 'WorkshopController#chooseWorkshops', 'choose_workshops');
 
 // User dashboard
@@ -42,6 +43,7 @@ $router->map('GET', '/dashboard', 'DashboardController#index', 'dashboard');
 $router->map('GET', '/profile', 'DashboardController#index', 'profile');
 $router->map('POST', '/dashboard/cancel-registration', 'DashboardController#cancelRegistration', 'cancel_registration');
 $router->map('POST', '/dashboard/reorder-registrations', 'DashboardController#reorderRegistrations', 'reorder_registrations');
+$router->map('POST', '/dashboard/save-answer', 'DashboardController#saveAnswer', 'save_answer');
 
 // Shop
 $router->map('GET',  '/tickets',              'ShopController#tickets',       'tickets');
