@@ -30,60 +30,44 @@ class WorkshopController extends BaseController
         ]);
     }
 
+
+    public function unregister()
+    {
+        $this->requireAuth();
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            $workshopId = $_POST['workshop_id'] ?? null;
+        }
+        $user = $this->getCurrentUser();
+        Workshop::unregister($this->db ,$user['id'], $workshopId);    
+
+        $this->chooseWorkshops();
+
+    }
+
     public function register()
     {
         $this->requireAuth();
-
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $workshopId = $_POST['workshop_id'] ?? null;
-            $companionProgram = isset($_POST['companion_program']) ? 1 : 0;
+           
 
             if (!$workshopId) {
                 $_SESSION['error'] = 'Vyberte prosím workshop.';
-                header('Location: /workshop/register');
-                exit;
+            }else{
+                if (!csrf_validate('choose_workshops', $_POST['_csrf'] ?? null)) {
+                $_SESSION['error'] = 'Neplatný bezpečnostní token. Zkuste to znovu.';
+                }else{
+            
+                $user = $this->getCurrentUser();
+
+                
+                Workshop::register($this->db ,$user['id'], $workshopId);                  
+
             }
-
-
-            $user = $this->getCurrentUser();
-
-            // Check if user already registered for this workshop
-            $stmt = $this->db->prepare("
-                SELECT id FROM registrations
-                WHERE user_id = ? AND workshop_id = ? and payment_status <> 'cancelled'
-            ");
-            $stmt->execute([$user['id'], $workshopId]);
-
-            if ($stmt->fetch()) {
-                $_SESSION['error'] = 'Již jste registrován na tento workshop.';
-                header('Location: /workshop/register');
-                exit;
-            }
-
-            // Get workshop price
-            $workshop = Workshop::findById($this->db, $workshopId);
-
-            // Create registration
-            $stmt = $this->db->prepare("
-                INSERT INTO registrations (user_id, workshop_id, companion_program, payment_status)
-                VALUES (?, ?, ?, 'pending')
-            ");
-            $stmt->execute([$user['id'], $workshopId, $companionProgram]);
-
-            $_SESSION['success'] = 'Registrace byla úspěšná.';
-            header('Location: /payment');
-            exit;
         }
+        }
+            $this->chooseWorkshops();
 
-        // Get available workshops for dropdown
-        $workshops = Workshop::getAvailableForRegistration($this->db);
-
-        echo $this->twig->render('pages/registration.twig', [
-            'user' => $this->getCurrentUser(),
-            'active_page' => 'registration',
-            'workshops' => $workshops,
-            'session' => $this->getSessionMessages()
-        ]);
     }
 
     public function chooseWorkshops()
@@ -91,49 +75,6 @@ class WorkshopController extends BaseController
         $this->requireAuth();
         $user = $this->getCurrentUser();
 
-        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            if (!csrf_validate('choose_workshops', $_POST['_csrf'] ?? null)) {
-                $_SESSION['error'] = 'Neplatný bezpečnostní token. Zkuste to znovu.';
-                header('Location: /choose-workshops');
-                exit;
-            }
-
-            $workshopId = (int)($_POST['workshop_id'] ?? 0);
-
-            if (!$workshopId) {
-                $_SESSION['error'] = 'Neplatný workshop.';
-                header('Location: /choose-workshops');
-                exit;
-            }
-
-            $workshop = Workshop::findById($this->db, $workshopId);
-            if (!$workshop || !$workshop['is_active']) {
-                $_SESSION['error'] = 'Workshop nebyl nalezen.';
-                header('Location: /choose-workshops');
-                exit;
-            }
-
-            // Duplicate registration check
-            $stmt = $this->db->prepare("
-                SELECT id FROM registrations WHERE user_id = ? AND workshop_id = ? and payment_status <> 'cancelled'
-            ");
-            $stmt->execute([$user['id'], $workshopId]);
-            if ($stmt->fetch()) {
-                $_SESSION['error'] = 'Na tento workshop jste již registrován/a.';
-                header('Location: /choose-workshops');
-                exit;
-            }
-
-            // Create registration
-            $stmt = $this->db->prepare("
-                INSERT INTO registrations (user_id, workshop_id, payment_status) VALUES (?, ?, 'pending')
-            ");
-            $stmt->execute([$user['id'], $workshopId]);
-
-            $_SESSION['success'] = 'Byli jste úspěšně přihlášeni na workshop.';
-            header('Location: /choose-workshops');
-            exit;
-        }
 
         // Build data for the view
         $timeslots = Timeslot::getAll($this->db);

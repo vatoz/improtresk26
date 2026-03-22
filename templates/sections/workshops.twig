@@ -60,7 +60,7 @@
 
         <div class="workshop-body">
             {% if workshop.description %}
-                <p class="workshop-description">{{ workshop.description }}</p>
+                <p >{{ workshop.description|raw|nl2br|cz_nbsp }}</p>
             {% endif %}
             
             <div class="workshop-details">
@@ -80,12 +80,9 @@
                 {% endif %}
                 <div class="workshop-detail-item">
                     <strong>Úroveň:</strong>
-                    <span class="badge badge-{{ workshop.level }}">
-                        {% if workshop.level == 'beginner' %}Začátečníci
-                        {% elseif workshop.level == 'intermediate' %}Mírně pokročilí
-                        {% elseif workshop.level == 'advanced' %}Pokročilí
-                        {% else %}Všechny úrovně
-                        {% endif %}
+                    <span >
+                        {{ workshop.level }}
+                        
                     </span>
                 </div>
             </div>
@@ -93,7 +90,7 @@
             <div class="workshop-info">
                 <div class="workshop-price">{{ workshop.price|number_format(0, ',', ' ') }} Kč</div>
                 <div class="capacity-info {{ isFull ? 'capacity-full' : '' }}">
-                    {{ workshop.registered }}/{{ workshop.capacity }} míst<br>
+                    {{ workshop.registered }}/{{ workshop.capacity }} míst obsazeno<br>
                     Eviduji {{ workshop.enrolled_count }} registrací
                     {% if isFull %}
                         <span class="full-badge">PLNÉ</span>

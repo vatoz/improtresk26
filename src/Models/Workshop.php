@@ -22,7 +22,7 @@ class Workshop
             LEFT JOIN registrations r ON w.id = r.workshop_id AND r.payment_status != 'cancelled'
             WHERE w.is_active = 1
             GROUP BY w.id
-            ORDER BY w.date, w.time
+            ORDER BY  w.name
         ");
         return $stmt->fetchAll();
     }
@@ -218,23 +218,7 @@ class Workshop
         return $workshop && $workshop['available_spots'] <= 0;
     }
 
-    /**
-     * Get workshop level label
-     *
-     * @param string $level
-     * @return string
-     */
-    public static function getLevelLabel(string $level): string
-    {
-        $labels = [
-            'beginner' => 'Začátečníci',
-            'intermediate' => 'Mírně pokročilí',
-            'advanced' => 'Pokročilí',
-            'all' => 'Všechny úrovně'
-        ];
-        return $labels[$level] ?? $level;
-    }
-
+    
     /**
      * Get workshop level badge class
      *
@@ -411,4 +395,65 @@ class Workshop
         $stmt->execute([$userId, $timeslot]);
         return $stmt->fetchAll();
     }
+
+    public static function register(PDO $db,$workshopId,$userId){
+        
+            $workshop = Workshop::findById($db, $workshopId);
+            if (!$workshop || !$workshop['is_active']) {
+                $_SESSION['error'] = 'Workshop nebyl nalezen.';
+               return false;
+            }
+
+            // Duplicate registration check
+            $stmt = $db->prepare("
+                SELECT id FROM registrations WHERE user_id = ? AND workshop_id = ? and payment_status <> 'cancelled'
+            ");
+            $stmt->execute([$userId, $workshopId]);
+            if ($stmt->fetch()) {
+                $_SESSION['error'] = 'Na tento workshop jste již registrován/a.';                
+                return false;
+            }
+
+            // Create registration
+            $stmt = $db->prepare("
+                INSERT INTO registrations (user_id, workshop_id, payment_status) VALUES (?, ?, 'pending')
+            ");
+            $stmt->execute([$userId, $workshopId]);
+
+            $_SESSION['success'] = 'Byli jste úspěšně přihlášeni na workshop.';
+            return true;
+    }
+
+    public static function unregister(PDO $db,$workshopId,$userId){
+        $workshop = Workshop::findById($db, $workshopId);
+            if (!$workshop || !$workshop['is_active']) {
+                $_SESSION['error'] = 'Workshop nebyl nalezen.';
+               return false;
+            }
+        
+                
+        // Load the registration and verify it belongs to this user
+        $stmt = $db->prepare("
+            SELECT * FROM registrations WHERE workshop_id = ? AND user_id = ?
+            and payment_status<>'paid' and payment_status<>'cancelled'
+        ");
+        $stmt->execute([$workshopId, $userId]);
+        $registration = $stmt->fetch();
+
+        if (!$registration) {
+            $_SESSION['error'] = 'Registrace nebyla nalezena.';
+            return false;
+        }
+
+
+        $db->prepare("DELETE FROM  registrations  WHERE workshop_id = ? AND user_id = ? and payment_status<>'paid' and payment_status<>'cancelled'")
+                 ->execute([$workshopId,$userId]);
+
+        $_SESSION['success'] = 'Registrace byla úspěšně zrušena.';
+        return true;
+
+
+    }
+
+
 }

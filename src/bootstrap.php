@@ -30,6 +30,13 @@ $twig = new Environment($loader, [
     'cache' => $_ENV['APP_ENV'] === 'production' ? __DIR__ . '/../var/cache/twig' : false,
 ]);
 
+function fixCzechOrphans(string $text): string
+{    return preg_replace( '/\s([sSzZvVkKaAiI])\s/u', ' $1&nbsp;', $text   ); }
+
+$twig->addFilter(new \Twig\TwigFilter('cz_nbsp', 'fixCzechOrphans', ['is_safe' => ['html']]));
+
+
+
 // Sessions
 if (session_status() === PHP_SESSION_NONE) {
     session_start();

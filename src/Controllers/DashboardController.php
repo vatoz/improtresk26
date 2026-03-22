@@ -1,6 +1,9 @@
 <?php
 namespace App\Controllers;
 
+use App\Models\UserQuestion;
+use App\Models\UserAnswer;
+
 class DashboardController extends BaseController
 {
     public function index()
@@ -42,6 +45,8 @@ class DashboardController extends BaseController
         $stmt->execute([$user['id'], $user['id']]);
         $purchases = $stmt->fetchAll();
 
+        $questions = UserQuestion::getWithAnswersForUser($this->db, $user['id']);
+
         $session = $this->getSessionMessages();
 
         echo $this->twig->render('pages/dashboard.twig', [
@@ -49,6 +54,7 @@ class DashboardController extends BaseController
             'active_page'   => 'dashboard',
             'registrations' => $registrations,
             'purchases'     => $purchases,
+            'questions'     => $questions,
             'error'         => $session['error'],
             'success'       => $session['success'],
             'csrf'          => csrf_token('dashboard'),
@@ -91,6 +97,53 @@ class DashboardController extends BaseController
                  ->execute([$registrationId]);
 
         $_SESSION['success'] = 'Registrace byla úspěšně zrušena.';
+        header('Location: /dashboard');
+        exit;
+    }
+
+    public function saveAnswer()
+    {
+        $this->requireAuth();
+
+        if (!csrf_validate('dashboard', $_POST['_csrf'] ?? null)) {
+            $_SESSION['error'] = 'Neplatný bezpečnostní token.';
+            header('Location: /dashboard');
+            exit;
+        }
+
+        $questionId = (int)($_POST['question_id'] ?? 0);
+        $value      = trim($_POST['value'] ?? '');
+        $user       = $this->getCurrentUser();
+
+        if ($questionId <= 0) {
+            $_SESSION['error'] = 'Neplatná otázka.';
+            header('Location: /dashboard');
+            exit;
+        }
+
+        // Verify question exists and is active
+        $stmt = $this->db->prepare("SELECT id, type FROM user_questions WHERE id = ? AND is_active = 1");
+        $stmt->execute([$questionId]);
+        $question = $stmt->fetch();
+
+        if (!$question) {
+            $_SESSION['error'] = 'Otázka nebyla nalezena.';
+            header('Location: /dashboard');
+            exit;
+        }
+
+        // Validate by type
+        if ($question['type'] === 'yes_no' && !in_array($value, ['yes', 'no'])) {
+            $_SESSION['error'] = 'Neplatná odpověď.';
+            header('Location: /dashboard');
+            exit;
+        }
+
+        if ($value !== '') {
+            UserAnswer::upsert($this->db, $user['id'], $questionId, $value);
+            $_SESSION['success'] = 'Odpověď byla uložena.';
+        }
+
         header('Location: /dashboard');
         exit;
     }
