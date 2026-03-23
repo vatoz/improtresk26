@@ -49,9 +49,11 @@ class DashboardController extends BaseController
 
         $session = $this->getSessionMessages();
 
+        $registrationStart = $_ENV['REGISTRATION_START'] ?? null;
         echo $this->twig->render('pages/dashboard.twig', [
             'user'          => $user,
             'active_page'   => 'dashboard',
+            'registration_start' => $registrationStart,
             'registrations' => $registrations,
             'purchases'     => $purchases,
             'questions'     => $questions,
