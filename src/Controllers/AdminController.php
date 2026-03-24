@@ -1,6 +1,7 @@
 <?php
 namespace App\Controllers;
 
+use App\Models\MailQueue;
 use App\Models\TransactionList;
 use App\Services\FioService;
 
@@ -157,6 +158,47 @@ class AdminController extends BaseController
         return $transactions;
     }
 
+
+    public function mailQueue()
+    {
+        $this->requireAdmin();
+
+        $stmt = $this->db->query("
+            SELECT id, to_email, subject, template, status, queued_at, sent_at
+            FROM mail_queue
+            ORDER BY queued_at DESC
+            LIMIT 200
+        ");
+
+        echo $this->twig->render('pages/admin-mail-queue.twig', [
+            'user'        => $this->getCurrentUser(),
+            'active_page' => 'admin',
+            'mails'       => $stmt->fetchAll(\PDO::FETCH_ASSOC),
+        ]);
+    }
+
+    public function mailQueuePreview(int $id)
+    {
+        $this->requireAdmin();
+
+        $mail = MailQueue::findById($this->db, $id);
+
+        if (!$mail) {
+            http_response_code(404);
+            echo 'E-mail nenalezen.';
+            return;
+        }
+
+        if (!empty($mail['template'])) {
+            $vars = !empty($mail['vars']) ? json_decode($mail['vars'], true) : [];
+            $body = $this->twig->render('emails/' . $mail['template'], $vars ?? []);
+        } else {
+            $body = (string) $mail['body'];
+        }
+
+        header('Content-Type: text/html; charset=utf-8');
+        echo $body;
+    }
 
     public function export()
     {

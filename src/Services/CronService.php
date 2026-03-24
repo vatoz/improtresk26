@@ -22,7 +22,7 @@ use Twig\Environment as Twig;
 class CronService
 {
     private const JOBS = [
-        'mail'    => ['key' => 'cron_last_run_mail',    'interval' => 3000],    // 5 min
+        'mail'    => ['key' => 'cron_last_run_mail',    'interval' => 60],    
         'fio'     => ['key' => 'cron_last_run_fio',     'interval' => 3600],   // 1 hour má být 3600        
         'unpaid'  => ['key' => 'cron_last_run_unpaid',  'interval' => 3600]    // 1 hour má být 3600        
     ];

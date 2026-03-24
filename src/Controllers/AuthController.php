@@ -84,7 +84,7 @@ class AuthController extends BaseController
                         $this->db,
                         $email,
                         'Vítej na Improtřesku 2026!',
-                        'emails/registration.twig',
+                        'registration.twig',
                         ['name' => $name, 'email' => $email, 'loginUrl' => $loginUrl]
                     );
 
@@ -140,7 +140,7 @@ class AuthController extends BaseController
                         $this->db,
                         $email,
                         'Obnova hesla - Improtřesk 2026',
-                    'emails/password-reset.twig',
+                    'password-reset.twig',
                     [
                         'resetUrl' => $resetUrl,
                         'email' => $email
