@@ -48,9 +48,9 @@
   --font-size-md: 14px;
   --font-size-lg: 16px;
   --font-size-xl: 18px;
-  --font-size-2xl: 20px;
-  --font-size-3xl: 24px;
-  --font-size-4xl: 30px;
+  --font-size-2xl: 24px;
+  --font-size-3xl: 32px;
+  --font-size-4xl: 40px;
   --font-weight-normal: 400;
   --font-weight-medium: 500;
   --font-weight-bold: 600;
@@ -1216,3 +1216,15 @@ blockquote::before {
     color: #4f46e5;
     opacity: 0.2;
 }
+
+
+.random0 {color:#a85f31ff}
+.random1 {color:#ecb737ff}
+.random2 {color:#d45842ff}
+.random3 {color:#47a8afff}
+.random4 {color:#98a239ff}
+.random5 {color:#3c66a6ff}
+.random6 {color:#7e4994ff}
+.random7 {color:#a44c7dff}
+.random8 {color:#768f89ff}
+.random9 {color:#7e8845ff}

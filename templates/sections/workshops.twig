@@ -19,7 +19,7 @@
             {% set group = workshops_by_timeslot[ts.code] ?? [] %}
             {% if group is not empty %}
                 <section class="workshops-timeslot-section">
-                    <h2 class="workshops-timeslot-heading">
+                    <h2 class="workshops-timeslot-heading  random{{ random(9) }} ">
                         {{ ts.name }}
                         <span class="workshops-timeslot-code">({{ ts.code }})</span>
                     </h2>
@@ -169,7 +169,6 @@
     margin-bottom: 2.5rem;
 }
 .workshops-timeslot-heading {
-    font-size: 1.4rem;
     margin-bottom: 1rem;
     padding-bottom: 0.4rem;
     border-bottom: 2px solid var(--color-primary, #c0392b);
