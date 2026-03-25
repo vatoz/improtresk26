@@ -25,7 +25,7 @@
                     </h2>
                     <div class="workshops-grid">
                         {% for workshop in group %}
-                            {{ _self.workshopCard(workshop, user, people, photo) }}
+                            {{ _self.workshopCard(workshop, user, people, photo,ts.name) }}
                         {% endfor %}
                     </div>
                 </section>
@@ -37,7 +37,7 @@
                 <h2 class="workshops-timeslot-heading">Ostatní workshopy</h2>
                 <div class="workshops-grid">
                     {% for workshop in workshops_no_timeslot %}
-                        {{ _self.workshopCard(workshop, user, people, photo) }}
+                        {{ _self.workshopCard(workshop, user, people, photo,'') }}
                     {% endfor %}
                 </div>
             </section>
@@ -46,7 +46,7 @@
     {% endif %}
 </div>
 
-{% macro workshopCard(workshop, user, lidi,fotky) %}
+{% macro workshopCard(workshop, user, lidi,fotky,timeslot_nazev) %}
     {% set isFull = workshop.available_spots <= 0 %}
     {% set progressPercent = (workshop.registered / workshop.capacity * 100)|round %}
     
@@ -88,6 +88,7 @@
             </div>
 
             <div class="workshop-info">
+                <div class="workshop-timeslot">{{ timeslot_nazev }} </div>
                 <div class="workshop-price">{{ workshop.price|number_format(0, ',', ' ') }} Kč</div>
                 <div class="capacity-info {{ isFull ? 'capacity-full' : '' }}">
                     {{ workshop.registered }}/{{ workshop.capacity }} míst obsazeno<br>
