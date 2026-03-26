@@ -10,7 +10,7 @@
     {% else %}
         {% for section, members in people %}
             <section class="people-section" style="padding-top:15px;padding-bottom:5px;">
-                <h2 class="people-section__title">{{ section }}</h2>
+                <h2 class="people-section__title random{{ random(9) }}">{{ section }}</h2>
                 <div class="people-grid">
                     {% for person in members %}
                         <div class="person-card card" style="margin-bottom:8px;">
