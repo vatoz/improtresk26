@@ -44,7 +44,7 @@ class Workshop
             FROM workshops w
             LEFT JOIN registrations r ON w.id = r.workshop_id AND r.payment_status != 'cancelled'
             GROUP BY w.id
-            ORDER BY w.date, w.time
+            ORDER BY w.timeslot, w.name
         ");
         return $stmt->fetchAll();
     }
@@ -67,7 +67,7 @@ class Workshop
             WHERE w.is_active = 1
             GROUP BY w.id
             HAVING available_spots > 0
-            ORDER BY w.date, w.time
+            ORDER BY w.timeslot, w.name
         ");
         return $stmt->fetchAll();
     }
@@ -106,19 +106,16 @@ class Workshop
     {
         $stmt = $db->prepare("
             INSERT INTO workshops (
-                name, description, instructor, date, time,
-                duration_minutes, price, capacity, location, level, is_active, timeslot, registered
+                name, description, instructor,
+                price, capacity, location, level, is_active, timeslot, registered
             )
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         ");
 
         $stmt->execute([
             $data['name'],
             $data['description'] ?? null,
             $data['instructor'] ?? null,
-            $data['date'],
-            $data['time'],
-            $data['duration_minutes'] ?? 120,
             $data['price'],
             $data['capacity'] ?? 20,
             $data['location'] ?? null,
@@ -145,8 +142,8 @@ class Workshop
         $values = [];
 
         $allowedFields = [
-            'name', 'description', 'instructor', 'date', 'time',
-            'duration_minutes', 'price', 'capacity', 'location', 'level', 'is_active', 'timeslot', 'registered'
+            'name', 'description', 'instructor',
+            'price', 'capacity', 'location', 'level', 'is_active', 'timeslot', 'registered'
         ];
 
         foreach ($data as $key => $value) {

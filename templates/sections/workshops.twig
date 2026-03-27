@@ -19,13 +19,30 @@
             {% set group = workshops_by_timeslot[ts.code] ?? [] %}
             {% if group is not empty %}
                 <section class="workshops-timeslot-section">
-                    <h2 class="workshops-timeslot-heading  random{{ random(9) }} " id="ts-{{ ts.code }}" >
+                    <h2 class="workshops-timeslot-heading  random{{ ts.id }} " id="ts-{{ ts.code }}" >
                         {{ ts.name }}
                         <span class="workshops-timeslot-code">({{ ts.code }})</span>
                     </h2>
+                    <div >
+                        {% if ts and ts.start_datetime %}
+                            <div class="workshop-detail-item">
+                            <strong>Začátek:</strong> {{ ts.start_datetime|date('j.n.Y H:i') }}
+                            </div>
+                        {% endif %}
+                            {% if ts and ts.end_datetime %}
+                        <div class="workshop-detail-item">
+                            <strong>Konec:</strong> {{ ts.end_datetime|date('j.n.Y H:i') }}
+                        </div>
+                        {% endif %}
+                        {% if ts and ts.duration_minutes %}
+                        <div class="workshop-detail-item">
+                            <strong>Délka:</strong> {{ ts.duration_minutes }} min
+                        </div>
+                        {% endif %}
+                    </div>
                     <div class="workshops-grid">
                         {% for workshop in group %}
-                            {{ _self.workshopCard(workshop, user, people_by_workshop[workshop.id] ?? [], photo, ts.name) }}
+                            {{ _self.workshopCard(workshop, user, people_by_workshop[workshop.id] ?? [], photo, ts) }}
                         {% endfor %}
                     </div>
                 </section>
@@ -37,7 +54,7 @@
                 <h2 class="workshops-timeslot-heading">Ostatní workshopy</h2>
                 <div class="workshops-grid">
                     {% for workshop in workshops_no_timeslot %}
-                        {{ _self.workshopCard(workshop, user, people_by_workshop[workshop.id] ?? [], photo, '') }}
+                        {{ _self.workshopCard(workshop, user, people_by_workshop[workshop.id] ?? [], photo, null) }}
                     {% endfor %}
                 </div>
             </section>
@@ -46,7 +63,7 @@
     {% endif %}
 </div>
 
-{% macro workshopCard(workshop, user, lidi,fotky,timeslot_nazev) %}
+{% macro workshopCard(workshop, user, lidi, fotky, ts) %}
     {% set isFull = workshop.available_spots <= 0 %}
     {% set progressPercent = (workshop.registered / workshop.capacity * 100)|round %}
     
@@ -63,16 +80,22 @@
                 <p >{{ workshop.description|raw|nl2br|cz_nbsp }}</p>
             {% endif %}
             
-            <div class="workshop-details">
+            <div class="workshop-details ws_item ws_item{{ts.id}}">
+                {% if ts and ts.start_datetime %}
                 <div class="workshop-detail-item">
-                    <strong>Datum:</strong> {{ workshop.date|date('j.n.Y') }}
+                    <strong>Začátek:</strong> {{ ts.start_datetime|date('j.n.Y H:i') }}
                 </div>
+                {% endif %}
+                {% if ts and ts.end_datetime %}
                 <div class="workshop-detail-item">
-                    <strong>Čas:</strong> {{ workshop.time[:5] }}
+                    <strong>Konec:</strong> {{ ts.end_datetime|date('j.n.Y H:i') }}
                 </div>
+                {% endif %}
+                {% if ts and ts.duration_minutes %}
                 <div class="workshop-detail-item">
-                    <strong>Délka:</strong> {{ workshop.duration_minutes }} min
+                    <strong>Délka:</strong> {{ ts.duration_minutes }} min
                 </div>
+                {% endif %}
                 {% if workshop.location %}
                     <div class="workshop-detail-item">
                         <strong>Místo:</strong> {{ workshop.location }}
@@ -81,14 +104,14 @@
                 <div class="workshop-detail-item">
                     <strong>Úroveň:</strong>
                     <span >
-                        {{ workshop.level }}
+                        {{ workshop.level|raw }}
                         
                     </span>
                 </div>
             </div>
 
-            <div class="workshop-info">
-                <div class="workshop-timeslot">{{ timeslot_nazev }} </div>
+            <div class="workshop-info ">
+                <div class="workshop-timeslot">{{ ts.name ?? '' }}</div>
                 <div class="workshop-price">{{ workshop.price|number_format(0, ',', ' ') }} Kč</div>
                 <div class="capacity-info {{ isFull ? 'capacity-full' : '' }}">
                     {{ workshop.registered }}/{{ workshop.capacity }} míst obsazeno<br>

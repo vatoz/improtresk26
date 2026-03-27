@@ -3,9 +3,10 @@
         <span class="wts-card__meta">{{ workshop.instructor }}</span>
     {% endif %}
     <span class="wts-card__meta">
-        {{ workshop.date|date('j.n.Y') }}
-        {% if workshop.time %}&nbsp;{{ workshop.time|slice(0,5) }}<br>{% endif %}
-        {% if workshop.duration_minutes %}&nbsp;·&nbsp;{{ workshop.duration_minutes }} min<br>{% endif %}
+        {% set _ts = timeslot is defined ? timeslot : (ts is defined ? ts : null) %}
+        {% if _ts and _ts.start_datetime %}{{ _ts.start_datetime|date('j.n.Y H:i') }}{% endif %}
+        {% if _ts and _ts.end_datetime %}&nbsp;– {{ _ts.end_datetime|date('H:i') }}<br>{% endif %}
+        {% if _ts and _ts.duration_minutes %}&nbsp;·&nbsp;{{ _ts.duration_minutes }} min<br>{% endif %}
     </span>
     <span class="wts-card__meta">
         {{ workshop.price|number_format(0, ',', ' ') }} Kč<br>

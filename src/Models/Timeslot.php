@@ -74,14 +74,17 @@ class Timeslot
     public static function create(PDO $db, array $data): int
     {
         $stmt = $db->prepare("
-            INSERT INTO timeslots (code, name, `order`)
-            VALUES (?, ?, ?)
+            INSERT INTO timeslots (code, name, `order`, start_datetime, end_datetime, duration_minutes)
+            VALUES (?, ?, ?, ?, ?, ?)
         ");
 
         $stmt->execute([
             strtoupper($data['code']),
             $data['name'],
-            $data['order'] ?? 0
+            $data['order'] ?? 0,
+            $data['start_datetime'] ?? null,
+            $data['end_datetime'] ?? null,
+            $data['duration_minutes'] ?? null,
         ]);
 
         return (int) $db->lastInsertId();
@@ -100,7 +103,7 @@ class Timeslot
         $fields = [];
         $values = [];
 
-        $allowedFields = ['code', 'name', 'order'];
+        $allowedFields = ['code', 'name', 'order', 'start_datetime', 'end_datetime', 'duration_minutes'];
 
         foreach ($data as $key => $value) {
             if (in_array($key, $allowedFields)) {

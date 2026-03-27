@@ -42,7 +42,7 @@
                                         {% endif %}
 
                                         {% if item.description %}
-                                            <p class="program-description">{{ item.description }}</p>
+                                            <p class="program-description">{{ item.description |raw|nl2br|cz_nbsp}}</p>
                                         {% endif %}
 
                                         <div class="program-details">
@@ -88,7 +88,7 @@
                                                         {% endif %}
 
                                                         {% if item.description %}
-                                                            <p class="program-description">{{ item.description }}</p>
+                                                            <p class="program-description">{{ item.description|raw|nl2br|cz_nbsp }}</p>
                                                         {% endif %}
 
                                                         <div class="program-details">

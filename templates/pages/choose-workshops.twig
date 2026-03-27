@@ -40,7 +40,7 @@
                                     {% set alreadyRegistered = workshop.id in user_registered_ids %}
                                     <div class="choose-workshop-item{% if alreadyRegistered %} choose-workshop-item--registered{% endif %}">
                                         <div class="choose-workshop-info">
-                                          {{ include('inlines/workshop.twig') }}
+                                          {{ include('inlines/workshop.twig', {'timeslot': ts}) }}
                                             
                                         </div>
 

@@ -167,20 +167,21 @@ class AdminController extends BaseController
             SELECT
                 w.id AS workshop_id,
                 w.name AS workshop_name,
-                w.date,
-                w.time,
                 w.timeslot,
                 w.capacity,
+                ts.start_datetime,
+                ts.end_datetime,
                 u.name  AS user_name,
                 u.email AS user_email,
                 r.payment_status,
                 r.variable_symbol
             FROM workshops w
+            LEFT JOIN timeslots ts ON ts.code = w.timeslot
             LEFT JOIN registrations r ON w.id = r.workshop_id
                 AND r.payment_status IN ('paid', 'approved')
             LEFT JOIN users u ON r.user_id = u.id
             WHERE w.is_active = 1
-            ORDER BY w.timeslot, w.date, w.time, w.name, u.name
+            ORDER BY ts.start_datetime, w.name, u.name
         ");
 
         $rows = $stmt->fetchAll(\PDO::FETCH_ASSOC);
@@ -191,13 +192,13 @@ class AdminController extends BaseController
             $wid = $row['workshop_id'];
             if (!isset($workshops[$wid])) {
                 $workshops[$wid] = [
-                    'id'           => $wid,
-                    'name'         => $row['workshop_name'],
-                    'date'         => $row['date'],
-                    'time'         => $row['time'],
-                    'timeslot'     => $row['timeslot'],
-                    'capacity'     => $row['capacity'],
-                    'participants' => [],
+                    'id'             => $wid,
+                    'name'           => $row['workshop_name'],
+                    'timeslot'       => $row['timeslot'],
+                    'start_datetime' => $row['start_datetime'],
+                    'end_datetime'   => $row['end_datetime'],
+                    'capacity'       => $row['capacity'],
+                    'participants'   => [],
                 ];
             }
             if ($row['user_name'] !== null) {

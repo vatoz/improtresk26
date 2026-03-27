@@ -1228,3 +1228,15 @@ blockquote::before {
 .random7 {color:#a44c7dff}
 .random8 {color:#768f89ff}
 .random9 {color:#7e8845ff}
+
+.ws_item{border-radius:10px;padding:10px 10px 10px 10px;}
+.ws_item1 {border:thin solid #a85f31ff; }
+.ws_item2 {border:thin solid #ecb737ff}
+.ws_item3 {border:thin solid#d45842ff}
+.ws_item4 {border:thin solid #47a8afff}
+.ws_item5 {border:thin solid#98a239ff}
+.ws_item6 {border:thin solid#3c66a6ff}
+.ws_item7 {border:thin solid#7e4994ff}
+.ws_item8 {border:thin solid#a44c7dff}
+.ws_item9 {border:thin solid#768f89ff}
+.ws_item0 {border:thin solid#7e8845ff}

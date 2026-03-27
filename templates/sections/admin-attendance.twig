@@ -9,8 +9,8 @@
         <h2 class="attendance-workshop-name">{{ workshop.name }}</h2>
         <div class="attendance-meta">
             {% if workshop.timeslot %}<span>Timeslot: <strong>{{ workshop.timeslot }}</strong></span>{% endif %}
-            {% if workshop.date %}<span>Datum: <strong>{{ workshop.date|date('j.n.Y') }}</strong></span>{% endif %}
-            {% if workshop.time %}<span>Čas: <strong>{{ workshop.time[:5] }}</strong></span>{% endif %}
+            {% if workshop.start_datetime %}<span>Začátek: <strong>{{ workshop.start_datetime|date('j.n.Y H:i') }}</strong></span>{% endif %}
+            {% if workshop.end_datetime %}<span>Konec: <strong>{{ workshop.end_datetime|date('H:i') }}</strong></span>{% endif %}
             <span>Kapacita: <strong>{{ workshop.capacity }}</strong></span>
             <span>Zaplaceno: <strong>{{ workshop.participants|length }}</strong></span>
         </div>
