@@ -25,7 +25,7 @@
                     </h2>
                     <div class="workshops-grid">
                         {% for workshop in group %}
-                            {{ _self.workshopCard(workshop, user, people, photo,ts.name) }}
+                            {{ _self.workshopCard(workshop, user, people_by_workshop[workshop.id] ?? [], photo, ts.name) }}
                         {% endfor %}
                     </div>
                 </section>
@@ -37,7 +37,7 @@
                 <h2 class="workshops-timeslot-heading">Ostatní workshopy</h2>
                 <div class="workshops-grid">
                     {% for workshop in workshops_no_timeslot %}
-                        {{ _self.workshopCard(workshop, user, people, photo,'') }}
+                        {{ _self.workshopCard(workshop, user, people_by_workshop[workshop.id] ?? [], photo, '') }}
                     {% endfor %}
                 </div>
             </section>
@@ -119,10 +119,9 @@
 
 
      {% for person in lidi %}
-      {% if person.workshop_id == workshop.id %}
                         <div class="person-card card" style="margin-bottom:8px;">
                             <div class="card__body">
-                                                               
+
                                 <h3 class="person-card__name" style="margin-bottom:4px;">{{ person.name }}</h3>
                                 {% if fotky[person.id] %}
                                 <img style="float:right;width:12em;margin-left:3em;margin-bottom:1em;
@@ -132,17 +131,17 @@
                                 <div class="person-card__links">
                                     {% if person.weblink %}
                                         <a href="{{ person.weblink }}" target="_blank" rel="noopener noreferrer" class="person-card__link person-card__link--web" title="Web">
-                                            Web 
+                                            Web
                                         </a>
                                     {% endif %}
                                     {% if person.fblink %}
                                         <a href="{{ person.fblink }}" target="_blank" rel="noopener noreferrer" class="person-card__link person-card__link--fb" title="Facebook">
-                                            FB 
+                                            FB
                                         </a>
                                     {% endif %}
                                     {% if person.instagramlink %}
                                         <a href="{{ person.instagramlink }}" target="_blank" rel="noopener noreferrer" class="person-card__link person-card__link--ig" title="Instagram">
-                                            IG 
+                                            IG
                                         </a>
                                     {% endif %}
                                 <br>
@@ -150,11 +149,10 @@
                                     <p class="person-card__description">{{ person.description |raw|nl2br |cz_nbsp }}</p>
                                 {% endif %}
 
-    
+
                                 </div>
                             </div>
                         </div>
-                        {% endif %}
                     {% endfor %}
 
 

@@ -43,10 +43,14 @@
                                     <p class="person-card__description">{{ person.description |raw|nl2br |cz_nbsp }}</p>
                                 {% endif %}
 
-                                {% if person.workshop_id %}
-                                    Workshop: <a href="/workshops#workshop-{{ person.workshop_id }}" class="btn btn--sm btn--outline person-card__workshop-link">
-                                        {{ person.workshop_name }}
-                                    </a>
+                                {% if person.workshops is not empty %}
+                                    <div class="person-card__workshops">
+                                        {% for ws in person.workshops %}
+                                            <a href="/workshops#workshop-{{ ws.id }}" class="btn btn--sm btn--outline person-card__workshop-link">
+                                                {{ ws.name }}
+                                            </a>
+                                        {% endfor %}
+                                    </div>
                                 {% endif %}
 
                                 

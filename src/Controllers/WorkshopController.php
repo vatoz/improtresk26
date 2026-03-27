@@ -22,7 +22,7 @@ class WorkshopController extends BaseController
             }
         }
 
-        $people = Person::getAll($this->db);
+        $peopleByWorkshop = Person::getGroupedByWorkshop($this->db);
 
         $photo=[];
         $dir = __DIR__ . '/../../public/img/';   // cesta ke složce
@@ -30,7 +30,7 @@ class WorkshopController extends BaseController
         $files = scandir($dir);
         foreach ($files as $file) {
             if (preg_match($allowedPattern, $file, $matches)) {
-                $photo[(int)$matches[1]]=$file;        
+                $photo[(int)$matches[1]]=$file;
             }
         }
         //$photo[1]="logo.png";
@@ -44,9 +44,7 @@ class WorkshopController extends BaseController
             'workshops_by_timeslot' => $workshopsByTimeslot,
             'workshops_no_timeslot' => $workshopsNoTimeslot,
             'photo' => $photo,
-            
-            'people' => $people
-    
+            'people_by_workshop'    => $peopleByWorkshop,
         ]);
     }
 
