@@ -19,7 +19,7 @@
             {% set group = workshops_by_timeslot[ts.code] ?? [] %}
             {% if group is not empty %}
                 <section class="workshops-timeslot-section">
-                    <h2 class="workshops-timeslot-heading  random{{ random(9) }} ">
+                    <h2 class="workshops-timeslot-heading  random{{ random(9) }} " id="ts-{{ ts.code }}" >
                         {{ ts.name }}
                         <span class="workshops-timeslot-code">({{ ts.code }})</span>
                     </h2>
