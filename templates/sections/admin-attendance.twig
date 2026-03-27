@@ -1,0 +1,138 @@
+<div class="attendance-controls no-print">
+    <button onclick="window.print()" class="btn btn--primary">Tisknout</button>
+    <span class="attendance-hint">Každý workshop začíná na nové stránce.</span>
+</div>
+
+{% for workshop in workshops %}
+<div class="attendance-sheet">
+    <div class="attendance-header">
+        <h2 class="attendance-workshop-name">{{ workshop.name }}</h2>
+        <div class="attendance-meta">
+            {% if workshop.timeslot %}<span>Timeslot: <strong>{{ workshop.timeslot }}</strong></span>{% endif %}
+            {% if workshop.date %}<span>Datum: <strong>{{ workshop.date|date('j.n.Y') }}</strong></span>{% endif %}
+            {% if workshop.time %}<span>Čas: <strong>{{ workshop.time[:5] }}</strong></span>{% endif %}
+            <span>Kapacita: <strong>{{ workshop.capacity }}</strong></span>
+            <span>Zaplaceno: <strong>{{ workshop.participants|length }}</strong></span>
+        </div>
+    </div>
+
+    {% if workshop.participants is empty %}
+        <p class="attendance-empty">Žádní zaplacení účastníci.</p>
+    {% else %}
+        <table class="attendance-table">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Jméno</th>
+                    <th>E-mail</th>
+                    <th>VS</th>
+                    <th class="attendance-check">Přítomen</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for p in workshop.participants %}
+                <tr>
+                    <td>{{ loop.index }}</td>
+                    <td>{{ p.name }}</td>
+                    <td>{{ p.email }}</td>
+                    <td>{{ p.vs }}</td>
+                    <td class="attendance-check">☐</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% endif %}
+</div>
+{% endfor %}
+
+<style>
+.attendance-controls {
+    margin: 1rem 0 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+.attendance-hint {
+    color: var(--color-muted, #777);
+    font-size: 0.9rem;
+}
+.attendance-sheet {
+    margin-bottom: 2.5rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 2px dashed #ccc;
+}
+.attendance-header {
+    margin-bottom: 0.75rem;
+}
+.attendance-workshop-name {
+    margin-bottom: 0.3rem;
+}
+.attendance-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1.2rem;
+    font-size: 0.9rem;
+    color: #555;
+}
+.attendance-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.92rem;
+}
+.attendance-table th,
+.attendance-table td {
+    border: 1px solid #ccc;
+    padding: 0.35rem 0.6rem;
+    text-align: left;
+}
+.attendance-table th {
+    background: #f4f4f4;
+    font-weight: bold;
+}
+.attendance-table tr:nth-child(even) {
+    background: #fafafa;
+}
+.attendance-check {
+    text-align: center;
+    width: 5rem;
+}
+.attendance-empty {
+    color: var(--color-muted, #999);
+    font-style: italic;
+}
+
+@media print {
+    .no-print,
+    .admin-tabs,
+    nav,
+    header,
+    footer {
+        display: none !important;
+    }
+    .attendance-sheet {
+        page-break-after: always;
+        border-bottom: none;
+        margin-bottom: 0;
+        padding-bottom: 0;
+    }
+    .attendance-sheet:last-child {
+        page-break-after: avoid;
+    }
+    .attendance-table th {
+        background: #eee !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+    }
+    .attendance-table tr:nth-child(even) {
+        background: #f9f9f9 !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+    }
+    h1,.disclaimer {
+        display: none;
+    }
+    
+}
+
+
+</style>

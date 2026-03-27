@@ -159,6 +159,64 @@ class AdminController extends BaseController
     }
 
 
+    public function attendance()
+    {
+        $this->requireAdmin();
+
+        $stmt = $this->db->query("
+            SELECT
+                w.id AS workshop_id,
+                w.name AS workshop_name,
+                w.date,
+                w.time,
+                w.timeslot,
+                w.capacity,
+                u.name  AS user_name,
+                u.email AS user_email,
+                r.payment_status,
+                r.variable_symbol
+            FROM workshops w
+            LEFT JOIN registrations r ON w.id = r.workshop_id
+                AND r.payment_status IN ('paid', 'approved')
+            LEFT JOIN users u ON r.user_id = u.id
+            WHERE w.is_active = 1
+            ORDER BY w.timeslot, w.date, w.time, w.name, u.name
+        ");
+
+        $rows = $stmt->fetchAll(\PDO::FETCH_ASSOC);
+
+        // Group participants under each workshop
+        $workshops = [];
+        foreach ($rows as $row) {
+            $wid = $row['workshop_id'];
+            if (!isset($workshops[$wid])) {
+                $workshops[$wid] = [
+                    'id'           => $wid,
+                    'name'         => $row['workshop_name'],
+                    'date'         => $row['date'],
+                    'time'         => $row['time'],
+                    'timeslot'     => $row['timeslot'],
+                    'capacity'     => $row['capacity'],
+                    'participants' => [],
+                ];
+            }
+            if ($row['user_name'] !== null) {
+                $workshops[$wid]['participants'][] = [
+                    'name'   => $row['user_name'],
+                    'email'  => $row['user_email'],
+                    'status' => $row['payment_status'],
+                    'vs'     => $row['variable_symbol'],
+                ];
+            }
+        }
+
+        echo $this->twig->render('pages/admin-attendance.twig', [
+            'user'        => $this->getCurrentUser(),
+            'active_page' => 'admin',
+            'workshops'   => array_values($workshops),
+        ]);
+    }
+
     public function mailQueue()
     {
         $this->requireAdmin();

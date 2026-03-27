@@ -69,6 +69,7 @@ $router->map('POST', '/admin/sync-fio', 'AdminController#syncFio', 'admin_sync_f
 $router->map('POST', '/admin/payments/mark-paid', 'AdminController#markPaid', 'admin_mark_paid');
 $router->map('GET', '/admin/export', 'AdminController#export', 'admin_export');
 $router->map('GET', '/admin/export-csv', 'AdminController#exportCsv', 'admin_export_csv');
+$router->map('GET', '/admin/attendance', 'AdminController#attendance', 'admin_attendance');
 $router->map('GET', '/admin/mail-queue', 'AdminController#mailQueue', 'admin_mail_queue');
 $router->map('GET', '/admin/mail-queue/[i:id]/preview', 'AdminController#mailQueuePreview', 'admin_mail_queue_preview');
 
