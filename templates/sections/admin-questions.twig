@@ -1,0 +1,83 @@
+{% if questions is empty %}
+    <p>Žádné otázky s příznakem „zobrazit v adminu" nebyly nalezeny.</p>
+{% else %}
+    {% for q in questions %}
+        <div class="admin-question-block">
+            <h3 class="admin-question-title">
+                {{ q.question_name }}
+                <span class="admin-question-full">– {{ q.question }}</span>
+            </h3>
+
+            {% if q.users is empty %}
+                <p class="admin-question-empty">Zatím nikdo neodpověděl „Ano".</p>
+            {% else %}
+                <p class="admin-question-count">Odpovědělo „Ano": <strong>{{ q.users|length }}</strong></p>
+                <table class="admin-table">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Jméno</th>
+                            <th>E-mail</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for u in q.users %}
+                            <tr>
+                                <td>{{ loop.index }}</td>
+                                <td>{{ u.name }}</td>
+                                <td><a href="mailto:{{ u.email }}">{{ u.email }}</a></td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            {% endif %}
+        </div>
+    {% endfor %}
+{% endif %}
+
+<style>
+.admin-question-block {
+    margin-bottom: 2rem;
+    padding: 1.25rem 1.5rem;
+    border: 1px solid var(--color-border, #e0e0e0);
+    border-radius: 6px;
+    background: #fafbfc;
+}
+.admin-question-title {
+    margin: 0 0 0.75rem;
+    font-size: 1.05rem;
+}
+.admin-question-full {
+    font-weight: 400;
+    color: var(--color-muted, #666);
+    font-size: 0.95rem;
+}
+.admin-question-count {
+    margin: 0 0 0.6rem;
+    font-size: 0.9rem;
+    color: var(--color-muted, #555);
+}
+.admin-question-empty {
+    color: var(--color-muted, #999);
+    font-size: 0.9rem;
+    margin: 0;
+}
+.admin-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.93rem;
+}
+.admin-table th,
+.admin-table td {
+    text-align: left;
+    padding: 0.45rem 0.75rem;
+    border-bottom: 1px solid var(--color-border, #e0e0e0);
+}
+.admin-table th {
+    font-weight: 600;
+    color: var(--color-muted, #555);
+}
+.admin-table tbody tr:last-child td {
+    border-bottom: none;
+}
+</style>

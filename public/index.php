@@ -72,6 +72,7 @@ $router->map('GET', '/admin/export-csv', 'AdminController#exportCsv', 'admin_exp
 $router->map('GET', '/admin/attendance', 'AdminController#attendance', 'admin_attendance');
 $router->map('GET', '/admin/mail-queue', 'AdminController#mailQueue', 'admin_mail_queue');
 $router->map('GET', '/admin/mail-queue/[i:id]/preview', 'AdminController#mailQueuePreview', 'admin_mail_queue_preview');
+$router->map('GET', '/admin/questions', 'AdminController#questions', 'admin_questions');
 
 $match = $router->match();
 

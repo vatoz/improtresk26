@@ -293,4 +293,46 @@ class AdminController extends BaseController
         fclose($output);
         exit;
     }
+
+    public function questions()
+    {
+        $this->requireAdmin();
+
+        // Fetch all yes_no questions with in_admin = 1, together with users who answered 'yes'
+        $stmt = $this->db->query("
+            SELECT q.id, q.question_name, q.question,
+                   u.name AS user_name, u.email AS user_email
+            FROM user_questions q
+            LEFT JOIN user_answers ua ON ua.question_id = q.id AND ua.value = 'yes'
+            LEFT JOIN users u ON u.id = ua.user_id
+            WHERE q.type = 'yes_no' AND q.in_admin = 1 AND q.is_active = 1
+            ORDER BY q.`order` ASC, q.id ASC, u.name ASC
+        ");
+
+        // Group rows by question
+        $questions = [];
+        foreach ($stmt->fetchAll(\PDO::FETCH_ASSOC) as $row) {
+            $qid = $row['id'];
+            if (!isset($questions[$qid])) {
+                $questions[$qid] = [
+                    'id'            => $row['id'],
+                    'question_name' => $row['question_name'],
+                    'question'      => $row['question'],
+                    'users'         => [],
+                ];
+            }
+            if ($row['user_name'] !== null) {
+                $questions[$qid]['users'][] = [
+                    'name'  => $row['user_name'],
+                    'email' => $row['user_email'],
+                ];
+            }
+        }
+
+        echo $this->twig->render('pages/admin-questions.twig', [
+            'user'        => $this->getCurrentUser(),
+            'active_page' => 'admin',
+            'questions'   => array_values($questions),
+        ]);
+    }
 }

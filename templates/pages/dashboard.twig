@@ -93,6 +93,9 @@
                             {% if q.description %}
                                 <p class="uq-description">{{ q.description |nl2br}}</p>
                             {% endif %}
+                            {% if q.ticket_id %}
+                            <p >Do nákupů ti automaticky přihodíme patřičnou vstupenku.</p>
+                            {% endif %}
                             <form method="POST" action="/dashboard/save-answer" class="uq-form">
                                 <input type="hidden" name="_csrf"        value="{{ csrf }}">
                                 <input type="hidden" name="question_id" value="{{ q.id }}">

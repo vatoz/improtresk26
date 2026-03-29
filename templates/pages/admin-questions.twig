@@ -1,0 +1,11 @@
+{% extends 'base.twig' %}
+
+{% block title %}Administrace – Otázky | Improtřesk 2026{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h1>Administrace</h1>
+    {% include 'sections/admin_navigation.twig' with { active_tab: 'questions' } %}
+    {% include 'sections/admin-questions.twig' %}
+</div>
+{% endblock %}

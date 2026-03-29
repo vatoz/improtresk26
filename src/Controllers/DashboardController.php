@@ -134,7 +134,7 @@ class DashboardController extends BaseController
         }
 
         // Verify question exists and is active
-        $stmt = $this->db->prepare("SELECT id, type FROM user_questions WHERE id = ? AND is_active = 1");
+        $stmt = $this->db->prepare("SELECT id, type, ticket_id FROM user_questions WHERE id = ? AND is_active = 1");
         $stmt->execute([$questionId]);
         $question = $stmt->fetch();
 
@@ -153,6 +153,37 @@ class DashboardController extends BaseController
 
         if ($value !== '') {
             UserAnswer::upsert($this->db, $user['id'], $questionId, $value);
+
+            // If this yes_no question has an associated ticket, manage the purchase automatically
+            if ($question['type'] === 'yes_no' && !empty($question['ticket_id'])) {
+                $ticketId = (int)$question['ticket_id'];
+
+                if ($value === 'yes') {
+                    // Add pending purchase only if user has no active (pending/paid) purchase for this ticket
+                    $stmt = $this->db->prepare("
+                        SELECT id FROM purchases
+                        WHERE user_id = ? AND item_type = 'ticket' AND item_id = ?
+                          AND payment_status IN ('pending', 'paid')
+                        LIMIT 1
+                    ");
+                    $stmt->execute([$user['id'], $ticketId]);
+                    if (!$stmt->fetch()) {
+                        $this->db->prepare("
+                            INSERT INTO purchases (user_id, item_type, item_id, quantity, payment_status)
+                            VALUES (?, 'ticket', ?, 1, 'pending')
+                        ")->execute([$user['id'], $ticketId]);
+                    }
+                } else {
+                    // Answer changed to 'no' — cancel any pending purchase for this ticket
+                    $this->db->prepare("
+                        UPDATE purchases
+                        SET payment_status = 'cancelled'
+                        WHERE user_id = ? AND item_type = 'ticket' AND item_id = ?
+                          AND payment_status = 'pending'
+                    ")->execute([$user['id'], $ticketId]);
+                }
+            }
+
             $_SESSION['success'] = 'Odpověď byla uložena.';
         }
 
