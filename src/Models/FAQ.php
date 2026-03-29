@@ -34,7 +34,7 @@ class FAQ
             SELECT *
             FROM faq
             WHERE is_active = 1
-            ORDER BY category, `order`, id
+            ORDER BY     `order`, id
         ");
         $items = $stmt->fetchAll();
 
