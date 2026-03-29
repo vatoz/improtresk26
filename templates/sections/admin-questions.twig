@@ -9,9 +9,9 @@
             </h3>
 
             {% if q.users is empty %}
-                <p class="admin-question-empty">Zatím nikdo neodpověděl „Ano".</p>
+                <p class="admin-question-empty">Zatím nikdo neodpověděl na sledovanou otázku.</p>
             {% else %}
-                <p class="admin-question-count">Odpovědělo „Ano": <strong>{{ q.users|length }}</strong></p>
+                <p class="admin-question-count">Odpovědělo „{{ q.in_admin ==1 ? "Ano" :"Ne"  }}": <strong>{{ q.users|length }}</strong></p>
                 <table class="admin-table">
                     <thead>
                         <tr>

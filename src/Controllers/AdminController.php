@@ -299,13 +299,18 @@ class AdminController extends BaseController
         $this->requireAdmin();
 
         // Fetch all yes_no questions with in_admin = 1, together with users who answered 'yes'
+        // Fetch all yes_no questions with in_admin = -1, together with users who answered 'no'
+
         $stmt = $this->db->query("
-            SELECT q.id, q.question_name, q.question,
+            SELECT q.id, q.question_name, q.question,q.in_admin,
                    u.name AS user_name, u.email AS user_email
             FROM user_questions q
-            LEFT JOIN user_answers ua ON ua.question_id = q.id AND ua.value = 'yes'
+            LEFT JOIN user_answers ua ON ua.question_id = q.id 
             LEFT JOIN users u ON u.id = ua.user_id
-            WHERE q.type = 'yes_no' AND q.in_admin = 1 AND q.is_active = 1
+            WHERE 
+                q.type = 'yes_no' AND
+                 ((q.in_admin = 1 AND ua.value = 'yes') or (q.in_admin = -1 and  ua.value = 'no' ))
+                   AND q.is_active = 1
             ORDER BY q.`order` ASC, q.id ASC, u.name ASC
         ");
 
