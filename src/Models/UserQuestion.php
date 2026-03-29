@@ -18,7 +18,7 @@ class UserQuestion
     public static function getWithAnswersForUser(PDO $db, int $userId): array
     {
         $stmt = $db->prepare("
-            SELECT q.id, q.question, q.question_name, q.description, q.type,
+            SELECT q.id, q.question, q.question_name, q.description, q.type, q.is_required,
                    ua.value, ua.updated_at
             FROM user_questions q
             LEFT JOIN user_answers ua ON ua.question_id = q.id AND ua.user_id = ?

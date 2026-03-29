@@ -14,7 +14,7 @@ class DashboardController extends BaseController
 
         $stmt = $this->db->prepare("
             SELECT r.id, r.workshop_id, r.payment_status, r.priority, r.created_at,
-                   w.name AS workshop_name, w.date, w.time, w.price, w.timeslot,
+                   w.name AS workshop_name, ts.start_datetime, ts.end_datetime, w.price, w.timeslot,
                    ts.name AS timeslot_name, ts.order AS timeslot_order
             FROM registrations r
             LEFT JOIN workshops w ON r.workshop_id = w.id
@@ -47,19 +47,29 @@ class DashboardController extends BaseController
 
         $questions = UserQuestion::getWithAnswersForUser($this->db, $user['id']);
 
+        // Check whether any required question is still unanswered
+        $questionsBlocking = false;
+        foreach ($questions as $q) {
+            if ($q['is_required'] && ($q['value'] === null || $q['value'] === '')) {
+                $questionsBlocking = true;
+                break;
+            }
+        }
+
         $session = $this->getSessionMessages();
 
         $registrationStart = $_ENV['REGISTRATION_START'] ?? null;
         echo $this->twig->render('pages/dashboard.twig', [
-            'user'          => $user,
-            'active_page'   => 'dashboard',
+            'user'               => $user,
+            'active_page'        => 'dashboard',
             'registration_start' => $registrationStart,
-            'registrations' => $registrations,
-            'purchases'     => $purchases,
-            'questions'     => $questions,
-            'error'         => $session['error'],
-            'success'       => $session['success'],
-            'csrf'          => csrf_token('dashboard'),
+            'registrations'      => $registrations,
+            'purchases'          => $purchases,
+            'questions'          => $questions,
+            'questions_blocking' => $questionsBlocking,
+            'error'              => $session['error'],
+            'success'            => $session['success'],
+            'csrf'               => csrf_token('dashboard'),
         ]);
     }
 

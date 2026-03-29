@@ -29,6 +29,11 @@
         <div class="card">
             <div class="card__body">
                 <h3>Doplňující informace</h3>
+                {% if questions_blocking %}
+                    <div class="alert alert-warning uq-blocking-notice">
+                        Nejprve vyplňte povinné otázky (označené <span class="uq-required-mark">*</span>). Pak budou dostupné další funkce.
+                    </div>
+                {% endif %}
 
                 {# Answered questions — compact summary #}
                 {% set answered = questions|filter(q => q.value is not null) %}
@@ -37,7 +42,7 @@
                         <tbody>
                             {% for q in answered %}
                                 <tr>
-                                    <td class="uq-name" title="{{ q.description }}">{{ q.question_name }}</td>
+                                    <td class="uq-name" title="{{ q.description }}">{{ q.question_name }}{% if q.is_required %}<span class="uq-required-mark" title="Povinná otázka"> *</span>{% endif %}</td>
                                     <td class="uq-value">
                                         {% if q.type == 'yes_no' %}
                                             {{ q.value == 'yes' ? 'Ano' : 'Ne' }}
@@ -84,7 +89,7 @@
                 {% if unanswered is not empty %}
                     {% for q in unanswered %}
                         <div class="uq-question-block">
-                            <p class="uq-question-text"><strong>{{ q.question }}</strong></p>
+                            <p class="uq-question-text"><strong>{{ q.question }}</strong>{% if q.is_required %}<span class="uq-required-mark" title="Povinná otázka"> *</span>{% endif %}</p>
                             {% if q.description %}
                                 <p class="uq-description">{{ q.description |nl2br}}</p>
                             {% endif %}
@@ -124,7 +129,11 @@
                             {% if registration_start %}Bude to {{ registration_start|date('U')}} {% endif %}
                             {% else%}
                             <!--<a href="/choose-workshops">Vybrat workshop</a>-->
-                            <br><a href="/wizard" class="btn btn--primary"  class="btn btn--outline">Vybrat si workshopy</a>                                                    
+                            {% if questions_blocking %}
+                                <br><span class="btn btn--primary btn--disabled" title="Nejprve vyplňte povinné otázky">Vybrat si workshopy</span>
+                            {% else %}
+                                <br><a href="/wizard" class="btn btn--primary"  class="btn btn--outline">Vybrat si workshopy</a>
+                            {% endif %}
                             {% endif %}
                         </p>
                     {% else %}
@@ -237,8 +246,13 @@
                 <div class="purchases-header">
                     <h3>Moje nákupy</h3>
                     <div class="shop-links">
-                        <a href="/tickets" class="btn btn--outline btn--sm">Vstupenky</a>
-                        <a href="/merch"   class="btn btn--outline btn--sm">Merch</a>
+                        {% if questions_blocking %}
+                            <span class="btn btn--outline btn--sm btn--disabled" title="Nejprve vyplňte povinné otázky">Vstupenky</span>
+                            <span class="btn btn--outline btn--sm btn--disabled" title="Nejprve vyplňte povinné otázky">Merch</span>
+                        {% else %}
+                            <a href="/tickets" class="btn btn--outline btn--sm">Vstupenky</a>
+                            <a href="/merch"   class="btn btn--outline btn--sm">Merch</a>
+                        {% endif %}
                     </div>
                 </div>
 
@@ -306,8 +320,13 @@
         {% else %}
          <div class="card">
             <div class="card__body">
-                <a href="/wizard/payment" class="btn btn--primary"  class="btn btn--outline">Platební detaily</a>
-                <a href="/choose-workshops" class="btn btn--primary"  class="btn btn--outline">Přidat/ubrat workshopy</a>
+                {% if questions_blocking %}
+                    <span class="btn btn--primary btn--disabled" title="Nejprve vyplňte povinné otázky">Platební detaily</span>
+                    <span class="btn btn--primary btn--disabled" title="Nejprve vyplňte povinné otázky">Přidat/ubrat workshopy</span>
+                {% else %}
+                    <a href="/wizard/payment" class="btn btn--primary"  class="btn btn--outline">Platební detaily</a>
+                    <a href="/choose-workshops" class="btn btn--primary"  class="btn btn--outline">Přidat/ubrat workshopy</a>
+                {% endif %}
             </div>
         </div>
         {% endif %}
@@ -445,6 +464,13 @@
 .uq-input { flex: 1; min-width: 180px; padding: 0.35rem 0.6rem; border: 1px solid var(--color-border, #ccc); border-radius: 4px; font-size: 0.95rem; }
 .uq-radio { display: inline-flex; align-items: center; gap: 0.25rem; font-size: 0.95rem; cursor: pointer; }
 .uq-edit-row td { padding-top: 0; padding-bottom: 0.6rem; }
+.uq-required-mark { color: #c0392b; font-weight: 700; }
+.uq-blocking-notice { margin-bottom: 1rem; }
+.btn--disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+    pointer-events: none;
+}
 </style>
 {% endblock %}
 

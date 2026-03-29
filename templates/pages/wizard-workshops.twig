@@ -35,7 +35,10 @@
                 Blok {{ done_timeslots + 1 }} z {{ total_timeslots }}
             </div>
             <h1 class="wts-title">{{ timeslot.name }}</h1>
-            <p class="wts-hint">Vyberte workshopy, na které se chcete přihlásit (lze vybrat více), nebo pokračujte bez výběru. Systém nabízí i možnost přidat workshopy, které jsou již možná plné, pro případ že by se uvolnilo místo.</p>
+            <p class="wts-hint">
+            
+            Vyberte si všechny workshopy, na které by se vám chtělo, začněte tím, na který chcete nejvíc. 
+            Nevadí že jsou plné, třeba se místo uvolní. </p>
         </div>
 
         {# ── Sub-progress dots ── #}
@@ -64,9 +67,16 @@
             {% else %}
                 <div class="wts-grid">
                     {% for workshop in workshops %}
-                        <label class="wts-card" for="ws-{{ workshop.id }}">
-                        {{ workshop.alreadyRegistered }}
-                                <form method="POST" action="/wizard/workshops">
+                        <label class="wts-card
+                        {% if workshop.alreadyRegistered %}
+                           bg4
+                        {% endif %}
+                        
+                        " for="ws-{{ workshop.id }}" 
+                        
+                        
+                        >
+                            <form method="POST" action="/wizard/workshops">
                                     <input type="hidden" name="_csrf" value="{{ csrf }}">
                                     
                                     <input type="hidden" name="slot"  value="{{ timeslot.code }}">                                    
@@ -74,8 +84,8 @@
                                     
                                         {% if workshop.alreadyRegistered != 'paid' %}
                                         <input  type="hidden" name="cancel_workshop_id" value="{{ workshop.id }}">
-                                        <button type="submit" class="btn btn--primary btn--sm">
-                                                Zrušit registraci  {{ workshop.id }}
+                                        <button type="submit" class="btn btn--primary btn--sm" style="float:right;">
+                                                Zrušit registraci
                                         </button>
                                         {% else %}
                                             Zaplaceno!

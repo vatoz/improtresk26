@@ -283,7 +283,7 @@ class Workshop
             WHERE w.is_active = 1
               AND w.timeslot IS NOT NULL
             GROUP BY w.id
-            ORDER BY w.timeslot, w.date, w.time
+            ORDER BY w.timeslot
         ");
         $rows = $stmt->fetchAll();
 
@@ -357,7 +357,7 @@ class Workshop
             WHERE w.is_active = 1
             AND w.timeslot REGEXP CONCAT('[', ?, ']')
             GROUP BY w.id
-            ORDER BY w.date, w.time
+            ORDER BY w.timeslot
         ");
 
         $stmt->execute([$timeslot]);

@@ -5,7 +5,15 @@
     <span class="wts-card__meta">
         {% set _ts = timeslot is defined ? timeslot : (ts is defined ? ts : null) %}
         {% if _ts and _ts.start_datetime %}{{ _ts.start_datetime|date('j.n.Y H:i') }}{% endif %}
-        {% if _ts and _ts.end_datetime %}&nbsp;– {{ _ts.end_datetime|date('H:i') }}<br>{% endif %}
+
+        - 
+        {% if _ts and _ts.start_datetime and  _ts.end_datetime %}
+            {% if _ts.start_datetime|date('j.n.Y') !=  _ts.end_datetime|date('j.n.Y')  %}
+                {{  _ts.end_datetime|date('j.n.Y')  }}
+            {% endif %}
+        {% endif %}
+
+        {% if _ts and _ts.end_datetime %}&nbsp; {{ _ts.end_datetime|date('H:i') }}<br>{% endif %}
         {% if _ts and _ts.duration_minutes %}&nbsp;·&nbsp;{{ _ts.duration_minutes }} min<br>{% endif %}
     </span>
     <span class="wts-card__meta">
