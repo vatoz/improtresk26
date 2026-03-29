@@ -42,10 +42,14 @@
                         <tbody>
                             {% for q in answered %}
                                 <tr>
-                                    <td class="uq-name" title="{{ q.description }}">{{ q.question_name }}{% if q.is_required %}<span class="uq-required-mark" title="Povinná otázka"> *</span>{% endif %}</td>
+                                    <td class="uq-name" title="{{ q.description }}">{{ q.question_name }}{% if q.is_required %}<span class="uq-required-mark" title="Povinná otázka"> *</span>{% endif %}
+                                     {% if q.ticket_id and q.value == 'yes'  %}
+                                                <sup title="Měla by být automaticky přidaná vstupenka" >Se vstupenkou</sup>
+                                                {% endif %}                                    
+                                    </td>
                                     <td class="uq-value">
                                         {% if q.type == 'yes_no' %}
-                                            {{ q.value == 'yes' ? 'Ano' : 'Ne' }}
+                                            {{ q.value == 'yes' ? 'Ano' : 'Ne' }}                                            
                                         {% else %}
                                             {{ q.value }}
                                         {% endif %}
