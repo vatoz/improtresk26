@@ -9,14 +9,14 @@
         </div>
     {% else %}
         {% for section, members in people %}
-            <section class="people-section" style="padding-top:15px;padding-bottom:5px;">
+            <section class="people-section" style="padding-top:15px;padding-bottom:5px; " id="sekce_{{ section }}">
                 <h2 class="people-section__title random{{ random(9) }}">{{ section }}</h2>
                 <div class="people-grid">
                     {% for person in members %}
                         <div class="person-card card" style="margin-bottom:8px;">
                             <div class="card__body">
                                                                
-                                <h3 class="person-card__name" style="margin-bottom:4px;">{{ person.name }}</h3>
+                                <h3 class="person-card__name" style="margin-bottom:4px;" id="person_{{ person.id }}" >{{ person.name }}</h3>
                                 {% if photo[person.id] %}
                                 <img style="float:right;width:12em;margin-left:3em;margin-bottom:1em;
                                 border:thick solid grey;
