@@ -241,7 +241,7 @@ class AuthController extends BaseController
         }
 
         // Success - redirect to login
-        echo $this->twig->render('pages/login.twig', [
+        echo $this->twig->render('pages/reseted.twig', [
             'success' => 'Heslo bylo úspěšně změněno. Nyní se můžete přihlásit.'
         ]);
     }
