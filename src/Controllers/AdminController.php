@@ -321,6 +321,7 @@ class AdminController extends BaseController
             if (!isset($questions[$qid])) {
                 $questions[$qid] = [
                     'id'            => $row['id'],
+                    'in_admin'            => $row['in_admin'],
                     'question_name' => $row['question_name'],
                     'question'      => $row['question'],
                     'users'         => [],
