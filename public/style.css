@@ -976,6 +976,11 @@ a:hover {
   grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
 }
 
+.info-sections{
+    grid-template-columns: repeat(2,1fr);
+}
+
+
 /* ========================================
    Dashboard
    ======================================== */
@@ -1240,3 +1245,17 @@ blockquote::before {
 .ws_item8 {border:thin solid#a44c7dff}
 .ws_item9 {border:thin solid#768f89ff}
 .ws_item0 {border:thin solid#7e8845ff}
+
+
+.bg1 {background-color: #a85f31ff; }
+.bg2 {background-color: #ecb737ff;}
+.bg3 {background-color:#d45842ff;}
+.bg4 {background-color: #47a8afff;}
+.bg5 {background-color:#98a239ff;}
+.bg6 {background-color:#3c66a6ff;}
+.bg7 {background-color:#7e4994ff;}
+.bg8 {background-color:#a44c7dff;}
+.bg9 {background-color:#768f89ff;}
+.bg0 {background-color:#7e8845ff;}
+    
+
