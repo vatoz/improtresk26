@@ -2,6 +2,7 @@
 namespace App\Controllers;
 
 use App\Models\MailQueue;
+use App\Models\Workshop;
 use App\Models\TransactionList;
 use App\Services\FioService;
 
@@ -110,12 +111,11 @@ class AdminController extends BaseController
 
     /**
      * Enrich pending transactions with matched user and pending workshop sum.
-     * variable_symbol encodes user_id as: variable_symbol - current_year = user_id
+     * variable_symbol encodes user_id as: variable_symbol = user_id
      */
     private function enrichTransactions(array $transactions): array
     {
-        $year = (int) date('Y');
-
+        
         foreach ($transactions as &$t) {
             $t['matched_user']  = null;
             $t['pending_sum']   = null;
@@ -126,7 +126,7 @@ class AdminController extends BaseController
                 continue;
             }
 
-            $userId = (int) $t['variable_symbol'] - $year;
+            $userId = (int) $t['variable_symbol'] ;
             if ($userId <= 0) {
                 continue;
             }
@@ -340,5 +340,260 @@ class AdminController extends BaseController
             'active_page' => 'admin',
             'questions'   => array_values($questions),
         ]);
+    }
+
+    public function detailedRegistrations()
+    {
+        $this->requireAdmin();
+
+        $stmt = $this->db->query("
+            SELECT
+                w.id AS workshop_id,
+                w.name AS workshop_name,
+                w.timeslot,
+                r.id AS registration_id,
+                r.payment_status,
+                r.created_at,
+                u.name AS user_name,
+                u.email AS user_email
+            FROM workshops w
+            LEFT JOIN registrations r ON w.id = r.workshop_id AND r.payment_status != 'cancelled'
+            LEFT JOIN users u ON r.user_id = u.id
+            WHERE w.is_active = 1
+            ORDER BY w.timeslot, w.name, r.created_at
+        ");
+
+        $rows = $stmt->fetchAll(\PDO::FETCH_ASSOC);
+        $threshold = new \DateTime('-5 days -6 hours');
+
+        $workshops = [];
+        foreach ($rows as $row) {
+            $wid = $row['workshop_id'];
+            if (!isset($workshops[$wid])) {
+                $workshops[$wid] = [
+                    'id'            => $wid,
+                    'name'          => $row['workshop_name'],
+                    'timeslot'      => $row['timeslot'],
+                    'registrations' => [],
+                ];
+            }
+            if ($row['registration_id'] !== null) {
+                $createdAt = new \DateTime($row['created_at']);
+                $workshops[$wid]['registrations'][] = [
+                    'id'             => $row['registration_id'],
+                    'status'         => $row['payment_status'],
+                    'created_at'     => $row['created_at'],
+                    'user_name'      => $row['user_name'],
+                    'user_email'     => $row['user_email'],
+                    'can_set_unpaid' => $row['payment_status'] === 'pending' && $createdAt < $threshold,
+                ];
+            }
+        }
+
+        echo $this->twig->render('pages/admin-registrations.twig', [
+            'user'       => $this->getCurrentUser(),
+            'active_page' => 'admin',
+            'workshops'  => array_values($workshops),
+            'csrf'       => csrf_token('admin-registrations'),
+        ]);
+    }
+
+    public function setUnpaid()
+    {
+        $this->requireAdmin();
+
+        header('Content-Type: application/json');
+
+        if (!csrf_validate('admin-registrations', $_POST['_csrf'] ?? null)) {
+            http_response_code(403);
+            echo json_encode(['error' => 'Neplatný CSRF token.']);
+            exit;
+        }
+
+        $regId = (int) ($_POST['registration_id'] ?? 0);
+
+        if ($regId <= 0) {
+            http_response_code(400);
+            echo json_encode(['error' => 'Neplatné ID registrace.']);
+            exit;
+        }
+
+        $stmt = $this->db->prepare("SELECT id, payment_status, created_at FROM registrations WHERE id = ? LIMIT 1");
+        $stmt->execute([$regId]);
+        $reg = $stmt->fetch(\PDO::FETCH_ASSOC);
+
+        if (!$reg || $reg['payment_status'] !== 'pending') {
+            http_response_code(400);
+            echo json_encode(['error' => 'Registrace není ve stavu pending.']);
+            exit;
+        }
+
+        $threshold = new \DateTime('-5 days -6 hours');
+        if (new \DateTime($reg['created_at']) >= $threshold) {
+            http_response_code(400);
+            echo json_encode(['error' => 'Registrace není dostatečně stará.']);
+            exit;
+        }
+
+        $this->db->prepare("UPDATE registrations SET payment_status = 'notpaid' WHERE id = ?")
+                 ->execute([$regId]);
+
+        echo json_encode(['ok' => true]);
+        exit;
+    }
+
+    public function pairing()
+    {
+        $this->requireAdmin();
+
+        // Load all transactions (including completed), newest first
+        $stmt = $this->db->query("
+            SELECT id, date, amount, currency, variable_symbol,
+                   counter_account_name, message, completed
+            FROM transaction_lists
+            ORDER BY completed ASC, date DESC, id DESC
+            LIMIT 200
+        ");
+        $transactions = $stmt->fetchAll(\PDO::FETCH_ASSOC);
+
+        // Enrich each transaction with matched user + their registrations + purchases
+        foreach ($transactions as &$tx) {
+            $tx['amount_int']   = (int) $tx['amount'];
+            $tx['matched_user'] = null;
+            $tx['registrations'] = [];
+            $tx['purchases']     = [];
+
+            if (empty($tx['variable_symbol'])) {
+                continue;
+            }
+
+            $userId = (int) $tx['variable_symbol'] ;
+            if ($userId <= 0) {
+                continue;
+            }
+
+            $uStmt = $this->db->prepare("SELECT id, name, email FROM users WHERE id = ? LIMIT 1");
+            $uStmt->execute([$userId]);
+            $user = $uStmt->fetch(\PDO::FETCH_ASSOC);
+            if (!$user) {
+                continue;
+            }
+            $tx['matched_user'] = $user;
+
+            // Registrations (non-cancelled)
+            $rStmt = $this->db->prepare("
+                SELECT r.id, r.payment_status, w.name AS workshop_name, w.price,
+                       ts.start_datetime, r.created_at , w.timeslot, w.capacity,w.registered
+                FROM registrations r
+                LEFT JOIN workshops w ON r.workshop_id = w.id
+                LEFT JOIN timeslots ts ON ts.code = w.timeslot
+                WHERE r.user_id = ? 
+                ORDER BY w.timeslot asc ,r.priority asc, r.id ASC
+            ");
+            $rStmt->execute([$userId]);
+            $tx['registrations'] = $rStmt->fetchAll(\PDO::FETCH_ASSOC);
+
+            // Attach queue position to each registration
+            $queuePositions = Workshop::getQueuePositions($this->db, $userId);
+            foreach ($tx['registrations'] as &$reg) {
+                $reg['queue_position'] = $queuePositions[(int)$reg['id']]['queue_position'] ?? null;
+            }
+            unset($reg);
+
+            // Purchases (non-cancelled)
+            $pStmt = $this->db->prepare("
+                SELECT p.id, p.item_type, p.quantity, p.payment_status,
+                       COALESCE(t.name, m.name) AS item_name,
+                       COALESCE(t.price, m.price) AS price
+                FROM purchases p
+                LEFT JOIN tickets t ON t.id = p.item_id AND p.item_type = 'ticket'
+                LEFT JOIN merch   m ON m.id = p.item_id AND p.item_type = 'merch'
+                WHERE p.user_id = ? 
+                ORDER BY p.created_at ASC
+            ");
+            $pStmt->execute([$userId]);
+            $tx['purchases'] = $pStmt->fetchAll(\PDO::FETCH_ASSOC);
+        }
+        unset($tx);
+
+        $threshold= new \DateTime('-5 days -6 hours');
+
+        echo $this->twig->render('pages/admin-pairing.twig', [
+            'user'         => $this->getCurrentUser(),
+            'active_page'  => 'admin',
+            'transactions' => $transactions,
+            'threshold'    => $threshold->format("U"),
+            'csrf'         => csrf_token('admin-pairing'),
+        ]);
+    }
+
+    public function setRegistrationStatus()
+    {
+        $this->requireAdmin();
+
+        if (!csrf_validate('admin-pairing', $_POST['_csrf'] ?? null)) {
+            http_response_code(403);
+            echo 'Neplatný CSRF token.';
+            exit;
+        }
+
+        $regId  = (int) ($_POST['registration_id'] ?? 0);
+        $status = $_POST['status'] ?? '';
+        $allowed = ['pending', 'paid', 'approved', 'upgradable', 'notpaid', 'cancelled', 'refunded'];
+
+        if ($regId > 0 && in_array($status, $allowed)) {
+            $extra = $status === 'paid' ? ', paid_at = NOW()' : '';
+            $this->db->prepare("UPDATE registrations SET payment_status = ?$extra WHERE id = ?")
+                     ->execute([$status, $regId]);
+            Workshop::recountRegistered($this->db,0,$regId);
+        }
+
+        $back = $_POST['back'] ?? '/admin/pairing';
+        header('Location: ' . $back);
+        exit;
+    }
+
+    public function setPurchaseStatus()
+    {
+        $this->requireAdmin();
+
+        if (!csrf_validate('admin-pairing', $_POST['_csrf'] ?? null)) {
+            http_response_code(403);
+            echo 'Neplatný CSRF token.';
+            exit;
+        }
+
+        $purchId = (int) ($_POST['purchase_id'] ?? 0);
+        $status  = $_POST['status'] ?? '';
+        $allowed = ['pending', 'paid', 'cancelled'];
+
+        if ($purchId > 0 && in_array($status, $allowed)) {
+            $this->db->prepare("UPDATE purchases SET payment_status = ? WHERE id = ?")
+                     ->execute([$status, $purchId]);
+        }
+
+        $back = $_POST['back'] ?? '/admin/pairing';
+        header('Location: ' . $back);
+        exit;
+    }
+
+    public function completeTransaction()
+    {
+        $this->requireAdmin();
+
+        if (!csrf_validate('admin-pairing', $_POST['_csrf'] ?? null)) {
+            http_response_code(403);
+            echo 'Neplatný CSRF token.';
+            exit;
+        }
+
+        $txId = (int) ($_POST['transaction_id'] ?? 0);
+        if ($txId > 0) {
+            TransactionList::markCompleted($this->db, $txId);
+        }
+
+        $back = $_POST['back'] ?? '/admin/pairing';
+        header('Location: ' . $back);
+        exit;
     }
 }

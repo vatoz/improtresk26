@@ -1,0 +1,150 @@
+{% for workshop in workshops %}
+<div class="dreg-workshop">
+    <h2 class="dreg-workshop-name">
+        {{ workshop.name }}
+        {% if workshop.timeslot %}<span class="dreg-timeslot">{{ workshop.timeslot }}</span>{% endif %}
+    </h2>
+
+    {% if workshop.registrations is empty %}
+        <p class="dreg-empty">Žádné registrace.</p>
+    {% else %}
+        <table class="dreg-table">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Jméno</th>
+                    <th>E-mail</th>
+                    <th>Stav</th>
+                    <th>Registrováno</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for r in workshop.registrations %}
+                <tr data-reg-id="{{ r.id }}">
+                    <td>{{ loop.index }}</td>
+                    <td>{{ r.user_name }}</td>
+                    <td>{{ r.user_email }}</td>
+                    <td class="dreg-status dreg-status--{{ r.status }}">
+                        {% if r.status == 'pending' %}Čeká na platbu
+                        {% elseif r.status == 'paid' %}Zaplaceno
+                        {% elseif r.status == 'approved' %}Schváleno
+                        {% elseif r.status == 'notpaid' %}Nezaplaceno
+                        {% elseif r.status == 'upgradable' %}Upgradovatelné
+                        {% elseif r.status == 'refunded' %}Vráceno
+                        {% else %}{{ r.status }}{% endif %}
+                    </td>
+                    <td>{{ r.created_at|date('j.n.Y H:i') }}</td>
+                    <td>
+                        {% if r.can_set_unpaid %}
+                        <button
+                            class="btn btn--small btn--danger dreg-unpaid-btn"
+                            data-reg-id="{{ r.id }}"
+                            data-csrf="{{ csrf }}"
+                            onclick="dregSetUnpaid(this)"
+                        >Nezaplaceno</button>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% endif %}
+</div>
+{% endfor %}
+
+<script>
+async function dregSetUnpaid(btn) {
+    btn.disabled = true;
+    const regId = btn.dataset.regId;
+    const csrf  = btn.dataset.csrf;
+
+    const body = new FormData();
+    body.append('registration_id', regId);
+    body.append('_csrf', csrf);
+
+    try {
+        const resp = await fetch('/admin/registrations/set-unpaid', { method: 'POST', body });
+        const data = await resp.json();
+
+        if (resp.ok && data.ok) {
+            const row = btn.closest('tr');
+            const statusCell = row.querySelector('.dreg-status');
+            statusCell.textContent = 'Nezaplaceno';
+            statusCell.className = 'dreg-status dreg-status--notpaid';
+            btn.remove();
+        } else {
+            alert('Chyba: ' + (data.error || 'Neznámá chyba'));
+            btn.disabled = false;
+        }
+    } catch (e) {
+        alert('Chyba spojení.');
+        btn.disabled = false;
+    }
+}
+</script>
+
+<style>
+.dreg-workshop {
+    margin-bottom: 2.5rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 2px dashed #ccc;
+}
+.dreg-workshop-name {
+    margin-bottom: 0.5rem;
+}
+.dreg-timeslot {
+    font-size: 0.8em;
+    font-weight: normal;
+    background: #e8e8e8;
+    border-radius: 4px;
+    padding: 0.15em 0.5em;
+    margin-left: 0.5rem;
+    vertical-align: middle;
+}
+.dreg-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.92rem;
+}
+.dreg-table th,
+.dreg-table td {
+    border: 1px solid #ccc;
+    padding: 0.35rem 0.6rem;
+    text-align: left;
+}
+.dreg-table th {
+    background: #f4f4f4;
+    font-weight: bold;
+}
+.dreg-table tr:nth-child(even) {
+    background: #fafafa;
+}
+.dreg-status--paid     { color: #1a7a1a; font-weight: bold; }
+.dreg-status--pending  { color: #7a5a00; }
+.dreg-status--notpaid  { color: #a00; font-weight: bold; }
+.dreg-status--approved { color: #005a8a; font-weight: bold; }
+.dreg-status--refunded { color: #777; }
+.dreg-empty {
+    color: #999;
+    font-style: italic;
+}
+.btn--small {
+    font-size: 0.82rem;
+    padding: 0.2em 0.6em;
+}
+.btn--danger {
+    background: #c0392b;
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+.btn--danger:hover:not(:disabled) {
+    background: #96281b;
+}
+.btn--danger:disabled {
+    opacity: 0.5;
+    cursor: default;
+}
+</style>

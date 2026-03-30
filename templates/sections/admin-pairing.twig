@@ -1,0 +1,304 @@
+{% if transactions is empty %}
+    <p>Žádné transakce k dispozici.</p>
+{% else %}
+
+{% set reg_labels = {
+    pending:    'Čeká na platbu',
+    paid:       'Zaplaceno',
+    approved:   'Vylosováno',
+    upgradable: 'Možný upgrade',
+    notpaid:    'Nezaplaceno',
+    cancelled:  'Zrušeno',
+    refunded:   'Vráceno'
+} %}
+{% set purch_labels = {
+    pending:   'Čeká na platbu',
+    paid:      'Zaplaceno',
+    cancelled: 'Zrušeno'
+} %}
+
+{% for tx in transactions %}
+<div class="pairing-card {% if tx.completed %}pairing-card--done{% endif %}" id="transaction-{{tx.id}}" >
+
+    {# ── Transaction header ── #}
+    <div class="pairing-tx-header" >
+        <div class="pairing-tx-meta">
+            <span class="pairing-tx-date">{{ tx.date }}</span>
+            <span class="pairing-tx-amount {% if tx.amount_int < 0 %}amount--out{% else %}amount--in{% endif %}">
+                {{ tx.amount_int|number_format(0, ',', ' ') }} {{ tx.currency }}
+            </span>
+            {% if tx.counter_account_name %}
+                <span class="pairing-tx-from" title="Protiúčet">{{ tx.counter_account_name }}</span>
+            {% endif %}
+            {% if tx.message %}
+                <span class="pairing-tx-msg" title="Zpráva">{{ tx.message }}</span>
+            {% endif %}
+            {% if tx.variable_symbol %}
+                <span class="pairing-tx-vs" title="Variabilní symbol">VS: {{ tx.variable_symbol }}</span>
+            {% endif %}
+        </div>
+        <div class="pairing-tx-status">
+            {% if tx.completed %}
+                <span class="pairing-badge pairing-badge--done">Vyřízeno {{ tx.completed|date('j.n.Y H:i') }}</span>
+            {% else %}
+                <span class="pairing-badge pairing-badge--open">Nevyřízeno</span>
+            {% endif %}
+        </div>
+    </div>
+
+    {# ── Matched user ── #}
+    {% if tx.matched_user %}
+        <div class="pairing-user">
+            Uživatel: <strong>{{ tx.matched_user.name }}</strong>
+            &lt;<a href="mailto:{{ tx.matched_user.email }}">{{ tx.matched_user.email }}</a>&gt;
+        </div>
+    {% else %}
+        <div class="pairing-user pairing-user--none">
+            Uživatele se nepodařilo napárovat podle variabilního symbolu.
+        </div>
+    {% endif %}
+
+    {% if tx.matched_user %}
+
+        {# ── Registrations ── #}
+        {% if tx.registrations is not empty %}
+        <div class="pairing-section">
+            <h4 class="pairing-section-title">Workshopy</h4>
+            <table class="admin-table">
+                <thead>
+                    <tr>
+                        <th>Workshop</th>
+                        <th>Datum</th>
+                        <th>Cena</th>
+                        <th>Stav</th>
+                        <th title="Počet aktivních registrací s dřívějším created_at na stejný workshop">Pořadí</th>
+                        <th>Změnit stav</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for reg in tx.registrations %}
+                    <tr class="pairing-row pairing-row--{{ reg.payment_status }}">
+                        <td>{{ reg.workshop_name ?? '–' }}</td>
+                        <td>{{ reg.timeslot }}</td>
+                        <td>{{ reg.price is not null ? reg.price|number_format(0, ',', ' ') ~ ' Kč' : '–' }}</td>
+                        <td>
+                            <span class="pairing-status pairing-status--{{ reg.payment_status }}">
+                                {{ reg_labels[reg.payment_status] ?? reg.payment_status }}
+                            </span> 
+                            {% if  threshold > reg.created_at |date('U') %}
+                            {% if reg.payment_status == 'pending'  %}, po termínu
+                             {{reg.created_at }}
+                            
+                            {% endif %}               
+                            {% endif %}                           
+                        </td>
+                        <td class="pairing-queue">
+                            {% if reg.queue_position is not null %}
+                                <span title="Kolikátý teď jsem">{{ reg.queue_position + 1 }}.</span>/<span title="Kolik mám zaplacených registrací">{{reg.registered}}</span>/<span title="Kapacita">{{reg.capacity}}</span>
+                            {% else %}
+                                –
+                            {% endif %}
+                        </td>
+                        <td>
+                            <form method="POST" action="/admin/pairing/set-registration-status" class="pairing-status-form">
+                                <input type="hidden" name="_csrf" value="{{ csrf }}">
+                                <input  name="registration_id" type="hidden" value="{{ reg.id }}">
+                                <input  name="back" type="hidden" value="/admin/pairing#transaction-{{tx.id}}">
+                                <select name="status" class="pairing-select">
+                                    {% for val, label in reg_labels %}
+                                        <option value="{{ val }}" {% if val == reg.payment_status %}selected{% endif %}>
+                                            {{ label }}
+                                        </option>
+                                    {% endfor %}
+                                </select>
+                                <button type="submit" class="btn btn--sm btn--primary">Uložit</button>
+                            </form>                             
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% endif %}
+
+        {# ── Purchases ── #}
+        {% if tx.purchases is not empty %}
+        <div class="pairing-section">
+            <h4 class="pairing-section-title">Nákupy</h4>
+            <table class="admin-table">
+                <thead>
+                    <tr>
+                        <th>Položka</th>
+                        <th>Typ</th>
+                        <th>Ks</th>
+                        <th>Cena</th>
+                        <th>Stav</th>
+                        <th>Změnit stav</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for p in tx.purchases %}
+                    <tr class="pairing-row pairing-row--{{ p.payment_status }}">
+                        <td>{{ p.item_name ?? '–' }}</td>
+                        <td>
+                            {% if p.item_type == 'ticket' %}
+                                <span class="type-badge type-badge--ticket">Vstupenka</span>
+                            {% else %}
+                                <span class="type-badge type-badge--merch">Merch</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ p.quantity }}</td>
+                        <td>{{ p.price is not null ? p.price|number_format(0, ',', ' ') ~ ' Kč' : '–' }}</td>
+                        <td>
+                            <span class="pairing-status pairing-status--{{ p.payment_status }}">
+                                {{ purch_labels[p.payment_status] ?? p.payment_status }}
+                            </span>
+                        </td>
+                        <td>
+                            <form method="POST" action="/admin/pairing/set-purchase-status" class="pairing-status-form">
+                                <input type="hidden" name="_csrf"        value="{{ csrf }}">
+                                <input  name="purchase_id"   type="hidden"  value="{{ p.id }}">
+                                <input  name="back"      type="hidden"    value="/admin/pairing#transaction-{{tx.id}}">
+                                <select name="status" class="pairing-select">
+                                    {% for val, label in purch_labels %}
+                                        <option value="{{ val }}" {% if val == p.payment_status %}selected{% endif %}>
+                                            {{ label }}
+                                        </option>
+                                    {% endfor %}
+                                </select>
+                                <button type="submit" class="btn btn--sm btn--primary">Uložit</button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% endif %}
+
+        {% if tx.registrations is empty and tx.purchases is empty %}
+            <p class="pairing-empty">Uživatel nemá žádné aktivní registrace ani nákupy.</p>
+        {% endif %}
+
+    {% endif %}{# matched_user #}
+
+    {# ── Complete transaction button ── #}
+    {% if not tx.completed %}
+    <div class="pairing-footer">
+        <form method="POST" action="/admin/pairing/complete-transaction"
+              onsubmit="return confirm('Označit transakci jako vyřízenou?')">
+            <input type="hidden" name="_csrf"           value="{{ csrf }}">
+            <input type="hidden" name="transaction_id"  value="{{ tx.id }}">
+            <input  name="back"  type="hidden" value="/admin/pairing#transaction-{{tx.id}} ">
+            <button type="submit" class="btn btn--success">Označit transakci jako vyřízenou</button>
+        </form>
+    </div>
+    {% endif %}
+
+</div>
+{% endfor %}
+{% endif %}
+
+<style>
+.pairing-card {
+    border: 1px solid var(--color-border, #ddd);
+    border-radius: 8px;
+    margin-bottom: 1.5rem;
+    background: #fff;
+    overflow: hidden;
+}
+.pairing-card--done {
+    opacity: 0.6;
+}
+.pairing-tx-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 0.85rem 1.25rem;
+    background: #f5f7fa;
+    border-bottom: 1px solid var(--color-border, #ddd);
+    flex-wrap: wrap;
+}
+.pairing-tx-meta {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+    align-items: center;
+    font-size: 0.93rem;
+}
+.pairing-tx-date   { color: var(--color-muted, #666); }
+.pairing-tx-amount { font-weight: 700; font-size: 1.05rem; }
+.pairing-tx-from   { color: var(--color-muted, #555); }
+.pairing-tx-msg    { font-style: italic; color: var(--color-muted, #777); max-width: 260px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.pairing-tx-vs     { font-family: monospace; background: #eef; padding: 0.1rem 0.4rem; border-radius: 3px; font-size: 0.85rem; }
+.pairing-badge {
+    display: inline-block;
+    padding: 0.2rem 0.65rem;
+    border-radius: 999px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    white-space: nowrap;
+}
+.pairing-badge--done { background: #e6f5ec; color: #27ae60; }
+.pairing-badge--open { background: #fef9e7; color: #d68910; }
+.pairing-user {
+    padding: 0.55rem 1.25rem;
+    font-size: 0.93rem;
+    border-bottom: 1px solid var(--color-border, #eee);
+    background: #fafbfc;
+}
+.pairing-user--none { color: var(--color-muted, #999); font-style: italic; }
+.pairing-section { padding: 0.75rem 1.25rem 0; }
+.pairing-section-title {
+    margin: 0 0 0.5rem;
+    font-size: 0.88rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--color-muted, #888);
+}
+.pairing-empty {
+    padding: 0.75rem 1.25rem;
+    font-size: 0.9rem;
+    color: var(--color-muted, #999);
+}
+.pairing-footer {
+    padding: 0.75rem 1.25rem 1rem;
+    border-top: 1px solid var(--color-border, #eee);
+    margin-top: 0.75rem;
+}
+.pairing-status-form {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+}
+.pairing-select {
+    padding: 0.25rem 0.4rem;
+    border: 1px solid var(--color-border, #ccc);
+    border-radius: 4px;
+    font-size: 0.85rem;
+}
+.pairing-status {
+    display: inline-block;
+    padding: 0.15rem 0.5rem;
+    border-radius: 999px;
+    font-size: 0.78rem;
+    font-weight: 600;
+    white-space: nowrap;
+}
+.pairing-status--pending    { background: #fef9e7; color: #d68910; }
+.pairing-status--paid       { background: #e6f5ec; color: #27ae60; }
+.pairing-status--approved   { background: #e8f4fd; color: #2980b9; }
+.pairing-status--upgradable { background: #f0e6ff; color: #7d3c98; }
+.pairing-status--notpaid    { background: #fdecea; color: #c0392b; }
+.pairing-status--cancelled  { background: #f2f2f2; color: #888; }
+.pairing-status--refunded   { background: #f5f0ff; color: #8e44ad; }
+.pairing-row--cancelled td  { opacity: 0.5; }
+.pairing-queue { text-align: center; font-weight: 600; color: var(--color-muted, #666); }
+.amount--in  { color: #27ae60; }
+.amount--out { color: #c0392b; }
+.type-badge { display: inline-block; padding: 0.1rem 0.5rem; border-radius: 4px; font-size: 0.78rem; font-weight: 700; }
+.type-badge--ticket { background: #e8f4fd; color: #2980b9; }
+.type-badge--merch  { background: #fef9e7; color: #d68910; }
+</style>

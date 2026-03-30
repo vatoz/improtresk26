@@ -393,6 +393,89 @@ class Workshop
         return $stmt->fetchAll();
     }
 
+    /**
+     * For each of the user's active registrations (excluding cancelled/notpaid/refunded),
+     * count how many other active registrations for the same workshop were created earlier.
+     * Returns an array keyed by registration_id with keys:
+     *   registration_id, workshop_id, created_at, queue_position
+     *
+     * queue_position = 0 means the user was the first to register for that workshop.
+     *
+     * @param PDO $db
+     * @param int $userId
+     * @return array
+     */
+    /**
+     * Recount paid registrations for a workshop and store the result in workshops.registered.
+     * Pass either workshop_id or registration_id (the workshop is resolved automatically).
+     *
+     * @param PDO $db
+     * @param int $workshopId
+     * @param int $registrationId  When non-zero, workshop_id is looked up from this registration.
+     * @return bool  False if the workshop could not be resolved.
+     */
+    public static function recountRegistered(PDO $db, int $workshopId = 0, int $registrationId = 0): bool
+    {
+        if ($workshopId === 0 && $registrationId === 0) {
+            return false;
+        }
+
+        if ($workshopId === 0) {
+            $stmt = $db->prepare("SELECT workshop_id FROM registrations WHERE id = ? LIMIT 1");
+            $stmt->execute([$registrationId]);
+            $row = $stmt->fetch(\PDO::FETCH_ASSOC);
+            if (!$row) {
+                return false;
+            }
+            $workshopId = (int) $row['workshop_id'];
+        }
+
+        $stmt = $db->prepare("
+            SELECT COUNT(*) FROM registrations
+            WHERE workshop_id = ? AND payment_status = 'paid'
+        ");
+        $stmt->execute([$workshopId]);
+        $count = (int) $stmt->fetchColumn();
+
+        $db->prepare("UPDATE workshops SET registered = ? WHERE id = ?")
+           ->execute([$count, $workshopId]);
+
+        return true;
+    }
+
+    public static function getQueuePositions(PDO $db, int $userId): array
+    {
+        $stmt = $db->prepare("
+            SELECT
+                r.id          AS registration_id,
+                r.workshop_id,
+                r.created_at,
+                (
+                    SELECT COUNT(*)
+                    FROM registrations r2
+                    WHERE r2.workshop_id = r.workshop_id
+                      AND r2.created_at  < r.created_at
+                      AND r2.payment_status NOT IN ('cancelled', 'notpaid', 'refunded')
+                ) AS queue_position
+            FROM registrations r
+            WHERE r.user_id = ?
+              AND r.payment_status NOT IN ('cancelled', 'notpaid', 'refunded')
+            ORDER BY r.workshop_id ASC, r.created_at ASC
+        ");
+        $stmt->execute([$userId]);
+
+        $result = [];
+        foreach ($stmt->fetchAll() as $row) {
+            $result[(int) $row['registration_id']] = [
+                'registration_id' => (int) $row['registration_id'],
+                'workshop_id'     => (int) $row['workshop_id'],
+                'created_at'      => $row['created_at'],
+                'queue_position'  => (int) $row['queue_position'],
+            ];
+        }
+        return $result;
+    }
+
     public static function register(PDO $db,$userId,$workshopId){
         
             $workshop = Workshop::findById($db, $workshopId);

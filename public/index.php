@@ -73,6 +73,12 @@ $router->map('GET', '/admin/attendance', 'AdminController#attendance', 'admin_at
 $router->map('GET', '/admin/mail-queue', 'AdminController#mailQueue', 'admin_mail_queue');
 $router->map('GET', '/admin/mail-queue/[i:id]/preview', 'AdminController#mailQueuePreview', 'admin_mail_queue_preview');
 $router->map('GET', '/admin/questions', 'AdminController#questions', 'admin_questions');
+$router->map('GET', '/admin/registrations', 'AdminController#detailedRegistrations', 'admin_registrations');
+$router->map('POST', '/admin/registrations/set-unpaid', 'AdminController#setUnpaid', 'admin_registrations_set_unpaid');
+$router->map('GET', '/admin/pairing', 'AdminController#pairing', 'admin_pairing');
+$router->map('POST', '/admin/pairing/set-registration-status', 'AdminController#setRegistrationStatus', 'admin_pairing_reg_status');
+$router->map('POST', '/admin/pairing/set-purchase-status', 'AdminController#setPurchaseStatus', 'admin_pairing_purch_status');
+$router->map('POST', '/admin/pairing/complete-transaction', 'AdminController#completeTransaction', 'admin_pairing_complete');
 
 $match = $router->match();
 

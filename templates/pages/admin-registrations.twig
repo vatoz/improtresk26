@@ -1,0 +1,11 @@
+{% extends 'base.twig' %}
+
+{% block title %}Administrace – Podrobné registrace | Improtřesk 2026{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h1>Administrace</h1>
+    {% include 'sections/admin_navigation.twig' with { active_tab: 'registrations' } %}
+    {% include 'sections/admin-registrations.twig' %}
+</div>
+{% endblock %}
