@@ -132,7 +132,7 @@
                     {% if registrations is empty %}
                         <p>Zatím nemáte žádné registrace.
                             {% if registration_start and registration_start|date('U') > "now"|date('U') %}
-                            Čekám na spuštění přihlašování.
+                                Čekám na spuštění přihlašování.
                             {% if registration_start %}Bude to {{ registration_start|date('U')}} {% endif %}
                             {% else%}
                             <!--<a href="/choose-workshops">Vybrat workshop</a>-->
@@ -143,6 +143,7 @@
                             {% endif %}
                             {% endif %}
                         </p>
+                     {% if user.role == 'admin' %}<a href="/wizard" class="btn btn--primary"  class="btn btn--outline">Vybrat si workshopy (ADMIN)</a>{% endif %}    
                     {% else %}
                         {% set showDrag = registrations|length > 1 %}
 
@@ -324,6 +325,12 @@
             </div>
         </div>
         {% if registration_start and registration_start|date('U') > "now"|date('U') %}
+            {% if user.role == 'admin' %}
+                    <a href="/wizard" class="btn btn--primary"  class="btn btn--outline">Wizard pro admina - hlavní cesta</a>
+                    <a href="/wizard/payment" class="btn btn--primary"  class="btn btn--outline">Platební detaily pro admina</a>
+                    <a href="/choose-workshops" class="btn btn--primary"  class="btn btn--outline">Přidat/ubrat workshopy pro admina</a>
+    
+            {% endif %}    
         {% else %}
          <div class="card">
             <div class="card__body">

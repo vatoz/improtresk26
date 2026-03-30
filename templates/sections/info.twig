@@ -16,13 +16,30 @@
                 
                 <p> Žižkostel<br>
                 náměstí Barikád 1520/1<br>  Praha 3 - Žižkov, Česko</p>
+
+                <p> <a href="https:\\fostra.cz">Fostra</a><br>
+                Roháčova 1148/63<br>  Praha 3 - Žižkov, Česko</p>
             </div>
         </div>
    
         <div class="card">
             <div class="card__body">
-                <h3>Ubytování</h3>
-                <p>Pro zájemce je zajištěné místo na přespání asi 15 minut chůze od hlavních festivalových prostor. </p>
+                <h3>
+                
+                 <img src=" /sysimg/icon_u.png" style="height:1em"/>
+               
+                Ubytování</h3>
+                <p>I v Praze bude možné využít ubytování ve společném prostoru nedaleko Žižkostela. A to
+                 v <a href="https://4pvs.nipax.cz/kontakt">Skautské klubovně vodních skautů</a> na adrese Pitterova 2892/1, za budovou SUDOP, 
+                 130 00 - Praha 3 (20 min pěšky přes park Parukářka nebo cca 10 min MHD ze zastavky Černínova do Olšanská) za 500 Kč na celou dobu festivalu (čtvrtek - neděle). Jedná se o možnost pro nenáročné účastníky. 
+                 Počítejte prosím s tím, že bude potřeba vzít si s sebou vlastní karimatku nebo nafukovací matraci a taky spacák.
+                 <br>
+                 Kapacita je 30 lidí. 
+</p><p>
+
+Druhou možností je sehnat si střechu nad hlavou na vlastní pěst buď u známého Pražáka či Pražačky, nebo v jednom z mnoha ubytovacích zařízení v Praze. 
+
+ </p>
             </div>
         </div>
         
@@ -85,21 +102,6 @@ L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
     attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
 }).addTo(map);
 
-    var zizkostelIcon = L.icon({
-    iconUrl: '/sysimg/icon_z.png',
-    //shadowUrl: 'leaf-shadow.png',
-    iconSize:     [29, 31], // size of the icon
-    //shadowSize:   [50, 64], // size of the shadow
-    iconAnchor:   [15, 15], // point of the icon which will correspond to marker's location
-    //shadowAnchor: [4, 62],  // the same for the shadow
-    //popupAnchor:  [-3, -76] // point from which the popup should open relative to the iconAnchor
-    });
-    L.marker([50.0878733, 14.4610983], {icon: zizkostelIcon}).addTo(map);
-
-
-    //.bindPopup('A pretty CSS popup.<br> Easily customizable.')
-    //.openPopup();
-
     var busIcon = L.icon({
     iconUrl: '/sysimg/bus.png',
     //shadowUrl: 'leaf-shadow.png',
@@ -133,8 +135,34 @@ L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
     //shadowAnchor: [4, 62],  // the same for the shadow
     //popupAnchor:  [-3, -76] // point from which the popup should open relative to the iconAnchor
     });
-    L.marker([50.0848797, 14.4536642], {icon: wsIcon}).addTo(map);
+    L.marker([
+        50.0880771,14.4602726], {icon: wsIcon}).addTo(map);
 
+
+
+    var skautIcon = L.icon({
+    iconUrl: '/sysimg/icon_u.png',
+    //shadowUrl: 'leaf-shadow.png',
+    iconSize:     [29, 31], // size of the icon
+    //shadowSize:   [50, 64], // size of the shadow
+    iconAnchor:   [15, 15], // point of the icon which will correspond to marker's location
+    //shadowAnchor: [4, 62],  // the same for the shadow
+    //popupAnchor:  [-3, -76] // point from which the popup should open relative to the iconAnchor
+    });
+    L.marker([50.0842755, 14.4631772], {icon: skautIcon}).addTo(map);
+
+
+    //poslední takže nejvýše
+    var zizkostelIcon = L.icon({
+    iconUrl: '/sysimg/icon_z.png',
+    //shadowUrl: 'leaf-shadow.png',
+    iconSize:     [29, 31], // size of the icon
+    //shadowSize:   [50, 64], // size of the shadow
+    iconAnchor:   [15, 15], // point of the icon which will correspond to marker's location
+    //shadowAnchor: [4, 62],  // the same for the shadow
+    //popupAnchor:  [-3, -76] // point from which the popup should open relative to the iconAnchor
+    });
+    L.marker([50.0878733, 14.4610983], {icon: zizkostelIcon}).addTo(map);
 
 
 
