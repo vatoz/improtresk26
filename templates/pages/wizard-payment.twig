@@ -84,6 +84,32 @@
                         <span>Celkem k úhradě</span>
                         <strong class="wizard-total-amount">{{ total|number_format(0, ',', ' ') }} Kč</strong>
                     </div>
+
+                    {% if user.hero is defined and user.hero > 0 %}
+                    <div class="hero-discount-box">
+                        <strong>Sleva za tebo garantovaný workshop</strong>
+                        <p>Pro workshop, který garantuješ, si od výše uvedené částky odečti:</p>
+                        <table class="hero-discount-table">
+                            <tr>
+                                <td>Dvoudenní workshop</td>
+                                <td>−&nbsp;1&nbsp;000&nbsp;Kč</td>
+                            </tr>
+                            <tr>
+                                <td>Jednodenní workshop</td>
+                                <td>−&nbsp;500&nbsp;Kč</td>
+                            </tr>
+                            <tr>
+                                <td>Půldenní workshop</td>
+                                <td>−&nbsp;300&nbsp;Kč</td>
+                            </tr>
+                        </table>
+                        <p class="hero-discount-note">Slevu uplatni přímo v platbě – pošli o příslušnou částku méně. 
+                
+                        Při párování plateb na to pamatuju.  Pokud s tím budeš mít trable, klidně mi brnkni.<br>
+                        
+                        Vašek 604 209 354</p>
+                    </div>
+                    {% endif %}
                 </div>
             </div>
 
@@ -219,6 +245,36 @@
     border-radius: 6px;
     padding: 0.75rem;
     margin: 0;
+}
+.hero-discount-box {
+    margin-top: 1rem;
+    padding: .75rem 1rem;
+    background: #fffbea;
+    border-left: 4px solid #f0c040;
+    border-radius: 0 6px 6px 0;
+    font-size: .9rem;
+}
+.hero-discount-box strong { display: block; margin-bottom: .35rem; }
+.hero-discount-box p { margin: .35rem 0; color: #555; }
+.hero-discount-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: .5rem 0;
+}
+.hero-discount-table td {
+    padding: .25rem .25rem;
+    border-bottom: 1px solid #f0e0a0;
+}
+.hero-discount-table td:last-child {
+    text-align: right;
+    font-weight: 600;
+    white-space: nowrap;
+    color: #b8860b;
+}
+.hero-discount-note {
+    font-size: .8rem;
+    color: #888;
+    margin-top: .4rem !important;
 }
 </style>
 {% endblock %}
