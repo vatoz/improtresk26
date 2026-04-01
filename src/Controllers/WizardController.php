@@ -383,6 +383,9 @@ class WizardController extends BaseController
             $queueByWorkshop[$qp['workshop_id']] = $qp['queue_position'];
         }
 
+        if(!isset($user['hero'])){
+            $user['hero']=0;
+        }
 
         // Calculate total; overlapping timeslots and unlikely spots are priced at 0
         $timeslots_taken = [];
@@ -392,7 +395,9 @@ class WizardController extends BaseController
             $queuePos = $queueByWorkshop[$r['workshop_id']] ?? null;
             if ($queuePos !== null) {
                 $registrations[$i]['queue_position'] = $queuePos;
-                if ($queuePos >= (int)$r['capacity'] && ($user['hero'] && $user['hero'] <1)) {
+                if ($queuePos >= (int)$r['capacity'] 
+                
+                && ( $user['hero'] <1  ) ){
                     $registrations[$i]['gray_price']= $registrations[$i]['price'];
                     $registrations[$i]['price']         = 0;
                     $registrations[$i]['likely_no_spot'] = true;
