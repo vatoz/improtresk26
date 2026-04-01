@@ -392,7 +392,7 @@ class WizardController extends BaseController
             $queuePos = $queueByWorkshop[$r['workshop_id']] ?? null;
             if ($queuePos !== null) {
                 $registrations[$i]['queue_position'] = $queuePos;
-                if ($queuePos >= (int)$r['capacity'] && ($user['hero'] <1)) {
+                if ($queuePos >= (int)$r['capacity'] && ($user['hero'] && $user['hero'] <1)) {
                     $registrations[$i]['gray_price']= $registrations[$i]['price'];
                     $registrations[$i]['price']         = 0;
                     $registrations[$i]['likely_no_spot'] = true;

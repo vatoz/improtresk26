@@ -21,10 +21,10 @@
                 <div id="user-info">
                     <p><strong>Jméno:</strong> {{ user.name }}</p>
                     <p><strong>Email:</strong> {{ user.email }}</p>
-                    {% if user.hero == 1 %}
+                    {% if user.hero and user.hero == 1 %}
                     <p><strong>Jsi náš hrdina!</strong></p>
                     Cenu přihlášky jsme v rozhraní nezměnili, ale kouknem na to při vyhodnocování plateb!
-                    {% elseif user.hero == 2 %}
+                    {% elseif user.hero and user.hero == 2 %}
                     <p><strong>Jsi naše hrdinka!</strong></p>
                     Cenu přihlášky jsme v rozhraní nezměnili, ale kouknem na to při vyhodnocování plateb!
                     {% endif %}
