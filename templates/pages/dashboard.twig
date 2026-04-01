@@ -25,26 +25,27 @@
             </div>
         </div>
 
-        {% if registration_start and registration_start|date('U') > "now"|date('U') %}
-            {% if user.role == 'admin' %}
-            <div class="card">
-            <div class="card__body">
-                    <a href="/wizard" class="btn btn--primary"  class="btn btn--outline">Wizard pro admina</a>                    
-            </div>
-            </div>
 
+  <div class="card">
+            <div class="card__body">
+        {% if registration_start and registration_start|date('U') > "now"|date('U') %}
+            {% if user.role == 'admin' %}          
+                    <a href="/wizard" class="btn btn--primary"  class="btn btn--outline">Wizard pro admina</a>                    
+                         {{ include('inlines/wizard-info.twig') }}            
+                {% else %}
+                    <h3>Tlačítko ještě čeká na spuštění. </h3>
+                    {% if questions_blocking %}Doporučujem taky vyplnit povinné otázky.{% endif %}            
             {% endif %}    
         {% else %}
-         <div class="card">
-            <div class="card__body">
                 {% if questions_blocking %}
                     <span class="btn btn--primary btn--disabled" title="Nejprve vyplňte povinné otázky">Průvodce výběrem workshopů</span>
                 {% else %}
                     <a href="/wizard" class="btn btn--primary"  class="btn btn--outline">Průvodce výběrem workshopů</a>
-                {% endif %}
-            </div>
-        </div>
+                {% endif %}            
         {% endif %}
+        {{ include('inlines/wizard-info.twig') }}
+        </div>
+        </div>
 
 
 
