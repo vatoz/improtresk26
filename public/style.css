@@ -1259,3 +1259,67 @@ blockquote::before {
 .bg0 {background-color:#7e8845ff;}
     
 
+
+/* ── Wizard progress bar ─────────────────────────────────── */
+.wizard-progress {
+    display: flex;
+    align-items: center;
+    margin-bottom: 2rem;
+}
+.wizard-step {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.3rem;
+    min-width: 60px;
+    text-decoration: none;
+    color: inherit;
+}
+.wizard-step__num {
+    width: 2rem;
+    height: 2rem;
+    border-radius: 50%;
+    background: var(--color-border, #e0e0e0);
+    color: #666;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 0.9rem;
+    transition: opacity 0.15s;
+}
+.wizard-step:hover .wizard-step__num { opacity: 0.8; }
+.wizard-step--active .wizard-step__num {
+    background: var(--color-primary, #c0392b);
+    color: #fff;
+}
+.wizard-step--done .wizard-step__num {
+    background: #27ae60;
+    color: #fff;
+}
+.wizard-step__label {
+    font-size: 0.75rem;
+    color: var(--color-muted, #777);
+    white-space: nowrap;
+}
+.wizard-step--active .wizard-step__label {
+    color: var(--color-primary, #c0392b);
+    font-weight: 600;
+}
+.wizard-progress__line {
+    flex: 1;
+    height: 2px;
+    background: var(--color-border, #e0e0e0);
+    margin-bottom: 1.2rem;
+}
+.wizard-progress__line--done { background: #27ae60; }
+
+/* ── Wizard nav ─────────────────────────────────────────── */
+.wizard-nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+    margin-top: 1.5rem;
+}
+.wizard-nav--end { justify-content: flex-end; }

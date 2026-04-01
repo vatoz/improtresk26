@@ -34,9 +34,9 @@ $router->map('POST', '/request-password-reset', 'AuthController#requestPasswordR
 
 // Workshops
 $router->map('GET', '/workshops', 'WorkshopController#index', 'workshops');
-$router->map('GET|POST', '/workshop/register', 'WorkshopController#register', 'workshop_register');
-$router->map('GET|POST', '/workshop/unregister', 'WorkshopController#unregister', 'workshop_unregister');
-$router->map('GET|POST', '/choose-workshops', 'WorkshopController#chooseWorkshops', 'choose_workshops');
+//$router->map('GET|POST', '/workshop/register', 'WorkshopController#register', 'workshop_register');
+//$router->map('GET|POST', '/workshop/unregister', 'WorkshopController#unregister', 'workshop_unregister');
+
 
 // User dashboard
 $router->map('GET', '/dashboard', 'DashboardController#index', 'dashboard');

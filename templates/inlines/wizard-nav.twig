@@ -1,0 +1,12 @@
+        <div class="wizard-nav">
+            {% if prev_url %}
+                <a href="{{ prev_url }}" class="btn btn--outline">Předchozí krok</a>
+            {% else %}
+                <a href="/dashboard" class="btn btn--outline">Zavřít</a>
+            {% endif %}
+            {% if next_url %}
+                <a href="{{ next_url }}" class="btn btn--primary">Další krok</a>
+            {% else %}
+                <a href="/dashboard" class="btn btn--outline">Přejít na můj přehled</a>    
+            {% endif %}
+        </div>

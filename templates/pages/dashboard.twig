@@ -24,6 +24,30 @@
                 </div>
             </div>
         </div>
+
+        {% if registration_start and registration_start|date('U') > "now"|date('U') %}
+            {% if user.role == 'admin' %}
+            <div class="card">
+            <div class="card__body">
+                    <a href="/wizard" class="btn btn--primary"  class="btn btn--outline">Wizard pro admina</a>                    
+            </div>
+            </div>
+
+            {% endif %}    
+        {% else %}
+         <div class="card">
+            <div class="card__body">
+                {% if questions_blocking %}
+                    <span class="btn btn--primary btn--disabled" title="Nejprve vyplňte povinné otázky">Průvodce výběrem workshopů</span>
+                {% else %}
+                    <a href="/wizard" class="btn btn--primary"  class="btn btn--outline">Průvodce výběrem workshopů</a>
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
+
+
+
         
         {% if questions is not empty %}
         <div class="card">
@@ -135,7 +159,7 @@
                                 Čekám na spuštění přihlašování.
                             {% if registration_start %}Bude to {{ registration_start|date('U')}} {% endif %}
                             {% else%}
-                            <!--<a href="/choose-workshops">Vybrat workshop</a>-->
+                            <a href="/wizard">Vybrat workshopy</a>
                             {% if questions_blocking %}
                                 <br><span class="btn btn--primary btn--disabled" title="Nejprve vyplňte povinné otázky">Vybrat si workshopy</span>
                             {% else %}
@@ -150,8 +174,8 @@
                         {% if showDrag %}
                             <p class="reorder-hint">
                                 Přetažením řádků upravte pořadí priorit registrací. 
-                                Systém se sám pokusí váš workshop změnit na lepší, když zjistí, že se uvolnilo místo.<br>
-                                Pokud už v daném časovém okně něco máte, už se to nepřeplánuje třeba z clodenního workshopu na dva půldenní.
+                                Pokusíme se ve spolupráci s vámi váš workshop změnit na nějaký, o který máte větší zájem, když zjistíme, že se uvolnilo místo. <br>
+                                
 
                             </p>
                         {% endif %}
@@ -243,7 +267,7 @@
                         </table>
 <!--
                         <p>
-                            <a href="/choose-workshops" class="btn btn--primary btn--block">Vybrat další workshop</a>
+                            <a href="/wizard" class="btn btn--primary btn--block">Průvodce výběrem workshopů</a>
                         </p>-->                        
                     {% endif %}
                 </div>
@@ -324,26 +348,6 @@
                 {% endif %}
             </div>
         </div>
-        {% if registration_start and registration_start|date('U') > "now"|date('U') %}
-            {% if user.role == 'admin' %}
-                    <a href="/wizard" class="btn btn--primary"  class="btn btn--outline">Wizard pro admina - hlavní cesta</a>
-                    <a href="/wizard/payment" class="btn btn--primary"  class="btn btn--outline">Platební detaily pro admina</a>
-                    <a href="/choose-workshops" class="btn btn--primary"  class="btn btn--outline">Přidat/ubrat workshopy pro admina</a>
-    
-            {% endif %}    
-        {% else %}
-         <div class="card">
-            <div class="card__body">
-                {% if questions_blocking %}
-                    <span class="btn btn--primary btn--disabled" title="Nejprve vyplňte povinné otázky">Platební detaily</span>
-                    <span class="btn btn--primary btn--disabled" title="Nejprve vyplňte povinné otázky">Přidat/ubrat workshopy</span>
-                {% else %}
-                    <a href="/wizard/payment" class="btn btn--primary"  class="btn btn--outline">Platební detaily</a>
-                    <a href="/choose-workshops" class="btn btn--primary"  class="btn btn--outline">Přidat/ubrat workshopy</a>
-                {% endif %}
-            </div>
-        </div>
-        {% endif %}
     </div>
 </div>
 {% endblock %}

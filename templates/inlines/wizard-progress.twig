@@ -1,0 +1,17 @@
+{# Wizard progress bar – include this in every wizard page.
+   Required variables: wizard_pages (array), wizard_step (string) #}
+
+<div class="wizard-progress">
+
+{% for page in wizard_pages %}
+        {% if page.num > 1    %}  
+        <div class="wizard-progress__line{{ page.num <= cur ? ' wizard-progress__line--done' : '' }}"></div>
+        {% endif %}  
+        <a href="{{page.url}}" class="wizard-step{{ page.num <= cur  ? ' wizard-step--active' : '' }}">
+            <span class="wizard-step__num">{{page.num}}</span>
+            <span class="wizard-step__label">{{page.label}}</span>
+        </a>
+{% endfor %}
+
+</div>
+{{ include('inlines/wizard-nav.twig') }}

@@ -16,8 +16,7 @@ class Workshop
         $stmt = $db->query("
             SELECT
                 w.*,
-                COUNT(r.id) as enrolled_count,
-                (w.capacity - w.registered) as available_spots
+                COUNT(r.id) as enrolled_count
             FROM workshops w
             LEFT JOIN registrations r ON w.id = r.workshop_id AND r.payment_status != 'cancelled'
             WHERE w.is_active = 1
@@ -38,9 +37,7 @@ class Workshop
         $stmt = $db->query("
             SELECT
                 w.*,
-                COUNT(r.id) as enrolled_count,
-                SUM(CASE WHEN r.payment_status = 'paid' THEN 1 ELSE 0 END) as paid_count,
-                (w.capacity - COUNT(r.id)) as available_spots
+                COUNT(r.id) as enrolled_count
             FROM workshops w
             LEFT JOIN registrations r ON w.id = r.workshop_id AND r.payment_status != 'cancelled'
             GROUP BY w.id
@@ -60,13 +57,12 @@ class Workshop
         $stmt = $db->query("
             SELECT
                 w.*,
-                COUNT(r.id) as enrolled_count,
-                (w.capacity - COUNT(r.id)) as available_spots
+                COUNT(r.id) as enrolled_count                
             FROM workshops w
             LEFT JOIN registrations r ON w.id = r.workshop_id AND r.payment_status != 'cancelled'
             WHERE w.is_active = 1
             GROUP BY w.id
-            HAVING available_spots > 0
+            HAVING paid < capacity
             ORDER BY w.timeslot, w.name
         ");
         return $stmt->fetchAll();
@@ -84,8 +80,7 @@ class Workshop
         $stmt = $db->prepare("
             SELECT
                 w.*,
-                COUNT(r.id) as enrolled_count,
-                (w.capacity - COUNT(r.id)) as available_spots
+                COUNT(r.id) as enrolled_count                
             FROM workshops w
             LEFT JOIN registrations r ON w.id = r.workshop_id AND r.payment_status != 'cancelled'
             WHERE w.id = ?
@@ -142,8 +137,7 @@ class Workshop
         $values = [];
 
         $allowedFields = [
-            'name', 'description', 'instructor',
-            'price', 'capacity', 'location', 'level', 'is_active', 'timeslot', 'registered'
+             'registered'
         ];
 
         foreach ($data as $key => $value) {
@@ -163,18 +157,7 @@ class Workshop
         return $stmt->execute($values);
     }
 
-    /**
-     * Delete workshop
-     *
-     * @param PDO $db
-     * @param int $id
-     * @return bool
-     */
-    public static function delete(PDO $db, int $id): bool
-    {
-        $stmt = $db->prepare("DELETE FROM workshops WHERE id = ?");
-        return $stmt->execute([$id]);
-    }
+   
 
     /**
      * Increment registered count by 1
@@ -212,7 +195,7 @@ class Workshop
     public static function isFull(PDO $db, int $id): bool
     {
         $workshop = self::findById($db, $id);
-        return $workshop && $workshop['available_spots'] <= 0;
+        return $workshop && ($workshop['paid'] <= $workshop['capacity']);
     }
 
     
@@ -276,8 +259,7 @@ class Workshop
     {
         $stmt = $db->query("
             SELECT w.*,
-                   COUNT(r.id) AS enrolled_count,
-                   (w.capacity - COUNT(r.id)) AS available_spots
+                   COUNT(r.id) AS enrolled_count
             FROM workshops w
             LEFT JOIN registrations r ON w.id = r.workshop_id AND r.payment_status != 'cancelled'
             WHERE w.is_active = 1
@@ -350,8 +332,7 @@ class Workshop
         $stmt = $db->prepare("
             SELECT
                 w.*,
-                COUNT(r.id) as enrolled_count,
-                (w.capacity - COUNT(r.id)) as available_spots
+                COUNT(r.id) as enrolled_count
             FROM workshops w
             LEFT JOIN registrations r ON w.id = r.workshop_id AND r.payment_status != 'cancelled'
             WHERE w.is_active = 1
@@ -437,7 +418,7 @@ class Workshop
         $stmt->execute([$workshopId]);
         $count = (int) $stmt->fetchColumn();
 
-        $db->prepare("UPDATE workshops SET registered = ? WHERE id = ?")
+        $db->prepare("UPDATE workshops SET paid = ? WHERE id = ?")
            ->execute([$count, $workshopId]);
 
         return true;
@@ -500,7 +481,7 @@ class Workshop
             ");
             $stmt->execute([$userId, $workshopId]);
 
-            $_SESSION['success'] = 'Byli jste úspěšně přihlášeni na workshop.';
+            $_SESSION['success'] = 'Registrovali jste zájem o workshop.';
             return true;
     }
 

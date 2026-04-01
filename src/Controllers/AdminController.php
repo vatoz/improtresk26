@@ -590,8 +590,9 @@ class AdminController extends BaseController
         $txId = (int) ($_POST['transaction_id'] ?? 0);
         if ($txId > 0) {
             TransactionList::markCompleted($this->db, $txId);
+            //todo poslat mail
         }
-
+        
         $back = $_POST['back'] ?? '/admin/pairing';
         header('Location: ' . $back);
         exit;

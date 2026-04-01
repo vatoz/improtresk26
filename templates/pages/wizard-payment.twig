@@ -6,28 +6,7 @@
 <section class="section">
     <div class="container">
 
-        {# Progress bar #}
-        <div class="wizard-progress">
-            <div class="wizard-step wizard-step--done">
-                <span class="wizard-step__num">✓</span>
-                <span class="wizard-step__label">Workshopy</span>
-            </div>
-            <div class="wizard-progress__line wizard-progress__line--done"></div>
-            <div class="wizard-step wizard-step--done">
-                <span class="wizard-step__num">✓</span>
-                <span class="wizard-step__label">Vstupenky</span>
-            </div>
-            <div class="wizard-progress__line wizard-progress__line--done"></div>
-            <div class="wizard-step wizard-step--done">
-                <span class="wizard-step__num">✓</span>
-                <span class="wizard-step__label">Merch</span>
-            </div>
-            <div class="wizard-progress__line wizard-progress__line--done"></div>
-            <div class="wizard-step wizard-step--active">
-                <span class="wizard-step__num">4</span>
-                <span class="wizard-step__label">Platba</span>
-            </div>
-        </div>
+        {{ include('inlines/wizard-progress.twig') }}
 
         <h1>Krok 4: Platební údaje</h1>
 
@@ -44,19 +23,35 @@
                         <h3 class="wizard-subsection">Workshopy</h3>
                         <table class="wizard-summary-table">
                             {% for r in registrations %}
-                            <tr>
-                                <td>{{ r.workshop_name }}</td>
+                            <tr{% if r.likely_no_spot is defined and r.likely_no_spot %} class="wps-row--nospot"{% endif %}>
+                                <td>
+                                    {{ r.workshop_name }}
+                                    {% if r.queue_position is defined %}
+                                        <span class="wps-queue">{{ r.queue_position + 1 }}. místo na čekací listině</span>
+                                    {% endif %}
+                                    {% if r.likely_no_spot is defined and r.likely_no_spot %}
+                                        <div class="wps-nospot-warn">
+                                            ⚠ Na workshop se pravděpodobně nedostanete – do platby nezahrnuto.
+                                        </div>
+                                    {% endif %}
+                                </td>
                                 <td class="wizard-summary-status">
                                     <span class="wizard-status wizard-status--{{ r.payment_status }}">
                                         {% if r.payment_status == 'pending' %}čeká na platbu
                                         {% elseif r.payment_status == 'approved' %}schváleno
-                                        {% elseif r.payment_status == 'timeblock' %}Překryv
+                                        {% elseif r.payment_status == 'timeblock' %}Překryv, do platby nezahrnuto
                                         {% else %}{{ r.payment_status }}{% endif %}
                                     </span>
                                 </td>
                                 <td>{{ r.timeslot_name }}</td>
                                 <td class="wizard-summary-price">
-                                {% if r.price> 0 %}{{ r.price|number_format(0, ',', ' ') }} Kč{% endif %}
+                                    {% if r.price > 0 %}{{ r.price|number_format(0, ',', ' ') }} Kč
+                                    {% elseif r.gray_price %}
+                                   <!-- <span style="color: #666">{{ r.gray_price|number_format(0, ',', ' ') }} Kč</span>-->
+
+                                    {% endif %}
+                                    
+
                                 </td>
                             </tr>
                             {% endfor %}
@@ -126,16 +121,14 @@
 
                     <p class="wizard-payment-note">
                         Po připsání platby vás budeme informovat e-mailem. Registrace jsou platné po úhradě.
-                        
+                        Na úhradu máte pět dní.
                     </p>
                 </div>
             </div>
 
         </div>
-
-        <div class="wizard-nav wizard-nav--end">
-            <a href="/dashboard" class="btn btn--primary">Přejít na můj přehled</a>
-        </div>
+        
+        {{ include('inlines/wizard-nav.twig') }}
 
     </div>
 </section>
@@ -144,56 +137,6 @@
 {% block stylesheets %}
 {{ parent() }}
 <style>
-.wizard-progress {
-    display: flex;
-    align-items: center;
-    margin-bottom: 2rem;
-}
-.wizard-step {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 0.3rem;
-    min-width: 60px;
-}
-.wizard-step__num {
-    width: 2rem;
-    height: 2rem;
-    border-radius: 50%;
-    background: var(--color-border, #e0e0e0);
-    color: #666;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-weight: 700;
-    font-size: 0.9rem;
-}
-.wizard-step--active .wizard-step__num {
-    background: var(--color-primary, #c0392b);
-    color: #fff;
-}
-.wizard-step--done .wizard-step__num {
-    background: #27ae60;
-    color: #fff;
-}
-.wizard-step__label {
-    font-size: 0.75rem;
-    color: var(--color-muted, #777);
-    white-space: nowrap;
-}
-.wizard-step--active .wizard-step__label {
-    color: var(--color-primary, #c0392b);
-    font-weight: 600;
-}
-.wizard-progress__line {
-    flex: 1;
-    height: 2px;
-    background: var(--color-border, #e0e0e0);
-    margin-bottom: 1.2rem;
-}
-.wizard-progress__line--done {
-    background: #27ae60;
-}
 .wizard-payment-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -203,10 +146,7 @@
 @media (max-width: 700px) {
     .wizard-payment-grid { grid-template-columns: 1fr; }
 }
-.wizard-section-title {
-    margin: 0;
-    font-size: 1.1rem;
-}
+.wizard-section-title { margin: 0; font-size: 1.1rem; }
 .wizard-subsection {
     font-size: 0.9rem;
     font-weight: 600;
@@ -215,23 +155,10 @@
     text-transform: uppercase;
     letter-spacing: 0.04em;
 }
-.wizard-summary-table {
-    width: 100%;
-    border-collapse: collapse;
-    font-size: 0.95rem;
-}
-.wizard-summary-table td {
-    padding: 0.35rem 0.25rem;
-    vertical-align: middle;
-}
-.wizard-summary-status {
-    text-align: center;
-}
-.wizard-summary-price {
-    text-align: right;
-    white-space: nowrap;
-    font-weight: 600;
-}
+.wizard-summary-table { width: 100%; border-collapse: collapse; font-size: 0.95rem; }
+.wizard-summary-table td { padding: 0.35rem 0.25rem; vertical-align: middle; }
+.wizard-summary-status { text-align: center; }
+.wizard-summary-price  { text-align: right; white-space: nowrap; font-weight: 600; }
 .wizard-status {
     display: inline-block;
     padding: 0.15rem 0.5rem;
@@ -251,32 +178,11 @@
     padding-top: 0.75rem;
     font-size: 1rem;
 }
-.wizard-total-amount {
-    font-size: 1.25rem;
-    color: var(--color-primary, #c0392b);
-}
-.wizard-qr-wrap {
-    text-align: center;
-    margin-bottom: 1.25rem;
-}
-.wizard-qr-img {
-    max-width: 180px;
-    height: auto;
-    border: 1px solid var(--color-border, #e0e0e0);
-    border-radius: 6px;
-    padding: 0.5rem;
-}
-.wizard-qr-caption {
-    margin: 0.4rem 0 0;
-    font-size: 0.82rem;
-    color: var(--color-muted, #777);
-}
-.wizard-bank-details {
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
-    margin-bottom: 1rem;
-}
+.wizard-total-amount { font-size: 1.25rem; color: var(--color-primary, #c0392b); }
+.wizard-qr-wrap    { text-align: center; margin-bottom: 1.25rem; }
+.wizard-qr-img     { max-width: 180px; height: auto; border: 1px solid var(--color-border, #e0e0e0); border-radius: 6px; padding: 0.5rem; }
+.wizard-qr-caption { margin: 0.4rem 0 0; font-size: 0.82rem; color: var(--color-muted, #777); }
+.wizard-bank-details { display: flex; flex-direction: column; gap: 0.5rem; margin-bottom: 1rem; }
 .wizard-bank-row {
     display: flex;
     justify-content: space-between;
@@ -285,14 +191,26 @@
     padding: 0.35rem 0;
     border-bottom: 1px solid var(--color-border, #f0f0f0);
 }
-.wizard-bank-label {
-    color: var(--color-muted, #666);
-    white-space: nowrap;
-}
-.wizard-bank-value {
+.wizard-bank-label { color: var(--color-muted, #666); white-space: nowrap; }
+.wizard-bank-value { font-weight: 600; word-break: break-all; text-align: right; }
+.wps-queue {
+    display: inline-block;
+    font-size: 0.75rem;
     font-weight: 600;
-    word-break: break-all;
-    text-align: right;
+    padding: 0.1rem 0.4rem;
+    border-radius: 999px;
+    background: #e8f4fd;
+    color: #1a6fa8;
+    margin-left: 0.35rem;
+    vertical-align: middle;
+}
+.wps-nospot-warn {
+    font-size: 0.8rem;
+    color: #856404;
+    margin-top: 0.2rem;
+}
+.wps-row--nospot td {
+    opacity: 0.65;
 }
 .wizard-payment-note {
     font-size: 0.85rem;
@@ -301,16 +219,6 @@
     border-radius: 6px;
     padding: 0.75rem;
     margin: 0;
-}
-.wizard-nav {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-top: 1.5rem;
-    gap: 1rem;
-}
-.wizard-nav--end {
-    justify-content: flex-end;
 }
 </style>
 {% endblock %}

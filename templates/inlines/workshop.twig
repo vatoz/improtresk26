@@ -3,6 +3,7 @@
         <span class="wts-card__meta">{{ workshop.instructor }}</span>
     {% endif %}
     <span class="wts-card__meta">
+    <!--
         {% set _ts = timeslot is defined ? timeslot : (ts is defined ? ts : null) %}
         {% if _ts and _ts.start_datetime %}{{ _ts.start_datetime|date('j.n.Y H:i') }}{% endif %}
 
@@ -15,17 +16,21 @@
 
         {% if _ts and _ts.end_datetime %}&nbsp; {{ _ts.end_datetime|date('H:i') }}<br>{% endif %}
         {% if _ts and _ts.duration_minutes %}&nbsp;·&nbsp;{{ _ts.duration_minutes }} min<br>{% endif %}
+        --!>
     </span>
     <span class="wts-card__meta">
         {{ workshop.price|number_format(0, ',', ' ') }} Kč<br>
-        &nbsp;·&nbsp;
-        {% if workshop.available_spots <= 0 %}
-            <span class="wts-badge wts-badge--full">Obsazeno</span><br>
-        {% else %}
-            volných míst: {{ workshop.available_spots }}<br>
-        {% endif %}
+        
+            míst na workshopu: {{ workshop.capacity}}<br>
+            počet existujících registrací: {{ workshop.enrolled_count }} <br>
+            {% if workshop.enrolled_count > workshop.capacity  %}
+            <div>
+                <strong>Je více registrací, než volných míst</strong>
+                Na workshop se dostanete  jen pokud se uvolní místa tím, že je někdo nezaplatí či se dostane na jiný workshop.
+            </div>
+            {% endif %}
          {% if workshop.location %}
-            <strong>Místo:</strong> {{ workshop.location }}
+            <strong>Místo:</strong> {{ workshop.location }}<br>
         {% endif %}
     </span>
 

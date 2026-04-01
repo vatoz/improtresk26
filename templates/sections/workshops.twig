@@ -64,8 +64,8 @@
 </div>
 
 {% macro workshopCard(workshop, user, lidi, fotky, ts) %}
-    {% set isFull = workshop.available_spots <= 0 %}
-    {% set progressPercent = (workshop.registered / workshop.capacity * 100)|round %}
+    {% set isFull = workshop.paid  <= workshop.capacity %}
+    
     
     <div class="workshop-card {{ isFull ? 'full' : '' }}" data-workshop-id="{{ workshop.id }}" id="workshop-{{ workshop.id }}">
         <div class="workshop-header">
@@ -104,8 +104,7 @@
                 <div class="workshop-detail-item">
                     <strong>Úroveň:</strong>
                     <span >
-                        {{ workshop.level|raw }}
-                        
+                        {{ workshop.level|raw }}                       
                     </span>
                 </div>
             </div>
@@ -113,30 +112,13 @@
             <div class="workshop-info ">
                 <div class="workshop-timeslot">{{ ts.name ?? '' }}</div>
                 <div class="workshop-price">{{ workshop.price|number_format(0, ',', ' ') }} Kč</div>
-                <div class="capacity-info {{ isFull ? 'capacity-full' : '' }}">
-                    {{ workshop.registered }}/{{ workshop.capacity }} míst obsazeno<br>
-                    Eviduji {{ workshop.enrolled_count }} registrací
-                    {% if isFull %}
-                        <span class="full-badge">PLNÉ</span>
-                    {% endif %}
+                <div class="capacity-info ">
+                    {{ workshop.paid }}/{{ workshop.capacity }} obsazeno a zaplaceno<br>
+                    Eviduji  celkem {{ workshop.enrolled_count }} registrací                    
                 </div>
             </div>
-
-            <div class="capacity-bar">
-                <div class="capacity-fill" style="width: {{ progressPercent }}%"></div>
-            </div>
-
-            {% if user %}
-                {% if isFull %}
-                    <button class="btn btn--secondary btn--block" disabled>Workshop je plný</button>
-                {% else %}          
-                    <!-- Bylo tu tlačítko registrovat -->
-                {% endif %}
-            {% else %}
-                <!--<a href="#" onclick="document.getElementById('login-btn').click(); return false;" class="btn btn--primary btn--block">
-                    Přihlaste se pro registraci
-                </a>-->
-            {% endif %}
+  
+              
         </div>
     </div>
 
