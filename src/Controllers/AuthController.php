@@ -31,6 +31,8 @@ class AuthController extends BaseController
                     'name' => $user['name'],
                     'email' => $user['email'],
                     'role' => $user['role'],
+                    'hero' => $user['hero'],
+
                     ];
                     header('Location: /profile');
                     

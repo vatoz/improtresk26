@@ -77,18 +77,7 @@ class User
         return $stmt->execute($values);
     }
 
-    /**
-     * Delete user
-     *
-     * @param PDO $db
-     * @param int $id
-     * @return bool
-     */
-    public static function delete(PDO $db, int $id): bool
-    {
-        $stmt = $db->prepare("DELETE FROM users WHERE id = ?");
-        return $stmt->execute([$id]);
-    }
+   
 
     /**
      * Create password reset token

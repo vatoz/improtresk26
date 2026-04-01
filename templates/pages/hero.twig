@@ -1,0 +1,20 @@
+{% extends 'base.twig' %}
+{% block title %}Improtřesk 2026{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="card" style="max-width:480px; margin:4rem auto; text-align:center;">
+        <div class="card__body">
+            {% if message %}
+                <h1 style="font-size:2rem;">{{ message }}</h1>
+<br><br><br> Víme o tvé ochotě pomoci s festivalem. A teď  už šup <A href="/dashboard" > na uživatelskou stránku</a>.
+Cenu přihlášky jsme v rozhraní nezměnili, ale kouknem na to při vyhodnocování plateb!
+
+            {% else %}
+                <h1 style="font-size:2rem;">403</h1>
+                <p>Přístup odepřen.</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

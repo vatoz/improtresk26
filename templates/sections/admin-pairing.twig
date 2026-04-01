@@ -50,6 +50,9 @@
     {% if tx.matched_user %}
         <div class="pairing-user">
             Uživatel: <strong>{{ tx.matched_user.name }}</strong>
+            {%if  tx.matched_user.hero>0 %}
+               <br> <strong>{{tx.matched_user.hero==1?'Uživatel je hrdina.':' Uživatelka je hrdinka.'}}</strong>
+            {% endif %}
             &lt;<a href="mailto:{{ tx.matched_user.email }}">{{ tx.matched_user.email }}</a>&gt;
         </div>
     {% else %}

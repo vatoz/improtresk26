@@ -57,6 +57,44 @@ class DefaultController extends BaseController
         ]);
     }
 
+    public function hero()
+    {
+        $this->handleHeroPage(1, 'hero');
+    }
+
+    public function heroine()
+    {
+        $this->handleHeroPage(2, 'heroine');
+    }
+
+    private function handleHeroPage(int $heroValue, string $page)
+    {
+        $this->requireAuth();
+
+        $secret = $_GET['secret'] ?? '';
+        if ($secret !== ($_ENV['HERO_SECRET'] ?? '')) {
+            http_response_code(403);
+            echo $this->twig->render('pages/hero.twig', [
+                'user' => $this->getCurrentUser(),
+                'message' => null,
+                'page' => $page,
+            ]);
+            return;
+        }
+
+        $user = $this->getCurrentUser();
+        if ($user) {
+            \App\Models\User::update($this->db, $user['id'], ['hero' => $heroValue]);
+            $_SESSION['user']['hero']= $heroValue;
+        }
+
+        echo $this->twig->render('pages/hero.twig', [
+            'user' => $user,
+            'message' => $heroValue === 1 ? 'Jsi náš hrdina!' : 'Jsi naše hrdinka!',
+            'page' => $page,
+        ]);
+    }
+
     public function medailonky()
     {
         $people = Person::getGroupedBySection($this->db);

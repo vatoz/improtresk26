@@ -21,6 +21,11 @@
                 <div id="user-info">
                     <p><strong>Jméno:</strong> {{ user.name }}</p>
                     <p><strong>Email:</strong> {{ user.email }}</p>
+                    {% if user.hero == 1 %}
+                    <p><strong>Jsi náš hrdina!</strong></p>
+                    {% elseif user.hero == 2 %}
+                    <p><strong>Jsi naše hrdinka!</strong></p>
+                    {% endif %}
                 </div>
             </div>
         </div>
@@ -30,8 +35,7 @@
             <div class="card__body">
         {% if registration_start and registration_start|date('U') > "now"|date('U') %}
             {% if user.role == 'admin' %}          
-                    <a href="/wizard" class="btn btn--primary"  class="btn btn--outline">Wizard pro admina</a>                    
-                         {{ include('inlines/wizard-info.twig') }}            
+                    <a href="/wizard" class="btn btn--primary"  class="btn btn--outline">Wizard pro admina</a>                                                      
                 {% else %}
                     <h3>Tlačítko ještě čeká na spuštění. </h3>
                     {% if questions_blocking %}Doporučujem taky vyplnit povinné otázky.{% endif %}            
@@ -158,7 +162,7 @@
                         <p>Zatím nemáte žádné registrace.
                             {% if registration_start and registration_start|date('U') > "now"|date('U') %}
                                 Čekám na spuštění přihlašování.
-                            {% if registration_start %}Bude to {{ registration_start|date('U')}} {% endif %}
+                            
                             {% else%}
                             <a href="/wizard">Vybrat workshopy</a>
                             {% if questions_blocking %}

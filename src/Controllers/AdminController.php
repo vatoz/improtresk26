@@ -131,7 +131,7 @@ class AdminController extends BaseController
                 continue;
             }
 
-            $stmt = $this->db->prepare("SELECT id, name, email FROM users WHERE id = ? LIMIT 1");
+            $stmt = $this->db->prepare("SELECT id, name, email, hero FROM users WHERE id = ? LIMIT 1");
             $stmt->execute([$userId]);
             $user = $stmt->fetch(\PDO::FETCH_ASSOC);
 
@@ -472,7 +472,7 @@ class AdminController extends BaseController
                 continue;
             }
 
-            $uStmt = $this->db->prepare("SELECT id, name, email FROM users WHERE id = ? LIMIT 1");
+            $uStmt = $this->db->prepare("SELECT id, name, email, hero FROM users WHERE id = ? LIMIT 1");
             $uStmt->execute([$userId]);
             $user = $uStmt->fetch(\PDO::FETCH_ASSOC);
             if (!$user) {

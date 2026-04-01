@@ -58,6 +58,10 @@ $router->map('GET|POST', '/wizard/merch',     'WizardController#merch',     'wiz
 $router->map('GET',      '/wizard/payment',   'WizardController#payment',   'wizard_payment');
 $router->map('GET', '/wizard', 'WizardController#workshops', 'wizard');
 
+// Secret hero pages
+$router->map('GET', '/hero', 'DefaultController#hero', 'hero');
+$router->map('GET', '/heroine', 'DefaultController#heroine', 'heroine');
+
 // Cron
 $router->map('GET', '/cron', 'CronController#run', 'cron');
 
