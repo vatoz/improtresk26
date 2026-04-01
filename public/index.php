@@ -76,6 +76,11 @@ $router->map('GET', '/admin/export-csv', 'AdminController#exportCsv', 'admin_exp
 $router->map('GET', '/admin/attendance', 'AdminController#attendance', 'admin_attendance');
 $router->map('GET', '/admin/mail-queue', 'AdminController#mailQueue', 'admin_mail_queue');
 $router->map('GET', '/admin/mail-queue/[i:id]/preview', 'AdminController#mailQueuePreview', 'admin_mail_queue_preview');
+$router->map('GET',  '/admin/send-mail',                  'AdminController#sendMailForm',       'admin_send_mail');
+$router->map('POST', '/admin/send-mail',                  'AdminController#sendMail',           'admin_send_mail_post');
+$router->map('POST', '/admin/send-mail/preview',          'AdminController#sendMailPreview',    'admin_send_mail_preview');
+$router->map('POST', '/admin/send-mail/template/save',    'AdminController#saveMailTemplate',   'admin_send_mail_tpl_save');
+$router->map('POST', '/admin/send-mail/template/delete',  'AdminController#deleteMailTemplate', 'admin_send_mail_tpl_delete');
 $router->map('GET', '/admin/questions', 'AdminController#questions', 'admin_questions');
 $router->map('GET', '/admin/registrations', 'AdminController#detailedRegistrations', 'admin_registrations');
 $router->map('POST', '/admin/registrations/set-unpaid', 'AdminController#setUnpaid', 'admin_registrations_set_unpaid');

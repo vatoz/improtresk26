@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ subject }}</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .container {
+            background-color: #f9f9f9;
+            border-radius: 8px;
+            padding: 30px;
+            border: 1px solid #ddd;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 28px;
+        }
+        .content {
+            background-color: white;
+            padding: 25px;
+            border-radius: 5px;
+        }
+        .footer {
+            margin-top: 30px;
+            text-align: center;
+            font-size: 12px;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1><span style="color:#a85f31ff">I</span><span style="color:#ecb737ff">M</span><span style="color:#d45842ff">P</span><span style="color:#47a8afff">R</span><span style="color:#98a239ff">O</span><span style="color:#3c66a6ff">T</span><span style="color:#7e4994ff">Ř</span><span style="color:#a44c7dff">E</span><span style="color:#768f89ff">S</span><span style="color:#7e8845ff">K</span></h1>
+            <p>Festival improvizace</p>
+        </div>
+
+        <div class="content">
+            {{ body|raw }}
+        </div>
+
+        <div class="footer">
+            <p>Tento e-mail byl odeslán automaticky, neodpovídej na něj.<br>
+            Pro dotazy nás kontaktuj na <a href="mailto:improtresk@improlab.art">improtresk@improlab.art</a></p>
+        </div>
+    </div>
+</body>
+</html>

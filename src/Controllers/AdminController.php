@@ -238,6 +238,147 @@ class AdminController extends BaseController
         ]);
     }
 
+    public function sendMailForm()
+    {
+        $this->requireAdmin();
+
+        $users = $this->db->query("SELECT id, name, email FROM users ORDER BY name")->fetchAll(\PDO::FETCH_ASSOC);
+        $mailTemplates = $this->db->query("SELECT id, title, subject, text FROM mail_templates WHERE is_valid = 1 ORDER BY title")->fetchAll(\PDO::FETCH_ASSOC);
+
+        echo $this->twig->render('pages/admin-send-mail.twig', [
+            'user'           => $this->getCurrentUser(),
+            'active_page'    => 'admin',
+            'users'          => $users,
+            'mail_templates' => $mailTemplates,
+            'form'           => $_SESSION['send_mail_form'] ?? [],
+            'success'        => $_SESSION['send_mail_success'] ?? null,
+            'error'          => $_SESSION['send_mail_error'] ?? null,
+            'csrf'           => csrf_token('admin-send-mail'),
+        ]);
+        unset($_SESSION['send_mail_form'], $_SESSION['send_mail_success'], $_SESSION['send_mail_error']);
+    }
+
+    public function sendMail()
+    {
+        $this->requireAdmin();
+
+        if (!csrf_validate('admin-send-mail', $_POST['_csrf'] ?? null)) {
+            http_response_code(403);
+            echo 'Neplatný CSRF token.';
+            exit;
+        }
+
+        $recipientsType  = $_POST['recipients_type'] ?? 'all';
+        $recipientsRaw   = $_POST['recipients_custom'] ?? '';
+        $subject         = trim($_POST['subject'] ?? '');
+        $body            = $_POST['body'] ?? '';
+
+        if ($subject === '' || trim($body) === '') {
+            $_SESSION['send_mail_error'] = 'Předmět a text e-mailu jsou povinné.';
+            $_SESSION['send_mail_form']  = $_POST;
+            header('Location: /admin/send-mail');
+            exit;
+        }
+
+        if ($recipientsType === 'all') {
+            $rows = $this->db->query("SELECT email FROM users ORDER BY id")->fetchAll(\PDO::FETCH_COLUMN);
+        } else {
+            // Split by newlines and/or commas, trim, filter empty
+            $rows = array_values(array_filter(
+                array_map('trim', preg_split('/[\r\n,]+/', $recipientsRaw)),
+                fn($e) => filter_var($e, FILTER_VALIDATE_EMAIL) !== false
+            ));
+        }
+
+        if (empty($rows)) {
+            $_SESSION['send_mail_error'] = 'Žádná platná e-mailová adresa.';
+            $_SESSION['send_mail_form']  = $_POST;
+            header('Location: /admin/send-mail');
+            exit;
+        }
+
+        $count = 0;
+        foreach ($rows as $email) {
+            MailQueue::addWithTemplate($this->db, $email, $subject, 'custom.twig', [
+                'subject' => $subject,
+                'body'    => $body,
+            ]);
+            $count++;
+        }
+
+        $_SESSION['send_mail_success'] = "Zařazeno do fronty: $count e-mail(ů).";
+        header('Location: /admin/send-mail');
+        exit;
+    }
+
+    public function sendMailPreview()
+    {
+        $this->requireAdmin();
+
+        if (!csrf_validate('admin-send-mail', $_POST['_csrf'] ?? null)) {
+            http_response_code(403);
+            echo 'Neplatný CSRF token.';
+            exit;
+        }
+
+        $subject = trim($_POST['subject'] ?? '(bez předmětu)');
+        $body    = $_POST['body'] ?? '';
+
+        header('Content-Type: text/html; charset=utf-8');
+        echo $this->twig->render('emails/custom.twig', [
+            'subject' => $subject,
+            'body'    => $body,
+        ]);
+    }
+
+    public function saveMailTemplate()
+    {
+        $this->requireAdmin();
+
+        if (!csrf_validate('admin-send-mail', $_POST['_csrf'] ?? null)) {
+            http_response_code(403); echo 'Neplatný CSRF token.'; exit;
+        }
+
+        $id       = (int) ($_POST['template_id'] ?? 0);
+        $title    = trim($_POST['tpl_title']   ?? '');
+        $subject  = trim($_POST['tpl_subject'] ?? '');
+        $text     = $_POST['tpl_text']         ?? '';
+        $isValid  = isset($_POST['tpl_is_valid']) ? 1 : 0;
+
+        if ($title === '') {
+            $_SESSION['send_mail_error'] = 'Název šablony je povinný.';
+            header('Location: /admin/send-mail'); exit;
+        }
+
+        if ($id > 0) {
+            $this->db->prepare("UPDATE mail_templates SET title=?, subject=?, text=?, is_valid=? WHERE id=?")
+                     ->execute([$title, $subject, $text, $isValid, $id]);
+        } else {
+            $this->db->prepare("INSERT INTO mail_templates (title, subject, text, is_valid) VALUES (?,?,?,?)")
+                     ->execute([$title, $subject, $text, $isValid]);
+        }
+
+        $_SESSION['send_mail_success'] = 'Šablona uložena.';
+        header('Location: /admin/send-mail'); exit;
+    }
+
+    public function deleteMailTemplate()
+    {
+        $this->requireAdmin();
+
+        if (!csrf_validate('admin-send-mail', $_POST['_csrf'] ?? null)) {
+            http_response_code(403); echo 'Neplatný CSRF token.'; exit;
+        }
+
+        $id = (int) ($_POST['template_id'] ?? 0);
+        if ($id > 0) {
+            $this->db->prepare("DELETE FROM mail_templates WHERE id = ?")->execute([$id]);
+        }
+
+        $_SESSION['send_mail_success'] = 'Šablona smazána.';
+        header('Location: /admin/send-mail'); exit;
+    }
+
     public function mailQueuePreview(int $id)
     {
         $this->requireAdmin();

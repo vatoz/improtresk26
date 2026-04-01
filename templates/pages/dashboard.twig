@@ -254,6 +254,8 @@
                                                 <span class="dashboard-status dashboard-status--cancelled">Zrušeno</span>
                                             {% elseif reg.payment_status == 'refunded' %}
                                                 <span class="dashboard-status dashboard-status--refunded">Platba vrácena</span>
+                                            {% elseif reg.payment_status == 'skipped' %}
+                                                <span class="dashboard-status dashboard-status--skipped">Přeskočeno, vybrána lepší varianta</span>    
                                             {% else %}
                                                 <span class="dashboard-status">{{ reg.payment_status }}</span>
                                             {% endif %}

@@ -1,0 +1,223 @@
+{# ── Templates panel ─────────────────────────────────────────────────── #}
+{% if mail_templates is not empty %}
+<div class="card" style="margin-bottom:1rem;">
+    <div class="card__body">
+        <h3 style="margin-bottom:.75rem;">Šablony</h3>
+        <div style="display:flex; flex-wrap:wrap; gap:.5rem;">
+            {% for tpl in mail_templates %}
+            <button type="button" class="btn btn--sm"
+                    onclick="applyTemplate({{ tpl.subject|json_encode }}, {{ tpl.text|json_encode }})">
+                {{ tpl.title }}
+            </button>
+            <button type="button" class="btn btn--sm" style="opacity:.6;"
+                    title="Upravit šablonu"
+                    onclick="openEditTemplate({{ tpl.id }}, {{ tpl.title|json_encode }}, {{ tpl.subject|json_encode }}, {{ tpl.text|json_encode }}, true)">
+                ✎
+            </button>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endif %}
+
+{# ── Compose form ─────────────────────────────────────────────────────── #}
+<div class="card">
+    <div class="card__body">
+        <div style="display:flex; justify-content:space-between; align-items:baseline; flex-wrap:wrap; gap:.5rem; margin-bottom:.75rem;">
+            <h3 style="margin:0;">Napsat e-mail</h3>
+            <button type="button" class="btn btn--sm"
+                    onclick="openEditTemplate(0, '', '', '', true)">+ Nová šablona</button>
+        </div>
+
+        {% if success is defined and success %}
+            <div class="notification notification--success">{{ success }}</div>
+        {% endif %}
+        {% if error is defined and error %}
+            <div class="notification notification--error">{{ error }}</div>
+        {% endif %}
+
+        <form method="post" action="/admin/send-mail" id="send-mail-form">
+            <input type="hidden" name="_csrf" value="{{ csrf }}">
+
+            <div class="form-group">
+                <label><strong>Příjemci</strong></label>
+                <div style="display:flex; gap:1rem; flex-wrap:wrap; margin-bottom:.5rem;">
+                   <!-- <label style="font-weight:normal; cursor:pointer;">
+                        <input type="radio" name="recipients_type" value="all"
+                               {% if (form.recipients_type ?? 'all') == 'all' %}checked{% endif %}
+                               onchange="toggleRecipients(this.value)">
+                        Všichni uživatelé ({{ users|length }})
+                    </label>-->
+                    <label style="font-weight:normal; cursor:pointer;">
+                        <input type="radio" name="recipients_type" value="custom"
+                               checked
+                               onchange="toggleRecipients(this.value)">
+                        Konkrétní adresy
+                    </label>
+                </div>
+                <div id="recipients-custom" style="display:none;">
+                    <textarea name="recipients_custom" rows="3"
+                              placeholder="Jeden e-mail na řádek nebo oddělené čárkou"
+                              style="width:100%; box-sizing:border-box;"
+                    >{{ form.recipients_custom ?? '' }}</textarea>
+                </div>
+            </div>
+
+            <div class="form-group" style="margin-top:1rem;">
+                <label for="subject"><strong>Předmět</strong></label>
+                <input type="text" id="subject" name="subject"
+                       value="{{ form.subject ?? '' }}"
+                       required style="width:100%; box-sizing:border-box;">
+            </div>
+
+            <div class="form-group" style="margin-top:1rem;">
+                <label for="body"><strong>Text e-mailu</strong> <small>(HTML je povoleno)</small></label>
+                <textarea id="body" name="body" rows="14" required
+                          style="width:100%; box-sizing:border-box; font-family:monospace;"
+                >{{ form.body ?? '' }}</textarea>
+            </div>
+
+            <div style="display:flex; gap:.75rem; margin-top:1rem; flex-wrap:wrap; align-items:center;">
+                <button type="submit" class="btn btn--primary">Zařadit do fronty</button>
+                <button type="button" class="btn btn--sm" onclick="openPreview()">Náhled</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+{# ── Preview modal ────────────────────────────────────────────────────── #}
+<div id="send-mail-preview-modal" class="modal hidden">
+    <div class="modal-content" style="width:90%; max-width:900px;">
+        <div class="modal-header">
+            <h3 id="send-mail-preview-title" style="font-size:1rem;"></h3>
+            <button class="modal-close" onclick="closeSendMailPreview()">&times;</button>
+        </div>
+        <iframe id="send-mail-preview-frame" name="send-mail-preview-frame"
+                src=""
+                style="width:100%; height:70vh; border:none; display:block;"></iframe>
+    </div>
+</div>
+
+{# ── Edit-template modal ──────────────────────────────────────────────── #}
+<div id="tpl-modal" class="modal hidden">
+    <div class="modal-content" style="width:90%; max-width:700px;">
+        <div class="modal-header">
+            <h3 id="tpl-modal-title" style="font-size:1rem;">Šablona</h3>
+            <button class="modal-close" onclick="closeTplModal()">&times;</button>
+        </div>
+        <div style="padding:1.25rem;">
+            <form method="post" id="tpl-form">
+                <input type="hidden" name="_csrf"        value="{{ csrf }}">
+                <input type="hidden" name="template_id"  id="tpl-id" value="0">
+
+                <div class="form-group">
+                    <label><strong>Název šablony</strong></label>
+                    <input type="text" name="tpl_title" id="tpl-title" required
+                           style="width:100%; box-sizing:border-box;">
+                </div>
+                <div class="form-group" style="margin-top:.75rem;">
+                    <label><strong>Předmět e-mailu</strong></label>
+                    <input type="text" name="tpl_subject" id="tpl-subject"
+                           style="width:100%; box-sizing:border-box;">
+                </div>
+                <div class="form-group" style="margin-top:.75rem;">
+                    <label><strong>Text e-mailu</strong> <small>(HTML je povoleno)</small></label>
+                    <textarea name="tpl_text" id="tpl-text" rows="12"
+                              style="width:100%; box-sizing:border-box; font-family:monospace;"></textarea>
+                </div>
+                <div class="form-group" style="margin-top:.75rem;">
+                    <label style="cursor:pointer;">
+                        <input type="checkbox" name="tpl_is_valid" id="tpl-is-valid" value="1">
+                        Aktivní (zobrazovat jako tlačítko)
+                    </label>
+                </div>
+
+                <div style="display:flex; gap:.75rem; margin-top:1rem; flex-wrap:wrap; align-items:center;">
+                    <button type="submit" class="btn btn--primary">Uložit šablonu</button>
+                    <button type="button" id="tpl-delete-btn" class="btn btn--sm" style="color:#c00; display:none;"
+                            onclick="deleteTemplate()">Smazat šablonu</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<form method="post" action="/admin/send-mail/template/delete" id="tpl-delete-form" style="display:none;">
+    <input type="hidden" name="_csrf"       value="{{ csrf }}">
+    <input type="hidden" name="template_id" id="tpl-delete-id" value="0">
+</form>
+
+<script>
+/* ── recipients toggle ── */
+(function () {
+    var rt = document.querySelector('input[name="recipients_type"]:checked');
+    if (rt) toggleRecipients(rt.value);
+})();
+function toggleRecipients(value) {
+    document.getElementById('recipients-custom').style.display = value === 'custom' ? '' : 'none';
+}
+
+/* ── apply template to compose form ── */
+function applyTemplate(subject, body) {
+    document.getElementById('subject').value = subject;
+    document.getElementById('body').value    = body;
+    document.getElementById('subject').focus();
+}
+
+/* ── compose preview ── */
+function openPreview() {
+    var subject = document.getElementById('subject').value || '(bez předmětu)';
+    var body    = document.getElementById('body').value;
+    if (!body.trim()) { alert('Vyplňte text e-mailu.'); return; }
+
+    var f = document.createElement('form');
+    f.method = 'post';
+    f.action = '/admin/send-mail/preview';
+    f.target = 'send-mail-preview-frame';
+    [['subject', subject], ['body', body],
+     ['_csrf', document.querySelector('#send-mail-form input[name="_csrf"]').value]
+    ].forEach(function(p) {
+        var i = document.createElement('input');
+        i.type = 'hidden'; i.name = p[0]; i.value = p[1];
+        f.appendChild(i);
+    });
+    document.body.appendChild(f); f.submit(); document.body.removeChild(f);
+
+    document.getElementById('send-mail-preview-title').textContent = subject;
+    document.getElementById('send-mail-preview-modal').classList.remove('hidden');
+}
+function closeSendMailPreview() {
+    document.getElementById('send-mail-preview-modal').classList.add('hidden');
+    document.getElementById('send-mail-preview-frame').src = '';
+}
+document.getElementById('send-mail-preview-modal').addEventListener('click', function(e) {
+    if (e.target === this) closeSendMailPreview();
+});
+
+/* ── template edit modal ── */
+function openEditTemplate(id, title, subject, text, isValid) {
+    document.getElementById('tpl-id').value      = id;
+    document.getElementById('tpl-title').value   = title;
+    document.getElementById('tpl-subject').value = subject;
+    document.getElementById('tpl-text').value    = text;
+    document.getElementById('tpl-is-valid').checked = !!isValid;
+    document.getElementById('tpl-modal-title').textContent = id ? 'Upravit šablonu' : 'Nová šablona';
+    document.getElementById('tpl-delete-btn').style.display = id ? '' : 'none';
+    document.getElementById('tpl-delete-id').value = id;
+    document.getElementById('tpl-form').action = '/admin/send-mail/template/save';
+    document.getElementById('tpl-modal').classList.remove('hidden');
+}
+function closeTplModal() {
+    document.getElementById('tpl-modal').classList.add('hidden');
+}
+function deleteTemplate() {
+    if (!confirm('Opravdu smazat tuto šablonu?')) return;
+    document.getElementById('tpl-delete-form').submit();
+}
+document.getElementById('tpl-modal').addEventListener('click', function(e) {
+    if (e.target === this) closeTplModal();
+});
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') { closeSendMailPreview(); closeTplModal(); }
+});
+</script>

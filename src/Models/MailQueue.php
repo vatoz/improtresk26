@@ -132,7 +132,7 @@ class MailQueue
         array  $merch        = [],
         string $dashboardUrl = ''
     ): int {
-        return self::addWithTemplate($db, $to, 'Platba přijata – máš přidělené workshopy!', 'payment-confirmed.twig', [
+        return self::addWithTemplate($db, $to, 'Platba za Improtřesk přijata – máš přidělené workshopy! ', 'payment-confirmed.twig', [
             'name'         => $name,
             'workshops'    => $workshops,
             'tickets'      => $tickets,
