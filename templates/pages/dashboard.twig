@@ -23,8 +23,10 @@
                     <p><strong>Email:</strong> {{ user.email }}</p>
                     {% if user.hero == 1 %}
                     <p><strong>Jsi náš hrdina!</strong></p>
+                    Cenu přihlášky jsme v rozhraní nezměnili, ale kouknem na to při vyhodnocování plateb!
                     {% elseif user.hero == 2 %}
                     <p><strong>Jsi naše hrdinka!</strong></p>
+                    Cenu přihlášky jsme v rozhraní nezměnili, ale kouknem na to při vyhodnocování plateb!
                     {% endif %}
                 </div>
             </div>
@@ -178,8 +180,9 @@
 
                         {% if showDrag %}
                             <p class="reorder-hint">
-                                Přetažením řádků upravte pořadí priorit registrací. 
-                                Pokusíme se ve spolupráci s vámi váš workshop změnit na nějaký, o který máte větší zájem, když zjistíme, že se uvolnilo místo. <br>
+                                Přetažením řádků upravte pořadí priorit registrací.
+                                Při vyhodnocování platby použijeme workshop s nejvyšší prioritou.
+                                 <br>
                                 
 
                             </p>
