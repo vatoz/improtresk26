@@ -18,7 +18,7 @@ class Workshop
                 w.*,
                 COUNT(r.id) as enrolled_count
             FROM workshops w
-            LEFT JOIN registrations r ON w.id = r.workshop_id AND r.payment_status != 'cancelled'
+            LEFT JOIN registrations r ON w.id = r.workshop_id AND r.payment_status NOT IN ('cancelled', 'skipped')
             WHERE w.is_active = 1
             GROUP BY w.id
             ORDER BY  w.name
@@ -39,7 +39,7 @@ class Workshop
                 w.*,
                 COUNT(r.id) as enrolled_count
             FROM workshops w
-            LEFT JOIN registrations r ON w.id = r.workshop_id AND r.payment_status != 'cancelled'
+            LEFT JOIN registrations r ON w.id = r.workshop_id AND r.payment_status NOT IN ('cancelled', 'skipped')
             GROUP BY w.id
             ORDER BY w.timeslot, w.name
         ");
@@ -59,7 +59,7 @@ class Workshop
                 w.*,
                 COUNT(r.id) as enrolled_count                
             FROM workshops w
-            LEFT JOIN registrations r ON w.id = r.workshop_id AND r.payment_status != 'cancelled'
+            LEFT JOIN registrations r ON w.id = r.workshop_id AND r.payment_status NOT IN ('cancelled', 'skipped')
             WHERE w.is_active = 1
             GROUP BY w.id
             HAVING paid < capacity
@@ -82,7 +82,7 @@ class Workshop
                 w.*,
                 COUNT(r.id) as enrolled_count                
             FROM workshops w
-            LEFT JOIN registrations r ON w.id = r.workshop_id AND r.payment_status != 'cancelled'
+            LEFT JOIN registrations r ON w.id = r.workshop_id AND r.payment_status NOT IN ('cancelled', 'skipped')
             WHERE w.id = ?
             GROUP BY w.id
         ");
@@ -261,7 +261,7 @@ class Workshop
             SELECT w.*,
                    COUNT(r.id) AS enrolled_count
             FROM workshops w
-            LEFT JOIN registrations r ON w.id = r.workshop_id AND r.payment_status != 'cancelled'
+            LEFT JOIN registrations r ON w.id = r.workshop_id AND r.payment_status NOT IN ('cancelled', 'skipped')
             WHERE w.is_active = 1
               AND w.timeslot IS NOT NULL
             GROUP BY w.id
@@ -290,7 +290,7 @@ class Workshop
             FROM workshops w
             INNER JOIN registrations r ON w.id = r.workshop_id
             WHERE r.user_id = ?
-              AND r.payment_status != 'cancelled'
+              AND r.payment_status NOT IN ('cancelled', 'skipped')
               AND w.timeslot IS NOT NULL
         ");
         $stmt->execute([$userId]);
@@ -309,7 +309,7 @@ class Workshop
         $stmt = $db->prepare("
             SELECT * FROM  registrations r 
             WHERE r.user_id = ?
-              AND r.payment_status != 'cancelled'
+              AND r.payment_status NOT IN ('cancelled', 'skipped')
         ");
         $stmt->execute([$userId]);
         return $stmt->fetchAll();
@@ -334,7 +334,7 @@ class Workshop
                 w.*,
                 COUNT(r.id) as enrolled_count
             FROM workshops w
-            LEFT JOIN registrations r ON w.id = r.workshop_id AND r.payment_status != 'cancelled'
+            LEFT JOIN registrations r ON w.id = r.workshop_id AND r.payment_status NOT IN ('cancelled', 'skipped')
             WHERE w.is_active = 1
             AND w.timeslot REGEXP CONCAT('[', ?, ']')
             GROUP BY w.id
@@ -436,11 +436,11 @@ class Workshop
                     FROM registrations r2
                     WHERE r2.workshop_id = r.workshop_id
                       AND r2.created_at  < r.created_at
-                      AND r2.payment_status NOT IN ('cancelled', 'notpaid', 'refunded')
+                      AND r2.payment_status NOT IN ('cancelled', 'notpaid', 'refunded', 'skipped')
                 ) AS queue_position
             FROM registrations r
             WHERE r.user_id = ?
-              AND r.payment_status NOT IN ('cancelled', 'notpaid', 'refunded')
+              AND r.payment_status NOT IN ('cancelled', 'notpaid', 'refunded', 'skipped')
             ORDER BY r.workshop_id ASC, r.created_at ASC
         ");
         $stmt->execute([$userId]);
@@ -467,7 +467,7 @@ class Workshop
 
             // Duplicate registration check
             $stmt = $db->prepare("
-                SELECT id FROM registrations WHERE user_id = ? AND workshop_id = ? and payment_status <> 'cancelled'
+                SELECT id FROM registrations WHERE user_id = ? AND workshop_id = ? AND payment_status NOT IN ('cancelled', 'skipped')
             ");
             $stmt->execute([$userId, $workshopId]);
             if ($stmt->fetch()) {
@@ -496,7 +496,7 @@ class Workshop
         // Load the registration and verify it belongs to this user
         $stmt = $db->prepare("
             SELECT * FROM registrations WHERE workshop_id = ? AND user_id = ?
-            and payment_status<>'paid' and payment_status<> 'cancelled'
+            AND payment_status NOT IN ('paid', 'cancelled', 'skipped')
         ");
         $stmt->execute([$workshopId, $userId]);
         $registration = $stmt->fetch();
@@ -507,7 +507,7 @@ class Workshop
         }
 
 
-        $db->prepare("DELETE FROM  registrations  WHERE workshop_id = ? AND user_id = ? and payment_status<>'paid' and payment_status<>'cancelled'")
+        $db->prepare("DELETE FROM registrations WHERE workshop_id = ? AND user_id = ? AND payment_status NOT IN ('paid', 'cancelled', 'skipped')")
                  ->execute([$workshopId,$userId]);
 
         $_SESSION['success'] = 'Registrace byla úspěšně zrušena.';

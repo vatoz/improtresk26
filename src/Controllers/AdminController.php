@@ -541,7 +541,7 @@ class AdminController extends BaseController
 
         $regId  = (int) ($_POST['registration_id'] ?? 0);
         $status = $_POST['status'] ?? '';
-        $allowed = ['pending', 'paid', 'approved', 'upgradable', 'notpaid', 'cancelled', 'refunded'];
+        $allowed = ['pending', 'paid', 'approved', 'upgradable', 'notpaid', 'cancelled', 'refunded', 'skipped'];
 
         if ($regId > 0 && in_array($status, $allowed)) {
             $extra = $status === 'paid' ? ', paid_at = NOW()' : '';
