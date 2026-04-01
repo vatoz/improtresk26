@@ -23,7 +23,7 @@
                                 <span class="faq-toggle">+</span>
                             </div>
                             <div class="faq-answer">
-                                <p>{{ item.answer|nl2br }}</p>
+                                <p>{{ item.answer|raw|nl2br }}</p>
                             </div>
                         </div>
                     {% endfor %}
