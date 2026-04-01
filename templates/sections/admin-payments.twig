@@ -31,7 +31,7 @@
                         <th>Zpráva</th>
                         <th>Typ</th>
                         <th>Importováno</th>
-                        <th>Akce</th>
+                        
                     </tr>
                 </thead>
                 <tbody>
@@ -65,14 +65,7 @@
                             <td>{{ t.message ?? '–' }}</td>
                             <td>{{ t.type ?? '–' }}</td>
                             <td>{{ t.imported_at }}</td>
-                            <td>
-                                {% if t.can_mark_paid %}
-                                    <form method="post" action="/admin/payments/mark-paid">
-                                        <input type="hidden" name="transaction_id" value="{{ t.id }}">
-                                        <button type="submit" class="btn btn--success btn--sm">Označit jako zaplaceno</button>
-                                    </form>
-                                {% endif %}
-                            </td>
+                            
                         </tr>
                     {% endfor %}
                 </tbody>

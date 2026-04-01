@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Platba přijata – Improtřesk 2026</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .container {
+            background-color: #f9f9f9;
+            border-radius: 8px;
+            padding: 30px;
+            border: 1px solid #ddd;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 28px;
+        }
+        .content {
+            background-color: white;
+            padding: 25px;
+            border-radius: 5px;
+        }
+        .button {
+            display: inline-block;
+            padding: 12px 30px;
+            background-color: #d32f2f;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            margin: 20px 0;
+            font-weight: bold;
+        }
+        .info-box {
+            border-left: 4px solid #43a047;
+            background-color: #e8f5e9;
+            padding: 12px 16px;
+            margin: 16px 0;
+        }
+        .info-box.blue {
+            border-left-color: #1976d2;
+            background-color: #e3f2fd;
+        }
+        .info-box.orange {
+            border-left-color: #f57c00;
+            background-color: #fff3e0;
+        }
+        .info-box strong {
+            display: block;
+            margin-bottom: 6px;
+        }
+        .item-list {
+            list-style: none;
+            padding: 0;
+            margin: 4px 0 0;
+        }
+        .item-list li {
+            padding: 5px 0;
+            border-bottom: 1px solid #ddd;
+        }
+        .item-list li:last-child {
+            border-bottom: none;
+        }
+        .footer {
+            margin-top: 30px;
+            text-align: center;
+            font-size: 12px;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1><span style="color:#a85f31ff">I</span><span style="color:#ecb737ff">M</span><span style="color:#d45842ff">P</span><span style="color:#47a8afff">R</span><span style="color:#98a239ff">O</span><span style="color:#3c66a6ff">T</span><span style="color:#7e4994ff">Ř</span><span style="color:#a44c7dff">E</span><span style="color:#768f89ff">S</span><span style="color:#7e8845ff">K</span></h1>
+            <p>Festival improvizace</p>
+        </div>
+
+        <div class="content">
+            <h2>Platba přijata, {{ name }}!</h2>
+
+            <p>Ahoj,</p>
+
+            <p>tvoje platba byla úspěšně přijata a my jsme ti finálně přidělili workshopy. Těšíme se na tebe na festivalu!</p>
+
+            {% if workshops %}
+            <div class="info-box">
+                <strong>Přidělené zaplacené workshopy:</strong>
+                <ul class="item-list">
+                    {% for w in workshops %}
+                    <li>{{ w }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+            {% endif %}
+
+            {% if tickets %}
+            <div class="info-box blue">
+                <strong>Vstupenky:</strong>
+                <ul class="item-list">
+                    {% for t in tickets %}
+                    <li>{{ t.name }}{% if t.quantity > 1 %} &times; {{ t.quantity }}{% endif %}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+            {% endif %}
+
+            {% if merch %}
+            <div class="info-box orange">
+                <strong>Merch:</strong>
+                <ul class="item-list">
+                    {% for m in merch %}
+                    <li>{{ m.name }}{% if m.quantity > 1 %} &times; {{ m.quantity }}{% endif %}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+            {% endif %}
+
+            {% if not workshops and not tickets and not merch %}
+            <div class="info-box">
+                <strong>Tvoje objednávka je nyní zaplacena.</strong><br>
+                Přehled najdeš na svém profilu.
+            </div>
+            {% endif %}
+
+            <div style="text-align: center;">
+                <a href="{{ dashboardUrl }}" class="button">Zobrazit můj profil</a>
+            </div>
+
+            <p>S pozdravem,<br>
+            Tým Improtřesk &amp; Vašek Černý</p>
+            
+
+            <p>P.S. Pokud se ještě rozhodneš změnit workshop nebo s někým vyměnit, napiš, uvidíme, co se s tím půjde dát dělat.<br>
+            Tým Improtřesk &amp; Vašek Černý</p>
+
+
+        </div>
+
+        <div class="footer">
+            <p>Tento e-mail byl odeslán automaticky, neodpovídej na něj.<br>
+            Pro dotazy nás kontaktuj na <a href="mailto:improtresk@improlab.art">improtresk@improlab.art</a></p>
+        </div>
+    </div>
+</body>
+</html>

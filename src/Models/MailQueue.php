@@ -112,6 +112,36 @@ class MailQueue
     }
 
     /**
+     * Queue a "payment confirmed + items assigned" email for a user.
+     *
+     * @param PDO    $db
+     * @param string $to           Recipient e-mail
+     * @param string $name         Recipient name
+     * @param array  $workshops    Workshop name strings
+     * @param array  $tickets      Ticket rows: [['name'=>…,'quantity'=>…], …]
+     * @param array  $merch        Merch rows:  [['name'=>…,'quantity'=>…], …]
+     * @param string $dashboardUrl Full URL to the user's dashboard
+     * @return int Inserted row ID
+     */
+    public static function sendPaymentConfirmed(
+        PDO    $db,
+        string $to,
+        string $name,
+        array  $workshops    = [],
+        array  $tickets      = [],
+        array  $merch        = [],
+        string $dashboardUrl = ''
+    ): int {
+        return self::addWithTemplate($db, $to, 'Platba přijata – máš přidělené workshopy!', 'payment-confirmed.twig', [
+            'name'         => $name,
+            'workshops'    => $workshops,
+            'tickets'      => $tickets,
+            'merch'        => $merch,
+            'dashboardUrl' => $dashboardUrl,
+        ]);
+    }
+
+    /**
      * Delete sent and failed mails older than the given number of days.
      *
      * @param PDO $db

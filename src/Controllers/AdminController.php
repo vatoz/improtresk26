@@ -82,7 +82,7 @@ class AdminController extends BaseController
     }
 
     public function markPaid()
-    {
+    { die();
         $this->requireAdmin();
 
         $txId = (int) ($_POST['transaction_id'] ?? 0);
@@ -101,6 +101,8 @@ class AdminController extends BaseController
                     ")->execute([$userId]);
 
                     TransactionList::markCompleted($this->db, $txId);
+
+                    $this->queuePaymentConfirmedMail($userId);
                 }
             }
         }
@@ -589,12 +591,63 @@ class AdminController extends BaseController
 
         $txId = (int) ($_POST['transaction_id'] ?? 0);
         if ($txId > 0) {
+            $tx = TransactionList::findById($this->db, $txId);
             TransactionList::markCompleted($this->db, $txId);
-            //todo poslat mail
+
+            if ($tx && !empty($tx['variable_symbol'])) {
+                $userId = (int) $tx['variable_symbol'];
+                if ($userId > 0) {
+                    $this->queuePaymentConfirmedMail($userId);
+                }
+            }
         }
-        
+
         $back = $_POST['back'] ?? '/admin/pairing';
         header('Location: ' . $back);
         exit;
+    }
+
+    /**
+     * Build and queue the payment-confirmed e-mail for a user.
+     * Includes their paid workshops, tickets and merch.
+     */
+    private function queuePaymentConfirmedMail(int $userId): void
+    {
+        $user = \App\Models\User::findById($this->db, $userId);
+        if (!$user) {
+            return;
+        }
+
+        // Paid workshops
+        $stmt = $this->db->prepare("
+            SELECT w.name
+            FROM registrations r
+            JOIN workshops w ON r.workshop_id = w.id
+            WHERE r.user_id = ? AND r.payment_status = 'paid'
+            ORDER BY w.name
+        ");
+        $stmt->execute([$userId]);
+        $workshops = $stmt->fetchAll(\PDO::FETCH_COLUMN);
+
+        // Paid purchases split by type
+        $stmt = $this->db->prepare("
+            SELECT p.item_type, p.quantity,
+                   COALESCE(t.name, m.name) AS name
+            FROM purchases p
+            LEFT JOIN tickets t ON t.id = p.item_id AND p.item_type = 'ticket'
+            LEFT JOIN merch   m ON m.id = p.item_id AND p.item_type = 'merch'
+            WHERE p.user_id = ? AND p.payment_status = 'paid'
+            ORDER BY p.item_type, p.created_at
+        ");
+        $stmt->execute([$userId]);
+        $purchases = $stmt->fetchAll(\PDO::FETCH_ASSOC);
+
+        $tickets = array_values(array_filter($purchases, fn($p) => $p['item_type'] === 'ticket'));
+        $merch   = array_values(array_filter($purchases, fn($p) => $p['item_type'] === 'merch'));
+
+        $dashboardUrl = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? 'https' : 'http')
+            . '://' . $_SERVER['HTTP_HOST'] . '/dashboard';
+
+        MailQueue::sendPaymentConfirmed($this->db, $user['email'], $user['name'], $workshops, $tickets, $merch, $dashboardUrl);
     }
 }
