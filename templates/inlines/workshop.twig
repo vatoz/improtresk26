@@ -25,8 +25,10 @@
             počet existujících registrací: {{ workshop.enrolled_count }} <br>
             {% if workshop.enrolled_count > workshop.capacity  %}
             <div>
-                <strong>Je více registrací, než volných míst</strong>
-                Na workshop se dostanete  jen pokud se uvolní místa tím, že je někdo nezaplatí či se dostane na jiný workshop.
+                <strong>Je více registrací, než volných míst</strong><br>
+                Na workshop se dostanete jen pokud se uvolní místa tím, že je někdo nezaplatí či se dostane na jiný workshop.
+                               
+
             </div>
             {% endif %}
          {% if workshop.location %}

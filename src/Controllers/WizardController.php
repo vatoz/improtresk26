@@ -78,7 +78,14 @@ class WizardController extends BaseController
         $requestedSlot = $_GET['slot'] ?? ($_POST['slot'] ?? null);
 
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            $isAjax = !empty($_POST['_ajax']);
+
             if (!csrf_validate('wizard', $_POST['_csrf'] ?? null)) {
+                if ($isAjax) {
+                    header('Content-Type: application/json');
+                    echo json_encode(['ok' => false, 'error' => 'Neplatný bezpečnostní token.']);
+                    exit;
+                }
                 $_SESSION['error'] = 'Neplatný bezpečnostní token. Zkuste to znovu.';
                 $redir = '/wizard/workshops' . ($requestedSlot ? '?slot=' . urlencode($requestedSlot) : '');
                 header('Location: ' . $redir);
@@ -95,6 +102,41 @@ class WizardController extends BaseController
             if ($canceledWorkshopId) {
                 $w = new Workshop();
                 $w->unregister($this->db, $user['id'], $canceledWorkshopId);
+            }
+
+            if ($isAjax) {
+                $errorMsg = $_SESSION['error'] ?? null;
+                unset($_SESSION['error'], $_SESSION['success']);
+
+                if ($errorMsg) {
+                    header('Content-Type: application/json');
+                    echo json_encode(['ok' => false, 'error' => $errorMsg]);
+                    exit;
+                }
+
+                $workshopId = $selectedWorkshopId ?: $canceledWorkshopId;
+                $ws = Workshop::findById($this->db, $workshopId);
+
+                $queuePosition = null;
+                if ($selectedWorkshopId) {
+                    foreach (Workshop::getQueuePositions($this->db, $user['id']) as $qp) {
+                        if ((int)$qp['workshop_id'] === $workshopId) {
+                            $queuePosition = (int)$qp['queue_position'];
+                            break;
+                        }
+                    }
+                }
+
+                header('Content-Type: application/json');
+                echo json_encode([
+                    'ok'             => true,
+                    'action'         => $selectedWorkshopId ? 'registered' : 'cancelled',
+                    'workshop_id'    => $workshopId,
+                    'queue_position' => $queuePosition,
+                    'enrolled_count' => (int)($ws['enrolled_count'] ?? 0),
+                    'capacity'       => (int)($ws['capacity'] ?? 0),
+                ]);
+                exit;
             }
 
             $redir = '/wizard/workshops' . ($requestedSlot ? '?slot=' . urlencode($requestedSlot) : '');

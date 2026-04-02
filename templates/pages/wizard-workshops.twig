@@ -29,35 +29,35 @@
         {% else %}
             <div class="wts-grid">
                 {% for workshop in workshops %}
-                    <label class="wts-card{% if workshop.alreadyRegistered %} bg4{% endif %}" for="ws-{{ workshop.id }}">
-                        <form method="POST" action="/wizard/workshops">
-                            <input type="hidden" name="_csrf" value="{{ csrf }}">
-                            <input type="hidden" name="slot"  value="{{ timeslot.code }}">
-                            {% if workshop.alreadyRegistered %}
-                                {% if workshop.alreadyRegistered != 'paid' %}
+                    <label class="wts-card{% if workshop.alreadyRegistered %} bg4{% endif %}" for="ws-{{ workshop.id }}" data-workshop-id="{{ workshop.id }}">
+                        <div class="wts-card-actions">
+                            {% if workshop.alreadyRegistered == 'paid' %}
+                                <span class="wts-paid-badge">Zaplaceno!</span>
+                            {% elseif workshop.alreadyRegistered %}
+                                <form method="POST" action="/wizard/workshops" class="wts-action-form">
+                                    <input type="hidden" name="_csrf" value="{{ csrf }}">
+                                    <input type="hidden" name="slot"  value="{{ timeslot.code }}">
                                     <input type="hidden" name="cancel_workshop_id" value="{{ workshop.id }}">
-                                    <button type="submit" class="btn btn--primary btn--sm" style="float:right;">
-                                        Zrušit registraci
-                                    </button>
+                                    <button type="submit" class="btn btn--primary btn--sm">Zrušit registraci</button>
                                     {% if workshop.queue_position is defined %}
                                         <span class="wts-queue">
                                             {{ workshop.queue_position + 1 }}. místo na čekací listině<br>
-                                            {% if workshop.queue_position  +1 > workshop.capacity %}
-                                                Na čekací listině je dost lidí před vámi. 
-                                                Doporučujeme se zařadit na čekací listinu u dalšího workshopu.
-                                            {% endif %}        
+                                            {% if workshop.queue_position + 1 > workshop.capacity %}
+                                                Na čekací listině je dost lidí před vámi.<br>
+                                                Doporučujeme se zařadit na čekací listinu u dalšího workshopu.<br>
+                                            {% endif %}
                                         </span>
                                     {% endif %}
-                                {% else %}
-                                    Zaplaceno!
-                                {% endif %}
+                                </form>
                             {% else %}
-                                <input type="hidden" name="workshop_id" value="{{ workshop.id }}">
-                                <button type="submit" class="btn btn--primary btn--sm">
-                                    Registrovat se na čekací listinu
-                                </button>
+                                <form method="POST" action="/wizard/workshops" class="wts-action-form">
+                                    <input type="hidden" name="_csrf" value="{{ csrf }}">
+                                    <input type="hidden" name="slot"  value="{{ timeslot.code }}">
+                                    <input type="hidden" name="workshop_id" value="{{ workshop.id }}">
+                                    <button type="submit" class="btn btn--primary btn--sm">Registrovat se na čekací listinu</button>
+                                </form>
                             {% endif %}
-                        </form>
+                        </div>
 
                         <div class="wts-card__inner">
                             <div class="wts-card__body">
@@ -164,5 +164,114 @@
     color: #1a6fa8;
     margin-left: 0.4rem;
 }
+.wts-card-actions {
+    padding: 0.6rem 1rem 0;
+    min-height: 2rem;
+}
+.wts-paid-badge {
+    display: inline-block;
+    font-weight: 700;
+    color: #27ae60;
+}
+.wts-action-error {
+    font-size: 0.85rem;
+    color: #c0392b;
+    margin: 0 0 0.35rem;
+}
+.wts-action-form button:disabled {
+    opacity: 0.6;
+    cursor: default;
+}
 </style>
+{% endblock %}
+
+{% block javascripts %}
+<script>
+(function () {
+    var grid = document.querySelector('.wts-grid');
+    if (!grid) return;
+
+    function esc(s) {
+        return String(s)
+            .replace(/&/g, '&amp;')
+            .replace(/"/g, '&quot;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;');
+    }
+
+    function makeRegisterHtml(csrf, slot, workshopId) {
+        return '<form method="POST" action="/wizard/workshops" class="wts-action-form">'
+             + '<input type="hidden" name="_csrf" value="' + esc(csrf) + '">'
+             + '<input type="hidden" name="slot" value="' + esc(slot) + '">'
+             + '<input type="hidden" name="workshop_id" value="' + workshopId + '">'
+             + '<button type="submit" class="btn btn--primary btn--sm">Registrovat se na čekací listinu</button>'
+             + '</form>';
+    }
+
+    function makeCancelHtml(csrf, slot, workshopId, queuePosition, capacity) {
+        var html = '<form method="POST" action="/wizard/workshops" class="wts-action-form">'
+                 + '<input type="hidden" name="_csrf" value="' + esc(csrf) + '">'
+                 + '<input type="hidden" name="slot" value="' + esc(slot) + '">'
+                 + '<input type="hidden" name="cancel_workshop_id" value="' + workshopId + '">'
+                 + '<button type="submit" class="btn btn--primary btn--sm">Zrušit registraci</button>';
+
+        if (queuePosition !== null && queuePosition !== undefined) {
+            var pos = queuePosition + 1;
+            html += ' <span class="wts-queue">' + pos + '. místo na čekací listině<br>';
+            if (pos > capacity) {
+                html += 'Na čekací listině je dost lidí před vámi.<br>'
+                      + 'Doporučujeme se zařadit na čekací listinu u dalšího workshopu.<br>';
+            }
+            html += '</span>';
+        }
+
+        return html + '</form>';
+    }
+
+    grid.addEventListener('submit', function (e) {
+        var form = e.target.closest('.wts-action-form');
+        if (!form) return;
+        e.preventDefault();
+
+        var card       = form.closest('[data-workshop-id]');
+        var actionsDiv = form.closest('.wts-card-actions');
+        var btn        = form.querySelector('button[type="submit"]');
+        var csrf       = form.querySelector('[name="_csrf"]').value;
+        var slot       = form.querySelector('[name="slot"]').value;
+        var savedHtml  = actionsDiv.innerHTML;
+
+        btn.disabled    = true;
+        btn.textContent = '\u2026';
+
+        var data = new FormData(form);
+        data.append('_ajax', '1');
+
+        fetch('/wizard/workshops', { method: 'POST', body: data })
+            .then(function (r) {
+                if (!r.ok) throw new Error('HTTP ' + r.status);
+                return r.json();
+            })
+            .then(function (resp) {
+                if (!resp.ok) {
+                    actionsDiv.innerHTML = savedHtml;
+                    var err = document.createElement('p');
+                    err.className   = 'wts-action-error';
+                    err.textContent = resp.error || 'Chyba. Zkuste to znovu.';
+                    actionsDiv.prepend(err);
+                    return;
+                }
+                if (resp.action === 'registered') {
+                    card.classList.add('bg4');
+                    actionsDiv.innerHTML = makeCancelHtml(csrf, slot, resp.workshop_id, resp.queue_position, resp.capacity);
+                } else {
+                    card.classList.remove('bg4');
+                    actionsDiv.innerHTML = makeRegisterHtml(csrf, slot, resp.workshop_id);
+                }
+            })
+            .catch(function () {
+                actionsDiv.innerHTML = savedHtml;
+            });
+    });
+}());
+</script>
 {% endblock %}
