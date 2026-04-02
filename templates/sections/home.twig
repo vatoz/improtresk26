@@ -16,7 +16,11 @@
                 </div>
 
             </div>
+            {% if user %}
+            <a href="/dashboard" class="btn btn--primary btn--lg">Můj účet</a>
+            {% else %}
             <a href="/register" class="btn btn--primary btn--lg">Zaregistruj se</a>
+            {% endif     %}
         </div>
     </div>
 </div>
