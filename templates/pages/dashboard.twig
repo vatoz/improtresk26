@@ -52,9 +52,6 @@
         {{ include('inlines/wizard-info.twig') }}
         </div>
         </div>
-
-
-
         
         {% if questions is not empty %}
         <div class="card">
@@ -504,11 +501,22 @@
 
 {% block javascripts %}
 <script>
+const tbody = document.getElementById('registrations-tbody');
+const draggableRows = () => Array.from(tbody.querySelectorAll('.reg-row[draggable="true"]'));
+ function saveOrder() {
+        const ids = draggableRows().map(r => parseInt(r.dataset.id, 10));
+        fetch('/dashboard/reorder-registrations', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ ids })
+        }).catch(function () {});
+    }
+
 (function () {
-    const tbody = document.getElementById('registrations-tbody');
+    
     if (!tbody) return;
 
-    const draggableRows = () => Array.from(tbody.querySelectorAll('.reg-row[draggable="true"]'));
+    
     if (draggableRows().length < 2) return;
 
     let dragSrc = null;
@@ -585,14 +593,7 @@
         });
     });
 
-    function saveOrder() {
-        const ids = draggableRows().map(r => parseInt(r.dataset.id, 10));
-        fetch('/dashboard/reorder-registrations', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ ids })
-        }).catch(function () {});
-    }
+   
 })();
 </script>
 {% endblock %}
