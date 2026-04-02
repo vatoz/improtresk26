@@ -680,7 +680,7 @@ class AdminController extends BaseController
                    (SELECT COUNT(*) FROM purchases pu WHERE pu.user_id = u.id AND pu.payment_status != 'cancelled') AS purchase_count,
                    (SELECT COUNT(*) FROM transaction_lists tl WHERE  CAST(tl.variable_symbol AS INT) = u.id ) AS transaction_count
             FROM users u
-            ORDER BY u.name
+            ORDER BY u.id
         ");
 
         echo $this->twig->render('pages/admin-users.twig', [
