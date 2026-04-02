@@ -47,6 +47,7 @@
                     <span class="btn btn--primary btn--disabled" title="Nejprve vyplňte povinné otázky">Nejprve vyplňte povinné otázky, pak tu bude Průvodce výběrem workshopů</span>
                 {% else %}
                     <a href="/wizard" class="btn btn--primary"  class="btn btn--outline">Průvodce výběrem workshopů</a>
+                    <a href="/wizard/payment" class="btn btn--primary"  class="btn btn--outline">Zobrazit platební detaily</a>
                 {% endif %}            
         {% endif %}
         {{ include('inlines/wizard-info.twig') }}
@@ -283,7 +284,7 @@
                         <span class="dashboard-status dashboard-status--notpaid">Nezaplaceno, zrušeno</span> protože pět dní nedorazila platba<br>
                         <span class="dashboard-status dashboard-status--cancelled">Zrušeno</span> z libovolných důvodů tebou.                        <br>
                         <span class="dashboard-status dashboard-status--refunded">Platba vrácena</span> v případě nějakých divnokomplikací.                        <br>
-                        <span class="dashboard-status dashboard-status--skipped">Přeskočeno, vybrána lepší varianta</span> znamená, že lépe hodnocený workshop dle tvého pořadí měl pro tebe volné místo (nastavuje admin a případně to umí změnit).                              <br>
+                        <span class="dashboard-status dashboard-status--skipped">Přeskočeno, vybrána lepší varianta</span> znamená, že tebou lépe hodnocený workshop dle tvého pořadí měl pro tebe volné místo (nastavuje admin a případně to umí změnit, napiš nám.).                              <br>
                         
 
                 </div>
