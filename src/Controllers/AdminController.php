@@ -670,6 +670,102 @@ class AdminController extends BaseController
         ]);
     }
 
+    public function userList()
+    {
+        $this->requireAdmin();
+
+        $stmt = $this->db->query("
+            SELECT u.id, u.name, u.email, u.hero, u.created_at,
+                   (SELECT COUNT(*) FROM registrations r WHERE r.user_id = u.id AND r.payment_status != 'cancelled') AS registration_count,
+                   (SELECT COUNT(*) FROM purchases pu WHERE pu.user_id = u.id AND pu.payment_status != 'cancelled') AS purchase_count,
+                   (SELECT COUNT(*) FROM transaction_lists tl WHERE  CAST(tl.variable_symbol AS INT) = u.id ) AS transaction_count
+            FROM users u
+            ORDER BY u.name
+        ");
+
+        echo $this->twig->render('pages/admin-users.twig', [
+            'user'        => $this->getCurrentUser(),
+            'active_page' => 'admin',
+            'users'       => $stmt->fetchAll(\PDO::FETCH_ASSOC),
+        ]);
+    }
+
+    public function userDetail(int $id)
+    {
+        $this->requireAdmin();
+
+        $uStmt = $this->db->prepare("SELECT id, name, email, hero, created_at FROM users WHERE id = ? LIMIT 1");
+        $uStmt->execute([$id]);
+        $profileUser = $uStmt->fetch(\PDO::FETCH_ASSOC);
+
+        if (!$profileUser) {
+            http_response_code(404);
+            echo 'Uživatel nenalezen.';
+            return;
+        }
+
+        // Transactions for this user
+        $txStmt = $this->db->prepare("
+            SELECT id, date, amount, currency, variable_symbol,
+                   counter_account_name, message, completed
+            FROM transaction_lists
+            WHERE cast(variable_symbol as int) = ? 
+            ORDER BY date DESC, id DESC
+        ");
+        $txStmt->execute([$id]);
+        $transactions = $txStmt->fetchAll(\PDO::FETCH_ASSOC);
+        foreach ($transactions as &$tx) {
+            $tx['amount_int'] = (int) $tx['amount'];
+        }
+        unset($tx);
+
+        // Registrations
+        $rStmt = $this->db->prepare("
+            SELECT r.id, r.payment_status, w.name AS workshop_name, w.price,
+                   ts.start_datetime, r.created_at, w.timeslot, w.capacity, w.registered
+            FROM registrations r
+            LEFT JOIN workshops w ON r.workshop_id = w.id
+            LEFT JOIN timeslots ts ON ts.code = w.timeslot
+            WHERE r.user_id = ?
+            ORDER BY w.timeslot ASC, r.priority ASC, r.id ASC
+        ");
+        $rStmt->execute([$id]);
+        $registrations = $rStmt->fetchAll(\PDO::FETCH_ASSOC);
+
+        $queuePositions = Workshop::getQueuePositions($this->db, $id);
+        foreach ($registrations as &$reg) {
+            $reg['queue_position'] = $queuePositions[(int)$reg['id']]['queue_position'] ?? null;
+        }
+        unset($reg);
+
+        // Purchases
+        $pStmt = $this->db->prepare("
+            SELECT p.id, p.item_type, p.quantity, p.payment_status,
+                   COALESCE(t.name, m.name) AS item_name,
+                   COALESCE(t.price, m.price) AS price
+            FROM purchases p
+            LEFT JOIN tickets t ON t.id = p.item_id AND p.item_type = 'ticket'
+            LEFT JOIN merch   m ON m.id = p.item_id AND p.item_type = 'merch'
+            WHERE p.user_id = ?
+            ORDER BY p.created_at ASC
+        ");
+        $pStmt->execute([$id]);
+        $purchases = $pStmt->fetchAll(\PDO::FETCH_ASSOC);
+
+        $threshold = new \DateTime('-5 days -6 hours');
+
+        echo $this->twig->render('pages/admin-user-detail.twig', [
+            'user'         => $this->getCurrentUser(),
+            'active_page'  => 'admin',
+            'profile_user' => $profileUser,
+            'transactions' => $transactions,
+            'registrations' => $registrations,
+            'purchases'    => $purchases,
+            'threshold'    => $threshold->format('U'),
+            'csrf'         => csrf_token('admin-pairing'),
+        ]);
+    }
+
     public function setRegistrationStatus()
     {
         $this->requireAdmin();

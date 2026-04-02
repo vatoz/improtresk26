@@ -170,7 +170,9 @@
                             {% endif %}
                             {% endif %}
                         </p>
-                     {% if user.role == 'admin' %}<a href="/wizard" class="btn btn--primary"  class="btn btn--outline">Vybrat si workshopy (ADMIN)</a>{% endif %}    
+                     {% if user.role == 'admin' %}
+                     <a href="/wizard" class="btn btn--primary"  class="btn btn--outline">Vybrat si workshopy (ADMIN)</a>
+                     {% endif %}    
                     {% else %}
                         {% set showDrag = registrations|length > 1 %}
 
@@ -271,12 +273,23 @@
                                 {% endfor %}
                             </tbody>
                         </table>
-<!--
-                        <p>
-                            <a href="/wizard" class="btn btn--primary btn--block">Průvodce výběrem workshopů</a>
-                        </p>-->                        
-                    {% endif %}
+                        <br> 
+                         Legenda:<br>
+                         <p>
+                         <span class="dashboard-status dashboard-status--paid">Zaplaceno</span> je takový workshop, na který dle systému nyní půjdeš..                        <br>
+                        <span class="dashboard-status dashboard-status--pending">Čeká na platbu</span> neboť za něj zatím nebylo zaplaceno.                        <br>
+                        U něčeho je <span class="dashboard-status dashboard-status--upgradable">Možný upgrade</span>, pokud se uvolní dost míst.                        <br>
+                    
+                        <span class="dashboard-status dashboard-status--notpaid">Nezaplaceno, zrušeno</span> protože pět dní nedorazila platba<br>
+                        <span class="dashboard-status dashboard-status--cancelled">Zrušeno</span> z libovolných důvodů tebou.                        <br>
+                        <span class="dashboard-status dashboard-status--refunded">Platba vrácena</span> v případě nějakých divnokomplikací.                        <br>
+                        <span class="dashboard-status dashboard-status--skipped">Přeskočeno, vybrána lepší varianta</span> znamená, že lépe hodnocený workshop dle tvého pořadí měl pro tebe volné místo (nastavuje admin a případně to umí změnit).                              <br>
+                        
+
                 </div>
+
+ {% endif %}
+
             </div>
         </div>
         <div class="card">
@@ -469,6 +482,7 @@
 .dashboard-status--notpaid   { background: #fdecea; color: #c0392b; }
 .dashboard-status--cancelled { background: #f2f2f2; color: #888; }
 .dashboard-status--refunded  { background: #f5f0ff; color: #8e44ad; }
+.dashboard-status--skipped  { background: #f5f0ff; color: #f044fa; }
 
 /* User questions */
 .uq-answered-table { margin-bottom: 1rem; }

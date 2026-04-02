@@ -1,0 +1,60 @@
+<p class="admin-users-count">Celkem uživatelů: <strong>{{ users|length }}</strong></p>
+
+<table class="admin-table admin-users-table">
+    <thead>
+        <tr>
+            <th>Jméno</th>
+            <th>E-mail</th>
+            <th title="Hrdina / hrdinka">H</th>
+            <th title="Počet aktivních registrací">Reg.</th>
+            <th title="Počet aktivních nákupů">Nák.</th>
+            <th title="Počet spárovaných transakcí">Tx</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for u in users %}
+        <tr class="{% if u.transaction_count > 0 %}user-row--has-tx{% endif %}">
+            <td>
+                <a href="/admin/users/{{ u.id }}">{{ u.name }}</a>
+            </td>
+            <td><a href="mailto:{{ u.email }}">{{ u.email }}</a></td>
+            <td class="text-center">
+                {% if u.hero == 1 %}
+                    <span class="pairing-badge pairing-badge--hero" title="Hrdina">H</span>
+                {% elseif u.hero == 2 %}
+                    <span class="pairing-badge pairing-badge--hero" title="Hrdinka">H</span>
+                {% endif %}
+            </td>
+            <td class="text-center">{{ u.registration_count > 0 ? u.registration_count : '–' }}</td>
+            <td class="text-center">{{ u.purchase_count > 0 ? u.purchase_count : '–' }}</td>
+            <td class="text-center">
+                {% if u.transaction_count > 0 %}
+                    <span class="pairing-badge pairing-badge--done" title="Má spárované transakce">{{ u.transaction_count }}</span>
+                {% else %}
+                    <span class="user-no-tx">–</span>
+                {% endif %}
+            </td>
+        </tr>
+        {% else %}
+        <tr><td colspan="6">Žádní uživatelé.</td></tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<style>
+.admin-users-count { margin-bottom: 1rem; color: var(--color-muted, #666); }
+.admin-users-table td, .admin-users-table th { vertical-align: middle; }
+.text-center { text-align: center; }
+.user-row--has-tx > td:first-child::before {
+    content: '';
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #27ae60;
+    margin-right: 6px;
+    vertical-align: middle;
+}
+.user-no-tx { color: var(--color-muted, #bbb); }
+.pairing-badge--hero { background: #fff3cd; color: #856404; }
+</style>
