@@ -37,7 +37,7 @@
                                 </td>
                                 <td class="wizard-summary-status">
                                     <span class="wizard-status wizard-status--{{ r.payment_status }}">
-                                        {% if r.payment_status == 'pending' %}čeká na platbu
+                                        {% if r.payment_status == 'pending' %}čeká 
                                         {% elseif r.payment_status == 'approved' %}schváleno
                                         {% elseif r.payment_status == 'timeblock' %}Překryv, do platby nezahrnuto
                                         {% else %}{{ r.payment_status }}{% endif %}
@@ -69,7 +69,7 @@
                                 </td>
                                 <td class="wizard-summary-status">
                                     <span class="wizard-status wizard-status--{{ p.payment_status }}">
-                                        {% if p.payment_status == 'pending' %}čeká na platbu
+                                        {% if p.payment_status == 'pending' %}čeká
                                         {% elseif p.payment_status == 'approved' %}schváleno
                                         {% else %}{{ p.payment_status }}{% endif %}
                                     </span>

@@ -26,7 +26,7 @@
                     <td>{{ r.user_name }}</td>
                     <td>{{ r.user_email }}</td>
                     <td class="dreg-status dreg-status--{{ r.status }}">
-                        {% if r.status == 'pending' %}Čeká na platbu
+                        {% if r.status == 'pending' %}Čeká
                         {% elseif r.status == 'paid' %}Zaplaceno
                         {% elseif r.status == 'approved' %}Schváleno
                         {% elseif r.status == 'notpaid' %}Nezaplaceno

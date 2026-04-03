@@ -240,11 +240,11 @@
 
                                         <td>
                                             {% if reg.payment_status == 'pending' %}
-                                                <span class="dashboard-status dashboard-status--pending">Čeká na platbu</span>
+                                                <span class="dashboard-status dashboard-status--pending">Čeká</span>
                                             {% elseif reg.payment_status == 'upgradable' %}
                                                 <span class="dashboard-status dashboard-status--upgradable">Možný upgrade</span>
                                             {% elseif reg.payment_status == 'approved' %}
-                                                <span class="dashboard-status dashboard-status--approved">Vylosováno, čeká na platbu</span>
+                                                <span class="dashboard-status dashboard-status--approved">Vylosováno, </span>
                                             {% elseif reg.payment_status == 'paid' %}
                                                 <span class="dashboard-status dashboard-status--paid">Zaplaceno</span>
                                             {% elseif reg.payment_status == 'notpaid' %}
@@ -278,7 +278,7 @@
                          Legenda:<br>
                          <p>
                          <span class="dashboard-status dashboard-status--paid">Zaplaceno</span> je takový workshop, na který dle systému nyní půjdeš..                        <br>
-                        <span class="dashboard-status dashboard-status--pending">Čeká na platbu</span> neboť za něj zatím nebylo zaplaceno.                        <br>
+                        <span class="dashboard-status dashboard-status--pending">Čeká </span> neboť za něj zatím nebylo zaplaceno. Na stránce s platbou zjistíš svoji pozici.                        <br>
                         U něčeho je <span class="dashboard-status dashboard-status--upgradable">Možný upgrade</span>, pokud se uvolní dost míst.                        <br>
                     
                         <span class="dashboard-status dashboard-status--notpaid">Nezaplaceno, zrušeno</span> protože pět dní nedorazila platba<br>
@@ -342,7 +342,7 @@
                                     <td>{{ p.price is not null ? p.price|number_format(0, ',', ' ') ~ ' Kč' : '–' }}</td>
                                     <td>
                                         {% if p.payment_status == 'pending' %}
-                                            <span class="dashboard-status dashboard-status--pending">Čeká na platbu</span>
+                                            <span class="dashboard-status dashboard-status--pending">Čeká</span>
                                         {% elseif p.payment_status == 'paid' %}
                                             <span class="dashboard-status dashboard-status--paid">Zaplaceno</span>
                                         {% elseif p.payment_status == 'cancelled' %}

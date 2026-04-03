@@ -627,7 +627,7 @@ class AdminController extends BaseController
             // Registrations (non-cancelled)
             $rStmt = $this->db->prepare("
                 SELECT r.id, r.payment_status, w.name AS workshop_name, w.price,
-                       ts.start_datetime, r.created_at , w.timeslot, w.capacity,w.registered
+                       ts.start_datetime, r.created_at , w.timeslot, w.capacity, w.paid
                 FROM registrations r
                 LEFT JOIN workshops w ON r.workshop_id = w.id
                 LEFT JOIN timeslots ts ON ts.code = w.timeslot

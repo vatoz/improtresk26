@@ -3,7 +3,7 @@
 {% else %}
 
 {% set reg_labels = {
-    pending:    'Čeká na platbu',
+    pending:    'Čeká',
     paid:       'Zaplaceno',
     approved:   'Vylosováno',
     upgradable: 'Možný upgrade',
@@ -14,7 +14,7 @@
 
 } %}
 {% set purch_labels = {
-    pending:   'Čeká na platbu',
+    pending:   'Čeká',
     paid:      'Zaplaceno',
     cancelled: 'Zrušeno'
 } %}
@@ -99,7 +99,12 @@
                         </td>
                         <td class="pairing-queue">
                             {% if reg.queue_position is not null %}
-                                <span title="Kolikátý teď jsem">{{ reg.queue_position + 1 }}.</span>/<span title="Kolik mám zaplacených registrací">{{reg.registered}}</span>/<span title="Kapacita">{{reg.capacity}}</span>
+                                <span title="Kolikátý teď jsem">{{ reg.queue_position + 1 }}.</span>/<span title="Kolik mám zaplacených registrací">{{reg.paid}}</span>/<span title="Kapacita">{{reg.capacity}}</span>
+                                {% if reg.queue_position + 1 > reg.capacity %}Pod čarou {% endif %}
+                                {% if reg.paid > reg.capacity %}
+                                <span style="background-color:red">PŘEPLNĚNO</span>                                
+                                {% endif %}
+
                             {% else %}
                                 –
                             {% endif %}
