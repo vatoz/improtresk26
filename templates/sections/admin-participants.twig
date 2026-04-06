@@ -1,6 +1,6 @@
 <div class="card">
     <div class="card__body">
-        <h3>Přehled účastníků</h3>
+        <h3>Přehled nedávných registrací na wsp</h3>
         {% if participants is empty %}
             <p>Žádní účastníci.</p>
         {% else %}
@@ -17,7 +17,7 @@
                 <tbody>
                     {% for p in participants %}
                         <tr>
-                            <td>{{ p.name }}</td>
+                            <td><a href="/admin/users/{{p.user_id}}">{{ p.name }}</a></td>
                             <td>{{ p.email }}</td>
                             <td>{{ p.workshop_name ?? '–' }}</td>
                             <td><span class="badge badge--{{ p.payment_status }}">{{ p.payment_status }}</span></td>

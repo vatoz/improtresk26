@@ -13,7 +13,7 @@ class AdminController extends BaseController
         $this->requireAdmin();
 
         $stmt = $this->db->query("
-            SELECT u.name, u.email, r.payment_status, w.name AS workshop_name, r.created_at
+            SELECT r.user_id, u.name, u.email, r.payment_status, w.name AS workshop_name, r.created_at
             FROM registrations r
             JOIN users u ON r.user_id = u.id
             LEFT JOIN workshops w ON r.workshop_id = w.id
@@ -755,16 +755,88 @@ class AdminController extends BaseController
 
         $threshold = new \DateTime('-5 days -6 hours');
 
+        $mailTemplates = $this->db->query(
+            "SELECT id, title, subject FROM mail_templates WHERE is_valid = 1 ORDER BY title"
+        )->fetchAll(\PDO::FETCH_ASSOC);
+
         echo $this->twig->render('pages/admin-user-detail.twig', [
-            'user'         => $this->getCurrentUser(),
-            'active_page'  => 'admin',
-            'profile_user' => $profileUser,
-            'transactions' => $transactions,
-            'registrations' => $registrations,
-            'purchases'    => $purchases,
-            'threshold'    => $threshold->format('U'),
-            'csrf'         => csrf_token('admin-pairing'),
+            'user'           => $this->getCurrentUser(),
+            'active_page'    => 'admin',
+            'profile_user'   => $profileUser,
+            'transactions'   => $transactions,
+            'registrations'  => $registrations,
+            'purchases'      => $purchases,
+            'threshold'      => $threshold->format('U'),
+            'csrf'           => csrf_token('admin-pairing'),
+            'mail_sent'      => $_GET['mail_sent'] ?? null,
+            'mail_templates' => $mailTemplates,
         ]);
+    }
+
+    public function sendUserMail(int $id)
+    {
+        $this->requireAdmin();
+        csrf_validate('admin-pairing', $_POST['_csrf'] ?? null);
+
+        $uStmt = $this->db->prepare("SELECT id, name, email FROM users WHERE id = ? LIMIT 1");
+        $uStmt->execute([$id]);
+        $user = $uStmt->fetch(\PDO::FETCH_ASSOC);
+
+        if (!$user) {
+            http_response_code(404);
+            echo 'Uživatel nenalezen.';
+            return;
+        }
+
+        $type = $_POST['mail_type'] ?? '';
+        $baseUrl = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? 'https' : 'http')
+            . '://' . $_SERVER['HTTP_HOST'];
+
+        switch ($type) {
+            case 'registration':
+                MailQueue::addWithTemplate($this->db, $user['email'], 'Vítej na Improtřesku 2026!', 'registration.twig', [
+                    'name'     => $user['name'],
+                    'email'    => $user['email'],
+                    'loginUrl' => $baseUrl . '/login',
+                ]);
+                break;
+
+            case 'payment-confirmed':
+                $this->queuePaymentConfirmedMail($id);
+                break;
+
+            case 'password-reset':
+                $token = \App\Models\User::createPasswordResetToken($this->db, $user['email']);
+                if ($token) {
+                    MailQueue::addWithTemplate($this->db, $user['email'], 'Obnova hesla - Improtřesk 2026', 'password-reset.twig', [
+                        'resetUrl' => $baseUrl . '/reset-password?token=' . $token,
+                        'email'    => $user['email'],
+                    ]);
+                }
+                break;
+
+            case 'template':
+                $templateId = (int) ($_POST['template_id'] ?? 0);
+                if ($templateId > 0) {
+                    $stmt = $this->db->prepare("SELECT subject, text FROM mail_templates WHERE id = ? AND is_valid = 1 LIMIT 1");
+                    $stmt->execute([$templateId]);
+                    $tpl = $stmt->fetch(\PDO::FETCH_ASSOC);
+                    if ($tpl) {
+                        MailQueue::addWithTemplate($this->db, $user['email'], $tpl['subject'], 'custom.twig', [
+                            'subject' => $tpl['subject'],
+                            'body'    => $tpl['text'],
+                        ]);
+                    }
+                }
+                break;
+
+            default:
+                header('Location: /admin/users/' . $id);
+                exit;
+        }
+
+        header('Location: /admin/users/' . $id . '?mail_sent=' . urlencode($type));
+        exit;
     }
 
     public function setRegistrationStatus()

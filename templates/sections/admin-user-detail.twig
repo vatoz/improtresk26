@@ -36,6 +36,54 @@
     </div>
 </div>
 
+{# ── Send mail ── #}
+{% if mail_sent %}
+<div class="pairing-alert pairing-alert--ok">
+    E-mail byl zařazen do fronty k odeslání.
+</div>
+{% endif %}
+<div class="pairing-card">
+    <div class="pairing-tx-header">
+        <strong>Odeslat e-mail</strong>
+    </div>
+    <div class="pairing-section" style="display:flex;gap:0.6rem;flex-wrap:wrap;padding:1rem 1.25rem;">
+        <form method="POST" action="/admin/users/{{ profile_user.id }}/send-mail"
+              onsubmit="return confirm('Opravdu odeslat e-mail „Uvítací e-mail" uživateli {{ profile_user.name }}?')">
+            <input type="hidden" name="_csrf" value="{{ csrf }}">
+            <input type="hidden" name="mail_type" value="registration">
+            <button type="submit" class="btn btn--sm">Uvítací e-mail</button>
+        </form>
+        <form method="POST" action="/admin/users/{{ profile_user.id }}/send-mail"
+              onsubmit="return confirm('Opravdu odeslat e-mail „Potvrzení platby" uživateli {{ profile_user.name }}?')">
+            <input type="hidden" name="_csrf" value="{{ csrf }}">
+            <input type="hidden" name="mail_type" value="payment-confirmed">
+            <button type="submit" class="btn btn--sm btn--success">Potvrzení platby</button>
+        </form>
+        <form method="POST" action="/admin/users/{{ profile_user.id }}/send-mail"
+              onsubmit="return confirm('Opravdu odeslat e-mail „Obnova hesla" uživateli {{ profile_user.name }}?')">
+            <input type="hidden" name="_csrf" value="{{ csrf }}">
+            <input type="hidden" name="mail_type" value="password-reset">
+            <button type="submit" class="btn btn--sm">Obnova hesla</button>
+        </form>
+    </div>
+    {% if mail_templates is not empty %}
+    <div style="border-top:1px solid var(--color-border,#eee);padding:0.75rem 1.25rem;display:flex;gap:0.6rem;align-items:center;flex-wrap:wrap;">
+        <form method="POST" action="/admin/users/{{ profile_user.id }}/send-mail"
+              onsubmit="return confirm('Opravdu odeslat vybranou šablonu uživateli {{ profile_user.name }}?')">
+            <input type="hidden" name="_csrf" value="{{ csrf }}">
+            <input type="hidden" name="mail_type" value="template">
+            <select name="template_id" class="pairing-select" required>
+                <option value="">— vyberte šablonu —</option>
+                {% for tpl in mail_templates %}
+                    <option value="{{ tpl.id }}">{{ tpl.title }}</option>
+                {% endfor %}
+            </select>
+            <button type="submit" class="btn btn--sm btn--primary" style="margin-left:0.3rem;">Odeslat šablonu</button>
+        </form>
+    </div>
+    {% endif %}
+</div>
+
 {# ── Registrations ── #}
 <div class="pairing-card">
     <div class="pairing-tx-header">
@@ -292,4 +340,6 @@
 .type-badge { display: inline-block; padding: 0.1rem 0.5rem; border-radius: 4px; font-size: 0.78rem; font-weight: 700; }
 .type-badge--ticket { background: #e8f4fd; color: #2980b9; }
 .type-badge--merch  { background: #fef9e7; color: #d68910; }
+.pairing-alert { padding: 0.65rem 1.25rem; border-radius: 6px; margin-bottom: 1rem; font-size: 0.9rem; }
+.pairing-alert--ok { background: #e6f5ec; color: #1e7e34; border: 1px solid #b7dfca; }
 </style>
