@@ -508,7 +508,7 @@ class AdminController extends BaseController
         ");
 
         $rows = $stmt->fetchAll(\PDO::FETCH_ASSOC);
-        $threshold = new \DateTime('-5 days -1 hours');
+        $threshold = new \DateTime('-6 hours');
 
         $workshops = [];
         foreach ($rows as $row) {
@@ -572,7 +572,7 @@ class AdminController extends BaseController
             exit;
         }
 
-        $threshold = new \DateTime('-5 days -1 hours');
+        $threshold = new \DateTime('-6 hours');
         if (new \DateTime($reg['created_at']) >= $threshold) {
             http_response_code(400);
             echo json_encode(['error' => 'Registrace není dostatečně stará.']);
@@ -660,7 +660,7 @@ class AdminController extends BaseController
         }
         unset($tx);
 
-        $threshold= new \DateTime('-5 days -1 hours');
+        $threshold= new \DateTime('-6 hours');
 
         echo $this->twig->render('pages/admin-pairing.twig', [
             'user'         => $this->getCurrentUser(),
@@ -753,7 +753,7 @@ class AdminController extends BaseController
         $pStmt->execute([$id]);
         $purchases = $pStmt->fetchAll(\PDO::FETCH_ASSOC);
 
-        $threshold = new \DateTime('-5 days -1 hours');
+        $threshold = new \DateTime('-6 hours');
 
         $mailTemplates = $this->db->query(
             "SELECT id, title, subject FROM mail_templates WHERE is_valid = 1 ORDER BY title"
