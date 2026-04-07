@@ -114,7 +114,15 @@
                 <div class="workshop-price">{{ workshop.price|number_format(0, ',', ' ') }} Kč</div>
                 <div class="capacity-info ">
                     {{ workshop.paid }}/{{ workshop.capacity }} obsazeno a zaplaceno<br>
-                    Eviduji  celkem {{ workshop.enrolled_count }} registrací                    
+                    {%if workshop.paid < workshop.capacity %}
+                        {%if  workshop.enrolled_count  < workshop.capacity %} 
+                            Přihlašte se a a obsaďte jedno místo.
+                        {% else %}
+                            Je možné, že se místo ještě uvolní.
+                        {% endif %}
+                        {% else %}
+                            Plno.
+                        {% endif %}
                 </div>
             </div>
   
