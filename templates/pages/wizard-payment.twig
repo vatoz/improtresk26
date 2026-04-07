@@ -26,12 +26,10 @@
                             <tr{% if r.likely_no_spot is defined and r.likely_no_spot %} class="wps-row--nospot"{% endif %}>
                                 <td>
                                     {{ r.workshop_name }}
-                                    {% if r.queue_position is defined %}
-                                        <span class="wps-queue">{{ r.queue_position + 1 }}. místo na čekací listině</span>
-                                    {% endif %}
                                     {% if r.likely_no_spot is defined and r.likely_no_spot %}
                                         <div class="wps-nospot-warn">
-                                            ⚠ Na workshop se pravděpodobně nedostanete – do platby nezahrnuto.
+                                            ⚠ Na workshop se pravděpodobně nedostanete – do platby nezahrnuto.<br>
+                                            doporučujeme změnit workshop.
                                         </div>
                                     {% endif %}
                                 </td>
@@ -40,6 +38,7 @@
                                         {% if r.payment_status == 'pending' %}čeká 
                                         {% elseif r.payment_status == 'approved' %}schváleno
                                         {% elseif r.payment_status == 'timeblock' %}Překryv, do platby nezahrnuto
+                                        {% elseif r.payment_status == 'paid' %}Již zaplaceno
                                         {% else %}{{ r.payment_status }}{% endif %}
                                     </span>
                                 </td>
@@ -71,6 +70,7 @@
                                     <span class="wizard-status wizard-status--{{ p.payment_status }}">
                                         {% if p.payment_status == 'pending' %}čeká
                                         {% elseif p.payment_status == 'approved' %}schváleno
+                                        {% elseif p.payment_status == 'paid' %}již zaplaceno
                                         {% else %}{{ p.payment_status }}{% endif %}
                                     </span>
                                 </td>
@@ -126,8 +126,8 @@
 
                     <div class="wizard-bank-details">
                         <div class="wizard-bank-row">
-                            <span class="wizard-bank-label">Číslo účtu / IBAN</span>
-                            <span class="wizard-bank-value">{{ payment.account_number }}</span>
+                            <span class="wizard-bank-label">Číslo účtu</span>
+                            <span class="wizard-bank-value">{{ payment.readable }}</span>
                         </div>
                         <div class="wizard-bank-row">
                             <span class="wizard-bank-label">Variabilní symbol</span>
@@ -147,7 +147,7 @@
 
                     <p class="wizard-payment-note">
                         Po připsání platby vás budeme informovat e-mailem. Registrace jsou platné po úhradě.
-                        Na úhradu máte pět dní.
+                        Na úhradu máte šest hodin.
                     </p>
                 </div>
             </div>

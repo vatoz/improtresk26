@@ -66,6 +66,7 @@ function payment_config(): array
 {
     return [
         'iban' => env('PAYMENT_IBAN'),
+        'readable' => env('PAYMENT_READABLE'),
         'currency' => env('PAYMENT_CURRENCY', 'CZK'),
         'message' => env('PAYMENT_MESSAGE', 'Improtresk 2026'),
         'default_fee' => env('DEFAULT_WORKSHOP_FEE', 1200.00),

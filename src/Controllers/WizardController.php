@@ -77,6 +77,8 @@ class WizardController extends BaseController
 
         $requestedSlot = $_GET['slot'] ?? ($_POST['slot'] ?? null);
 
+        $isHero = (int)($user['hero'] ?? 0) > 0;
+
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $isAjax = !empty($_POST['_ajax']);
 
@@ -94,8 +96,23 @@ class WizardController extends BaseController
 
             $selectedWorkshopId = intval($_POST['workshop_id'] ?? 0);
             if ($selectedWorkshopId) {
-                $w = new Workshop();
-                $w->register($this->db, $user['id'], $selectedWorkshopId);
+                $ws = Workshop::findById($this->db, $selectedWorkshopId);
+                $blocked = false;
+
+                if (!$isHero && $ws) {
+                    if ((int)$ws['paid'] >= (int)$ws['capacity']) {
+                        $_SESSION['error'] = 'Workshop je plně obsazen.';
+                        $blocked = true;
+                    } elseif ((int)$ws['enrolled_count'] >= (int)$ws['capacity']) {
+                        $_SESSION['error'] = 'Čekací listina workshopu je plná.';
+                        $blocked = true;
+                    }
+                }
+
+                if (!$blocked) {
+                    $w = new Workshop();
+                    $w->register($this->db, $user['id'], $selectedWorkshopId);
+                }
             }
 
             $canceledWorkshopId = intval($_POST['cancel_workshop_id'] ?? 0);
@@ -174,6 +191,14 @@ class WizardController extends BaseController
         $userWorkshops       = Workshop::getUserRegistrations($this->db, $user['id']);
         $queuePositions      = Workshop::getQueuePositions($this->db, $user['id']);
 
+        // For non-heroes hide workshops where all paid seats are taken
+        if (!$isHero) {
+            $currentWorkshops = array_values(array_filter(
+                $currentWorkshops,
+                fn($w) => (int)$w['paid'] < (int)$w['capacity']
+            ));
+        }
+
         // Build workshop_id → queue_position lookup
         $queueByWorkshop = [];
         foreach ($queuePositions as $qp) {
@@ -189,6 +214,9 @@ class WizardController extends BaseController
                     }
                 }
             }
+            // Registration allowed only while waitlist has room (heroes bypass this)
+            $currentWorkshops[$idx]['can_register'] = $isHero
+                || (int)$currentWorkshops[$idx]['enrolled_count'] < (int)$currentWorkshops[$idx]['capacity'];
         }
 
         // Position within timeslots for sub-progress display
@@ -220,8 +248,8 @@ class WizardController extends BaseController
             'wizard_slot'     => $requestedSlot,
             'prev_url'        => $nav['prev'],
             'next_url'        => $nav['next'],
-            'cur'        => $nav['cur'],
-
+            'cur'             => $nav['cur'],
+            'is_hero'         => $isHero,
         ]);
     }
 
@@ -394,7 +422,7 @@ class WizardController extends BaseController
             FROM registrations r
             LEFT JOIN workshops w ON r.workshop_id = w.id
             LEFT JOIN timeslots ts ON ts.code = w.timeslot
-            WHERE r.user_id = ? AND r.payment_status IN ('pending', 'approved')
+            WHERE r.user_id = ? AND r.payment_status IN ('pending', 'paid')
             ORDER BY COALESCE(ts.order, 2147483647), r.created_at
         ");
         $stmt->execute([$user['id']]);
@@ -407,7 +435,7 @@ class WizardController extends BaseController
             FROM purchases p
             LEFT JOIN tickets t ON t.id = p.item_id AND p.item_type = 'ticket'
             LEFT JOIN merch m ON m.id = p.item_id AND p.item_type = 'merch'
-            WHERE p.user_id = ? AND p.payment_status IN ('pending', 'approved')
+            WHERE p.user_id = ? AND p.payment_status IN ('pending','paid')
             ORDER BY p.item_type, p.created_at
         ");
         $stmt->execute([$user['id']]);
@@ -435,10 +463,11 @@ class WizardController extends BaseController
         foreach ($registrations as $i => $r) {
             // Queue position beyond capacity → user likely won't get in
             $queuePos = $queueByWorkshop[$r['workshop_id']] ?? null;
-            if ($queuePos !== null) {
+            if($registrations[$i]['payment_status'] == "paid"){
+                $registrations[$i]['price']         = 0;
+            }elseif ($queuePos !== null) {
                 $registrations[$i]['queue_position'] = $queuePos;
-                if ($queuePos >= (int)$r['capacity'] 
-                
+                if ($queuePos >= (int)$r['capacity']                 
                 && ( $user['hero'] <1  ) ){
                     $registrations[$i]['gray_price']= $registrations[$i]['price'];
                     $registrations[$i]['price']         = 0;
@@ -454,18 +483,23 @@ class WizardController extends BaseController
                 }
             }
             $total += (float)$registrations[$i]['price'];
-            if($registrations[$i]['price']>0){
+            if($registrations[$i]['price']>0 ||  $registrations[$i]['payment_status'] == "paid"){
                 $timeslots_taken[] = $r['timeslot_code'];
             }
             
         }
 
-        foreach ($purchases as $p) {
-            $total += (float)$p['item_price'] * (int)$p['quantity'];
+        foreach ($purchases as $i   => $p) {
+            if($p['payment_status']!= 'paid'){
+                $total += (float)$p['item_price'] * (int)$p['quantity'];
+            }else{
+                $purchases[$i]['item_price']=0;
+
+            }
         }
 
         $paymentConfig  = payment_config();
-        $variableSymbol = str_pad($user['id'], 10, '0', STR_PAD_LEFT);
+        $variableSymbol = $user['id'];
 
         $qrPlatba = new QRPlatba();
         $qrPlatba->setIban($paymentConfig['iban'])
@@ -475,6 +509,7 @@ class WizardController extends BaseController
 
         $paymentDetails = [
             'account_number'  => $paymentConfig['iban'],
+            'readable'  => $paymentConfig['readable'],
             'variable_symbol' => $variableSymbol,
             'amount'          => $total,
             'currency'        => $paymentConfig['currency'],

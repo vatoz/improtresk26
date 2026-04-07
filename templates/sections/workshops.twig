@@ -113,10 +113,10 @@
                 <div class="workshop-timeslot">{{ ts.name ?? '' }}</div>
                 <div class="workshop-price">{{ workshop.price|number_format(0, ',', ' ') }} Kč</div>
                 <div class="capacity-info ">
-                    {{ workshop.paid }}/{{ workshop.capacity }} obsazeno a zaplaceno<br>
+                    {{ workshop.paid }}/{{ workshop.capacity }} zaplaceno<br>
                     {%if workshop.paid < workshop.capacity %}
                         {%if  workshop.enrolled_count  < workshop.capacity %} 
-                            Přihlašte se a a obsaďte jedno místo.
+                            Přihlašte se a obsaďte místo.
                         {% else %}
                             Je možné, že se místo ještě uvolní.
                         {% endif %}

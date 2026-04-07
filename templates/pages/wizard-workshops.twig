@@ -11,8 +11,7 @@
          <h1 >{{ timeslot.name }}</h1>
 
          {{ include('inlines/wizard-info.twig') }}
-        
-
+       
         {% if error %}
             <div class="alert alert-error">{{ error }}</div>
         {% endif %}
@@ -40,22 +39,25 @@
                                     <input type="hidden" name="cancel_workshop_id" value="{{ workshop.id }}">
                                     <button type="submit" class="btn btn--primary btn--sm">Zrušit registraci</button>
                                     {% if workshop.queue_position is defined %}
-                                        <span class="wts-queue">
-                                            {{ workshop.queue_position + 1 }}. místo na čekací listině<br>
+                                        <span class="wts-queue">             
                                             {% if workshop.queue_position + 1 > workshop.capacity %}
                                                 Na čekací listině je dost lidí před vámi.<br>
-                                                Doporučujeme se zařadit na čekací listinu u dalšího workshopu.<br>
+                                                Doporučujeme zrušit registraci a vybrat si jiný workshop nebo napsat organizátorům.<br>
                                             {% endif %}
                                         </span>
                                     {% endif %}
                                 </form>
                             {% else %}
-                                <form method="POST" action="/wizard/workshops" class="wts-action-form">
-                                    <input type="hidden" name="_csrf" value="{{ csrf }}">
-                                    <input type="hidden" name="slot"  value="{{ timeslot.code }}">
-                                    <input type="hidden" name="workshop_id" value="{{ workshop.id }}">
-                                    <button type="submit" class="btn btn--primary btn--sm">Registrovat se na čekací listinu</button>
-                                </form>
+                                {% if workshop.can_register %}
+                                    <form method="POST" action="/wizard/workshops" class="wts-action-form">
+                                        <input type="hidden" name="_csrf" value="{{ csrf }}">
+                                        <input type="hidden" name="slot"  value="{{ timeslot.code }}">
+                                        <input type="hidden" name="workshop_id" value="{{ workshop.id }}">
+                                        <button type="submit" class="btn btn--primary btn--sm">Přihodit workshop do košíku</button>
+                                    </form>
+                                {% else %}
+                                    <span class="wts-full-badge">Ještě není zaplaceno, ale mám hromadu registrací.</span>
+                                {% endif %}
                             {% endif %}
                         </div>
 
@@ -173,6 +175,15 @@
     font-weight: 700;
     color: #27ae60;
 }
+.wts-full-badge {
+    display: inline-block;
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: #c0392b;
+    padding: 0.15rem 0.5rem;
+    border-radius: 999px;
+    background: #fdecea;
+}
 .wts-action-error {
     font-size: 0.85rem;
     color: #c0392b;
@@ -199,12 +210,18 @@
             .replace(/>/g, '&gt;');
     }
 
-    function makeRegisterHtml(csrf, slot, workshopId) {
+    var isHero = {{ is_hero ? 'true' : 'false' }};
+
+    function makeRegisterHtml(csrf, slot, workshopId, enrolledCount, capacity) {
+        var canRegister = isHero || enrolledCount < capacity;
+        if (!canRegister) {
+            return '<span class="wts-full-badge">Na ws není možné provést registraci</span>';
+        }
         return '<form method="POST" action="/wizard/workshops" class="wts-action-form">'
              + '<input type="hidden" name="_csrf" value="' + esc(csrf) + '">'
              + '<input type="hidden" name="slot" value="' + esc(slot) + '">'
              + '<input type="hidden" name="workshop_id" value="' + workshopId + '">'
-             + '<button type="submit" class="btn btn--primary btn--sm">Registrovat se na čekací listinu</button>'
+             + '<button type="submit" class="btn btn--primary btn--sm">Přihodit workshop do košíku</button>'
              + '</form>';
     }
 
@@ -217,10 +234,10 @@
 
         if (queuePosition !== null && queuePosition !== undefined) {
             var pos = queuePosition + 1;
-            html += ' <span class="wts-queue">' + pos + '. místo na čekací listině<br>';
+            
             if (pos > capacity) {
-                html += 'Na čekací listině je dost lidí před vámi.<br>'
-                      + 'Doporučujeme se zařadit na čekací listinu u dalšího workshopu.<br>';
+                html += 'Workshop má aktuálně zaregistrováno víc lidí, než je míst.<br>'
+                      + 'Doporučujeme si vybrat jiný workshop.<br>';
             }
             html += '</span>';
         }
@@ -265,7 +282,7 @@
                     actionsDiv.innerHTML = makeCancelHtml(csrf, slot, resp.workshop_id, resp.queue_position, resp.capacity);
                 } else {
                     card.classList.remove('bg4');
-                    actionsDiv.innerHTML = makeRegisterHtml(csrf, slot, resp.workshop_id);
+                    actionsDiv.innerHTML = makeRegisterHtml(csrf, slot, resp.workshop_id, resp.enrolled_count, resp.capacity);
                 }
             })
             .catch(function () {
