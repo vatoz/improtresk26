@@ -1,0 +1,74 @@
+{% for ticket in by_ticket %}
+<section class="ticket-section">
+    <h2 class="ticket-section__title">
+        {{ ticket.name }}
+        <span class="ticket-section__meta">{{ ticket.price|number_format(0, ',', ' ') }} Kč</span>
+        <span class="ticket-section__count">Prodáno: <strong>{{ ticket.sales|length }}</strong></span>
+    </h2>
+
+    {% if ticket.sales|length > 0 %}
+    <table class="admin-table">
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>Jméno</th>
+                <th>E-mail</th>
+                <th>Množství</th>
+                <th>Stav platby</th>
+                <th>Datum nákupu</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for s in ticket.sales %}
+            <tr>
+                <td>{{ loop.index }}</td>
+                <td><a href="/admin/users/{{ s.user_id }}">{{ s.user_name }}</a></td>
+                <td><a href="mailto:{{ s.user_email }}">{{ s.user_email }}</a></td>
+                <td class="text-center">{{ s.quantity }}</td>
+                <td class="text-center">
+                    {% if s.payment_status == 'paid' %}
+                        <span class="status-badge status-badge--paid">Zaplaceno</span>
+                    {% elseif s.payment_status == 'pending' %}
+                        <span class="status-badge status-badge--pending">Čeká</span>
+                    {% else %}
+                        <span class="status-badge">{{ s.payment_status }}</span>
+                    {% endif %}
+                </td>
+                <td>{{ s.created_at|date('d. m. Y H:i') }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <p class="ticket-section__empty">Zatím žádné prodeje.</p>
+    {% endif %}
+</section>
+{% else %}
+<p>Žádné typy vstupenek nenalezeny.</p>
+{% endfor %}
+
+<style>
+.ticket-section { margin-bottom: 2.5rem; }
+.ticket-section__title {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    font-size: 1.2rem;
+    margin-bottom: 0.75rem;
+    border-bottom: 1px solid var(--color-border, #ddd);
+    padding-bottom: 0.5rem;
+}
+.ticket-section__meta { font-size: 0.9rem; font-weight: normal; color: var(--color-muted, #666); }
+.ticket-section__count { font-size: 0.9rem; font-weight: normal; margin-left: auto; }
+.ticket-section__empty { color: var(--color-muted, #999); font-style: italic; }
+.text-center { text-align: center; }
+.status-badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 3px;
+    font-size: 0.8rem;
+    background: #eee;
+}
+.status-badge--paid { background: #d4edda; color: #155724; }
+.status-badge--pending { background: #fff3cd; color: #856404; }
+</style>

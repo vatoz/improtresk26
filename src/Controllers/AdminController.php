@@ -960,4 +960,44 @@ class AdminController extends BaseController
 
         MailQueue::sendPaymentConfirmed($this->db, $user['email'], $user['name'], $workshops, $tickets, $merch, $dashboardUrl);
     }
+
+    public function ticketSales()
+    {
+        $this->requireAdmin();
+
+        $stmt = $this->db->query("
+            SELECT t.id AS ticket_id, t.name AS ticket_name, t.price,
+                   p.id AS purchase_id, p.quantity, p.payment_status, p.created_at,
+                   u.id AS user_id, u.name AS user_name, u.email AS user_email
+            FROM tickets t
+            LEFT JOIN purchases p ON p.item_id = t.id AND p.item_type = 'ticket' AND p.payment_status = 'paid'
+            LEFT JOIN users u ON u.id = p.user_id
+            ORDER BY t.id ASC, p.created_at ASC
+        ");
+
+        $rows = $stmt->fetchAll(\PDO::FETCH_ASSOC);
+
+        // Group by ticket type
+        $byTicket = [];
+        foreach ($rows as $row) {
+            $tid = $row['ticket_id'];
+            if (!isset($byTicket[$tid])) {
+                $byTicket[$tid] = [
+                    'id'    => $tid,
+                    'name'  => $row['ticket_name'],
+                    'price' => $row['price'],
+                    'sales' => [],
+                ];
+            }
+            if ($row['purchase_id'] !== null) {
+                $byTicket[$tid]['sales'][] = $row;
+            }
+        }
+
+        echo $this->twig->render('pages/admin-tickets.twig', [
+            'user'       => $this->getCurrentUser(),
+            'active_page' => 'admin',
+            'by_ticket'  => array_values($byTicket),
+        ]);
+    }
 }
