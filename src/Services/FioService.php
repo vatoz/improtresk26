@@ -124,9 +124,7 @@ class FioService
             $wasInserted ? $inserted++ : $skipped++;
         }
 
-        if( $inserted > 0){
-            new FastbuyService($this->db)->run();
-        }
+        
         
         return ['inserted' => $inserted, 'skipped' => $skipped];
     }
