@@ -22,9 +22,9 @@ use Twig\Environment as Twig;
 class CronService
 {
     private const JOBS = [
-        'mail'    => ['key' => 'cron_last_run_mail',    'interval' => 60*3],    
-        'fio'     => ['key' => 'cron_last_run_fio',     'interval' => 60*5],   // 1 hour má být 3600        
-        'unpaid'  => ['key' => 'cron_last_run_unpaid',  'interval' => 3600]    // 1 hour má být 3600        
+        'mail'     => ['key' => 'cron_last_run_mail',     'interval' => 60*3],
+        'fio'      => ['key' => 'cron_last_run_fio',      'interval' => 60*5],
+        'reminder' => ['key' => 'cron_last_run_reminder', 'interval' => 60*2],
     ];
 
     private PDO  $db;
@@ -53,11 +53,11 @@ class CronService
             $this->runFio();
             $this->saveLastRun('fio', $now);
         }
-        
-        if ($this->isDue('unpaid', $lastRuns, $now)) {
-            //$this->runUnpaid();
-            $this->saveLastRun('unpaid', $now);
-        }        
+
+        if ($this->isDue('reminder', $lastRuns, $now)) {
+            $this->runReminder();
+            $this->saveLastRun('reminder', $now);
+        }
     }
 
     // -------------------------------------------------------------------------
@@ -81,15 +81,16 @@ class CronService
             error_log('CronService [fio]: ' . $e->getMessage());
         }
     }
-    
-    private function runUnpaid(): void
+
+    private function runReminder(): void
     {
         try {
-            (new UnpaidService($this->db))->cancelOverdue();
+            (new ReminderService($this->db))->sendReminders();
         } catch (\Throwable $e) {
-            error_log('CronService [unpaid]: ' . $e->getMessage());
+            error_log('CronService [reminder]: ' . $e->getMessage());
         }
     }
+
 
     
     // -------------------------------------------------------------------------

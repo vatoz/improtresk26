@@ -36,6 +36,33 @@
     </div>
 </div>
 
+{# ── Awaiting payment ── #}
+<div class="pairing-card">
+    <div class="pairing-tx-header">
+        <strong>Čekající platba</strong>
+        <span class="pairing-tx-date">
+            Aktuálně:
+            {% if profile_user.awaiting_payment > 0 %}
+                <strong style="color:#d68910;">{{ profile_user.awaiting_payment|number_format(2, ',', ' ') }} Kč</strong>
+            {% else %}
+                <span style="color:#999;">0 Kč</span>
+            {% endif %}
+        </span>
+    </div>
+    <div class="pairing-section">
+        <form method="POST" action="/admin/users/{{ profile_user.id }}/set-awaiting-payment"
+              style="display:flex;gap:0.5rem;align-items:center;flex-wrap:wrap;">
+            <input type="hidden" name="_csrf" value="{{ csrf }}">
+            <input type="number" name="awaiting_payment" step="0.01" min="0"
+                   value="{{ profile_user.awaiting_payment }}"
+                   class="pairing-select" style="width:10rem;" required>
+            <span style="font-size:0.9rem;color:#666;">Kč</span>
+            <button type="submit" class="btn btn--sm btn--primary">Uložit</button>
+            <span style="font-size:0.8rem;color:#999;">(0 = žádná čekající platba)</span>
+        </form>
+    </div>
+</div>
+
 {# ── Send mail ── #}
 {% if mail_sent %}
 <div class="pairing-alert pairing-alert--ok">
@@ -206,6 +233,138 @@
     <p class="pairing-empty">Žádné nákupy.</p>
     {% endif %}
 </div>
+
+{# ── Questions & Answers ── #}
+<div class="pairing-card">
+    <div class="pairing-tx-header">
+        <strong>Odpovědi na otázky</strong>
+        <span class="pairing-tx-date">{{ questions_with_answers|length }} otázek</span>
+    </div>
+    {% if questions_with_answers is not empty %}
+    <div class="pairing-section">
+        <table class="admin-table">
+            <thead>
+                <tr>
+                    <th>Otázka</th>
+                    <th>Odpověď</th>
+                    <th>Aktualizováno</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for qa in questions_with_answers %}
+                <tr>
+                    <td style="max-width:260px;">
+                        {{ qa.question }}
+                        {% if qa.is_required %}<span style="color:#c0392b;" title="Povinná">*</span>{% endif %}
+                    </td>
+                    <td>
+                        {% if qa.value is not null %}
+                            {% if qa.type == 'yes_no' %}
+                                <span class="pairing-status {% if qa.value == '1' or qa.value == 'yes' %}pairing-status--paid{% else %}pairing-status--cancelled{% endif %}">
+                                    {{ (qa.value == '1' or qa.value == 'yes') ? 'Ano' : 'Ne' }}
+                                </span>
+                            {% else %}
+                                {{ qa.value }}
+                            {% endif %}
+                        {% else %}
+                            <span style="color:#bbb;">—</span>
+                        {% endif %}
+                    </td>
+                    <td style="white-space:nowrap;font-size:0.83rem;color:#888;">
+                        {{ qa.updated_at ? qa.updated_at|date('j.n.Y H:i') : '—' }}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <p class="pairing-empty">Žádné otázky.</p>
+    {% endif %}
+</div>
+
+{# ── Sent mails ── #}
+<div class="pairing-card">
+    <div class="pairing-tx-header">
+        <strong>Odeslané e-maily</strong>
+        <span class="pairing-tx-date">{{ sent_mails|length }} záznamů</span>
+    </div>
+    {% if sent_mails is not empty %}
+    <div class="pairing-section">
+        <table class="admin-table">
+            <thead>
+                <tr>
+                    <th>Předmět</th>
+                    <th>Šablona</th>
+                    <th>Stav</th>
+                    <th>Zařazeno</th>
+                    <th>Odesláno</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for mail in sent_mails %}
+                <tr>
+                    <td>{{ mail.subject }}</td>
+                    <td style="font-size:0.82rem;color:#888;font-family:monospace;">{{ mail.template ?? '—' }}</td>
+                    <td>
+                        <span class="pairing-status
+                            {% if mail.status == 'sent' %}pairing-status--paid
+                            {% elseif mail.status == 'failed' %}pairing-status--notpaid
+                            {% else %}pairing-status--pending{% endif %}">
+                            {% if mail.status == 'sent' %}Odesláno
+                            {% elseif mail.status == 'failed' %}Chyba
+                            {% else %}Čeká{% endif %}
+                        </span>
+                    </td>
+                    <td style="white-space:nowrap;font-size:0.83rem;color:#888;">{{ mail.queued_at|date('j.n.Y H:i') }}</td>
+                    <td style="white-space:nowrap;font-size:0.83rem;color:#888;">{{ mail.sent_at ? mail.sent_at|date('j.n.Y H:i') : '—' }}</td>
+                    <td>
+                        <button class="btn btn--sm"
+                                onclick="openMailPreview({{ mail.id }}, {{ mail.subject|json_encode }})">
+                            Náhled
+                        </button>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <p class="pairing-empty">Žádné e-maily.</p>
+    {% endif %}
+</div>
+
+{# Preview modal #}
+<div id="mail-preview-modal" class="modal hidden">
+    <div class="modal-content" style="width:90%; max-width:900px;">
+        <div class="modal-header">
+            <h3 id="mail-preview-title" style="font-size:1rem; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;"></h3>
+            <button class="modal-close" onclick="closeMailPreview()">&times;</button>
+        </div>
+        <iframe id="mail-preview-frame"
+                src=""
+                style="width:100%; height:70vh; border:none; display:block;"></iframe>
+    </div>
+</div>
+
+<script>
+function openMailPreview(id, subject) {
+    document.getElementById('mail-preview-title').textContent = subject;
+    document.getElementById('mail-preview-frame').src = '/admin/mail-queue/' + id + '/preview';
+    document.getElementById('mail-preview-modal').classList.remove('hidden');
+}
+function closeMailPreview() {
+    document.getElementById('mail-preview-modal').classList.add('hidden');
+    document.getElementById('mail-preview-frame').src = '';
+}
+document.getElementById('mail-preview-modal').addEventListener('click', function(e) {
+    if (e.target === this) closeMailPreview();
+});
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') closeMailPreview();
+});
+</script>
 
 {# ── Transactions ── #}
 <h3 style="margin: 1.5rem 0 0.75rem;">Transakce ({{ transactions|length }})</h3>

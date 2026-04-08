@@ -142,6 +142,45 @@ class MailQueue
     }
 
     /**
+     * Queue a "payment pending" email with QR code and payment details.
+     *
+     * @param PDO    $db
+     * @param string $to      Recipient e-mail
+     * @param string $name    Recipient name
+     * @param int    $userId  User ID (used as variable symbol)
+     * @param float  $amount  Amount awaiting payment
+     * @return int Inserted row ID
+     */
+    public static function sendAwaitingPayment(
+        PDO    $db,
+        string $to,
+        string $name,
+        int    $userId,
+        float  $amount
+    ): int {
+        $paymentConfig = payment_config();
+
+        $qrPlatba = new \vplacek\QRPlatba\QRPlatba();
+        $qrPlatba->setIban($paymentConfig['iban'])
+            ->setAmount($amount)
+            ->setScale(5)
+            ->setVariableSymbol((string) $userId);
+
+        $qr = 'data:image/png;base64,' . base64_encode($qrPlatba->generateQr());
+
+        return self::addWithTemplate($db, $to, 'Platba za Improtřesk – platební instrukce', 'payment-pending.twig', [
+            'name'            => $name,
+            'amount'          => $amount,
+            'iban'            => $paymentConfig['iban'],
+            'readable'        => $paymentConfig['readable'],
+            'variable_symbol' => $userId,
+            'currency'        => $paymentConfig['currency'],
+            'message'         => $paymentConfig['message'],
+            'qr'              => $qr,
+        ]);
+    }
+
+    /**
      * Delete sent and failed mails older than the given number of days.
      *
      * @param PDO $db

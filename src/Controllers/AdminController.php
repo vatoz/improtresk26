@@ -695,7 +695,7 @@ class AdminController extends BaseController
     {
         $this->requireAdmin();
 
-        $uStmt = $this->db->prepare("SELECT id, name, email, hero, created_at FROM users WHERE id = ? LIMIT 1");
+        $uStmt = $this->db->prepare("SELECT id, name, email, hero, created_at, awaiting_payment FROM users WHERE id = ? LIMIT 1");
         $uStmt->execute([$id]);
         $profileUser = $uStmt->fetch(\PDO::FETCH_ASSOC);
 
@@ -759,17 +759,32 @@ class AdminController extends BaseController
             "SELECT id, title, subject FROM mail_templates WHERE is_valid = 1 ORDER BY title"
         )->fetchAll(\PDO::FETCH_ASSOC);
 
+        // Mails sent to this user (by e-mail address)
+        $mStmt = $this->db->prepare("
+            SELECT id, subject, template, status, queued_at, sent_at
+            FROM mail_queue
+            WHERE to_email = ?
+            ORDER BY queued_at DESC
+        ");
+        $mStmt->execute([$profileUser['email']]);
+        $sentMails = $mStmt->fetchAll(\PDO::FETCH_ASSOC);
+
+        // Q&A
+        $questionsWithAnswers = \App\Models\UserQuestion::getWithAnswersForUser($this->db, $id);
+
         echo $this->twig->render('pages/admin-user-detail.twig', [
-            'user'           => $this->getCurrentUser(),
-            'active_page'    => 'admin',
-            'profile_user'   => $profileUser,
-            'transactions'   => $transactions,
-            'registrations'  => $registrations,
-            'purchases'      => $purchases,
-            'threshold'      => $threshold->format('U'),
-            'csrf'           => csrf_token('admin-pairing'),
-            'mail_sent'      => $_GET['mail_sent'] ?? null,
-            'mail_templates' => $mailTemplates,
+            'user'                  => $this->getCurrentUser(),
+            'active_page'           => 'admin',
+            'profile_user'          => $profileUser,
+            'transactions'          => $transactions,
+            'registrations'         => $registrations,
+            'purchases'             => $purchases,
+            'threshold'             => $threshold->format('U'),
+            'csrf'                  => csrf_token('admin-pairing'),
+            'mail_sent'             => $_GET['mail_sent'] ?? null,
+            'mail_templates'        => $mailTemplates,
+            'sent_mails'            => $sentMails,
+            'questions_with_answers'=> $questionsWithAnswers,
         ]);
     }
 
@@ -836,6 +851,22 @@ class AdminController extends BaseController
         }
 
         header('Location: /admin/users/' . $id . '?mail_sent=' . urlencode($type));
+        exit;
+    }
+
+    public function setAwaitingPayment(int $id)
+    {
+        $this->requireAdmin();
+        csrf_validate('admin-pairing', $_POST['_csrf'] ?? null);
+
+        $amount = (float) str_replace(',', '.', $_POST['awaiting_payment'] ?? '0');
+        if ($amount < 0) {
+            $amount = 0;
+        }
+
+        $this->db->prepare("UPDATE users SET awaiting_payment = ? WHERE id = ?")->execute([$amount, $id]);
+
+        header('Location: /admin/users/' . $id);
         exit;
     }
 

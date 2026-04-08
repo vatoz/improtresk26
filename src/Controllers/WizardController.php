@@ -3,6 +3,7 @@ namespace App\Controllers;
 
 use App\Models\Workshop;
 use App\Models\Timeslot;
+use App\Models\User;
 use vplacek\QRPlatba\QRPlatba;
 
 class WizardController extends BaseController
@@ -515,6 +516,9 @@ class WizardController extends BaseController
             'currency'        => $paymentConfig['currency'],
             'message'         => $paymentConfig['message'],
         ];
+
+            $uu=new User();
+            $uu->update($this->db,$user['id'],['awaiting_payment'=>$total]);
 
         echo $this->twig->render('pages/wizard-payment.twig', [
             'user'          => $user,

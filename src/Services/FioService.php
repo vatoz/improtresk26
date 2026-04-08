@@ -3,6 +3,7 @@ namespace App\Services;
 
 use App\Models\TransactionList;
 use PDO;
+use App\Services\FastbuyService;
 
 class FioService
 {
@@ -123,6 +124,10 @@ class FioService
             $wasInserted ? $inserted++ : $skipped++;
         }
 
+        if( $inserted > 0){
+            new FastbuyService($this->db)->run();
+        }
+        
         return ['inserted' => $inserted, 'skipped' => $skipped];
     }
 
