@@ -18,7 +18,7 @@ class Workshop
                 w.*,
                 COUNT(r.id) as enrolled_count
             FROM workshops w
-            LEFT JOIN registrations r ON w.id = r.workshop_id AND r.payment_status NOT IN ('cancelled', 'skipped')
+            LEFT JOIN registrations r ON w.id = r.workshop_id AND r.payment_status NOT IN ('cancelled', 'skipped', 'notpaid')
             WHERE w.is_active = 1
             GROUP BY w.id
             ORDER BY  w.name
