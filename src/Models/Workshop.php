@@ -261,7 +261,7 @@ class Workshop
             SELECT w.*,
                    COUNT(r.id) AS enrolled_count
             FROM workshops w
-            LEFT JOIN registrations r ON w.id = r.workshop_id AND r.payment_status NOT IN ('cancelled', 'skipped')
+            LEFT JOIN registrations r ON w.id = r.workshop_id AND r.payment_status NOT IN ('cancelled', 'skipped', 'notpaid')
             WHERE w.is_active = 1
               AND w.timeslot IS NOT NULL
             GROUP BY w.id
@@ -334,7 +334,8 @@ class Workshop
                 w.*,
                 COUNT(r.id) as enrolled_count
             FROM workshops w
-            LEFT JOIN registrations r ON w.id = r.workshop_id AND r.payment_status NOT IN ('cancelled', 'skipped')
+            LEFT JOIN registrations r ON w.id = r.workshop_id AND r.payment_status NOT IN ('cancelled', 'skipped','notpaid'
+            )
             WHERE w.is_active = 1
             AND w.timeslot REGEXP CONCAT('[', ?, ']')
             GROUP BY w.id
@@ -467,7 +468,7 @@ class Workshop
 
             // Duplicate registration check
             $stmt = $db->prepare("
-                SELECT id FROM registrations WHERE user_id = ? AND workshop_id = ? AND payment_status NOT IN ('cancelled', 'skipped')
+                SELECT id FROM registrations WHERE user_id = ? AND workshop_id = ? AND payment_status NOT IN ('cancelled', 'skipped','notpaid')
             ");
             $stmt->execute([$userId, $workshopId]);
             if ($stmt->fetch()) {
