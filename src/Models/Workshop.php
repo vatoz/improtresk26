@@ -39,7 +39,7 @@ class Workshop
                 w.*,
                 COUNT(r.id) as enrolled_count
             FROM workshops w
-            LEFT JOIN registrations r ON w.id = r.workshop_id AND r.payment_status NOT IN ('cancelled', 'skipped')
+            LEFT JOIN registrations r ON w.id = r.workshop_id AND r.payment_status NOT IN ('cancelled', 'skipped','unpaid')
             GROUP BY w.id
             ORDER BY w.timeslot, w.name
         ");
@@ -59,7 +59,7 @@ class Workshop
                 w.*,
                 COUNT(r.id) as enrolled_count                
             FROM workshops w
-            LEFT JOIN registrations r ON w.id = r.workshop_id AND r.payment_status NOT IN ('cancelled', 'skipped')
+            LEFT JOIN registrations r ON w.id = r.workshop_id AND r.payment_status NOT IN ('cancelled', 'skipped','unpaid')
             WHERE w.is_active = 1
             GROUP BY w.id
             HAVING paid < capacity
@@ -82,7 +82,7 @@ class Workshop
                 w.*,
                 COUNT(r.id) as enrolled_count                
             FROM workshops w
-            LEFT JOIN registrations r ON w.id = r.workshop_id AND r.payment_status NOT IN ('cancelled', 'skipped')
+            LEFT JOIN registrations r ON w.id = r.workshop_id AND r.payment_status NOT IN ('cancelled', 'skipped','unpaid')
             WHERE w.id = ?
             GROUP BY w.id
         ");
