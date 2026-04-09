@@ -37,7 +37,7 @@ class AdminController extends BaseController
                    SUM(CASE WHEN r.payment_status = 'paid' THEN 1 ELSE 0 END) AS paid_count
             FROM workshops w
             LEFT JOIN registrations r ON w.id = r.workshop_id
-            WHERE r.payment_status not in ('skipped','cancelled')
+            WHERE r.payment_status not in ('skipped','cancelled','notpaid')
             GROUP BY w.id
         ");
 
