@@ -1,124 +1,64 @@
-<!-- Program Page -->
 <div class="container">
-    <h1>Program festivalu</h1>
+    <h1>Program</h1>
 
-    {% if program_items is empty %}
+    {% if program_info is empty %}
         <div class="card">
             <div class="card__body">
-                <p>Program festivalu bude brzy zveřejněn. Sledujte naše stránky pro aktualizace.</p>
+                <p>Momentálně nejsou k dispozici žádné informace o programu.</p>
             </div>
         </div>
     {% else %}
-        <div class="program-grid">
-            {% for date, timeSlots in program_items %}
-                <div class="program-day">
-                    <h2 class="program-day-title">{{ date|date('j. n. Y') }}</h2>
+        {% for group, items in program_info %}
+            <section class="people-section" style="padding-top:15px;padding-bottom:5px;" id="sekce_{{ group|replace({' ': '_'}) }}">
+                <h2 class="people-section__title random{{ random(9) }}">{{ group }}</h2>
+                <div class="people-grid">
+                    {% for item in items %}
+                        <div class="person-card card" style="margin-bottom:8px;">
+                            <div class="card__body">
+                                {% if photo[item.id] %}
+                                <img class="program_foto"
+                                " src="img/{{photo[item.id]}}" alt="Promo foto"/>
+                                {% endif %}
+                                <h3 class="person-card__name" style="margin-bottom:4px;" id="program_{{ item.id }}">{{ item.name }}</h3>
+                                <div class="person-card__links">
+                                    {% if item.web_link %}
+                                        <a href="{{ item.web_link }}" target="_blank" rel="noopener noreferrer" class="person-card__link person-card__link--web" title="Web">
+                                            Web
+                                        </a>
+                                    {% endif %}
+                                    {% if item.facebook_link %}
+                                        <a href="{{ item.facebook_link }}" target="_blank" rel="noopener noreferrer" class="person-card__link person-card__link--fb" title="Facebook">
+                                            FB
+                                        </a>
+                                    {% endif %}
+                                    {% if item.instagram_link %}
+                                        <a href="{{ item.instagram_link }}" target="_blank" rel="noopener noreferrer" class="person-card__link person-card__link--ig" title="Instagram">
+                                            IG
+                                        </a>
+                                    {% endif %}
+                                <br>
+                                {% if item.description %}
+                                    <p class="person-card__description">{{ item.description|raw|nl2br|cz_nbsp }}</p>
+                                {% endif %}
 
-                    {% for timeSlot, slot in timeSlots %}
-                        <div class="program-timeslot">
-                            <div class="program-time-label">
-                                {{ slot.start_time[:5] }} - {{ slot.end_time[:5] }}
-                            </div>
+                                {% if item.program_item_title %}
+                                    
+                                    <div class="card_details_program">
+                                       
+                                    
+                                    {{ item.date|date('j. n. Y') }}  {{ item.start_time[:5] }} <br>
+                                    {{ item.location }}
 
-                            {% if slot.full_width %}
-                                {# Full-width item spanning both tracks #}
-                                {% set item = slot.full_width %}
-                                <div class="program-item program-item--full">
-                                    <div class="program-content">
-                                        <div class="program-header">
-                                            <h3 class="program-title">{{ item.title }}</h3>
-                                            <span class="program-type badge badge-{{ item.type }}">
-                                                {% if item.type == 'performance' %}Představení
-                                                {% elseif item.type == 'workshop' %}Workshop
-                                                {% elseif item.type == 'discussion' %}Diskuse
-                                                {% elseif item.type == 'party' %}Párty
-                                                {% else %}{{ item.type }}
-                                                {% endif %}
-                                            </span>
-                                        </div>
 
-                                        {% if item.performer %}
-                                            <div class="program-performer">{{ item.performer }}</div>
-                                        {% endif %}
-
-                                        {% if item.description %}
-                                            <p class="program-description">{{ item.description |raw|nl2br|cz_nbsp}}</p>
-                                        {% endif %}
-
-                                        <div class="program-details">
-                                            {% if item.location %}
-                                                <span class="program-location">📍 {{ item.location }}</span>
-                                            {% endif %}
-                                            {% if item.is_free %}
-                                                <span class="program-free">🎫 Vstup zdarma</span>
-                                            {% endif %}
-                                            {% if item.max_capacity %}
-                                                <span class="program-capacity">👥 Kapacita: {{ item.max_capacity }}</span>
-                                            {% endif %}
-                                        </div>
                                     </div>
+                                {% endif %}
+
                                 </div>
-                            {% else %}
-                                {# Concurrent tracks #}
-                                <div class="program-tracks">
-                                    {% for track in ['track_a', 'track_b'] %}
-                                        <div class="program-track">
-                                            <div class="program-track-label">
-                                                {{ track == 'track_a' ? 'Blok A' : 'Blok B' }}
-                                            </div>
-
-                                            {% if slot[track] %}
-                                                {% set item = slot[track] %}
-                                                <div class="program-item">
-                                                    <div class="program-content">
-                                                        <div class="program-header">
-                                                            <h3 class="program-title">{{ item.title }}</h3>
-                                                            <span class="program-type badge badge-{{ item.type }}">
-                                                                {% if item.type == 'performance' %}Představení
-                                                                {% elseif item.type == 'workshop' %}Workshop
-                                                                {% elseif item.type == 'discussion' %}Diskuse
-                                                                {% elseif item.type == 'party' %}Párty
-                                                                {% else %}{{ item.type }}
-                                                                {% endif %}
-                                                            </span>
-                                                        </div>
-
-                                                        {% if item.performer %}
-                                                            <div class="program-performer">{{ item.performer }}</div>
-                                                        {% endif %}
-
-                                                        {% if item.description %}
-                                                            <p class="program-description">{{ item.description|raw|nl2br|cz_nbsp }}</p>
-                                                        {% endif %}
-
-                                                        <div class="program-details">
-                                                            {% if item.location %}
-                                                                <span class="program-location">📍 {{ item.location }}</span>
-                                                            {% endif %}
-                                                            {% if item.is_free %}
-                                                                <span class="program-free">🎫 Vstup zdarma</span>
-                                                            {% endif %}
-                                                            {% if item.max_capacity %}
-                                                                <span class="program-capacity">👥 Kapacita: {{ item.max_capacity }}</span>
-                                                            {% endif %}
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            {% else %}
-                                                <div class="program-item program-item--empty">
-                                                    <div class="program-content">
-                                                        <p class="program-empty-text">Žádný program</p>
-                                                    </div>
-                                                </div>
-                                            {% endif %}
-                                        </div>
-                                    {% endfor %}
-                                </div>
-                            {% endif %}
+                            </div>
                         </div>
                     {% endfor %}
                 </div>
-            {% endfor %}
-        </div>
+            </section>
+        {% endfor %}
     {% endif %}
 </div>

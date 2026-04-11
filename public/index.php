@@ -19,6 +19,7 @@ $router = new AltoRouter();
 // Default pages
 $router->map('GET', '/', 'DefaultController#index', 'home');
 $router->map('GET', '/program', 'DefaultController#program', 'program');
+$router->map('GET', '/harmonogram', 'DefaultController#harmonogram', 'harmonogram');
 $router->map('GET', '/info', 'DefaultController#info', 'info');
 $router->map('GET', '/faq', 'DefaultController#faq', 'faq');
 $router->map('GET', '/contact', 'DefaultController#contact', 'contact');
@@ -57,6 +58,9 @@ $router->map('GET|POST', '/wizard/tickets',   'WizardController#tickets',   'wiz
 $router->map('GET|POST', '/wizard/merch',     'WizardController#merch',     'wizard_merch');
 $router->map('GET',      '/wizard/payment',   'WizardController#payment',   'wizard_payment');
 $router->map('GET', '/wizard', 'WizardController#workshops', 'wizard');
+
+// QR platba
+$router->map('GET', '/qr-platba', 'DefaultController#qrPlatba', 'qr_platba');
 
 // Secret hero pages
 $router->map('GET', '/hero', 'DefaultController#hero', 'hero');

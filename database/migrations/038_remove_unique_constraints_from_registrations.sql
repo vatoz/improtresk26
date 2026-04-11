@@ -4,5 +4,5 @@
 --   variable_symbol              (variable_symbol column inline UNIQUE)  – added in migration 003
 
 ALTER TABLE `registrations`
-    DROP INDEX `unique_user_workshop_status`,
-    DROP INDEX `variable_symbol`;
+	ADD INDEX `unique_user_workshop_status` (`user_id`, `workshop_id`, `payment_status`),
+	DROP INDEX `unique_user_workshop_status`,    DROP INDEX `variable_symbol`;

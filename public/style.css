@@ -1323,3 +1323,19 @@ blockquote::before {
     margin-top: 1.5rem;
 }
 .wizard-nav--end { justify-content: flex-end; }
+
+.card_details_program{
+  border:thin solid #3c66a6ff;
+  border-radius:5px;
+  width:15em;
+  padding:8px 8px 8px 8px; 
+
+}
+
+.program_foto{
+  float:right;width:40em;margin-left:3em;margin-bottom:1em;
+                                border:thick solid #7e4994ff;
+                                border-radius:5px;
+
+
+}

@@ -2,8 +2,10 @@
 namespace App\Controllers;
 
 use App\Models\ProgramItem;
+use App\Models\ProgramInfo;
 use App\Models\FAQ;
 use App\Models\Person;
+use vplacek\QRPlatba\QRPlatba;
 
 class DefaultController extends BaseController
 {
@@ -17,14 +19,38 @@ class DefaultController extends BaseController
         ]);
     }
 
+
+    
     public function program()
     {
-        // Get program items grouped by date and track for concurrent display
-        $programItems = ProgramItem::getGroupedByDateAndTrack($this->db);
+        $programInfo = ProgramInfo::getGroupedByGroup($this->db);
+        
+        $photo=[];
+        $dir = __DIR__ . '/../../public/img/';   // cesta ke složce
+        $allowedPattern = '/^c(\d+)\.(jpg|png)$/i';
+        $files = scandir($dir);
+        foreach ($files as $file) {
+            if (preg_match($allowedPattern, $file, $matches)) {
+                $photo[(int)$matches[1]]=$file;        
+            }
+        }
 
         echo $this->twig->render('pages/program.twig', [
             'user' => $this->getCurrentUser(),
             'active_page' => 'program',
+            'photo' => $photo,
+            'program_info' => $programInfo,
+        ]);
+    }
+
+    public function harmonogram()
+    {
+        // Get program items grouped by date and track for concurrent display
+        $programItems = ProgramItem::getGroupedByDateAndTrack($this->db);
+
+        echo $this->twig->render('pages/harmonogram.twig', [
+            'user' => $this->getCurrentUser(),
+            'active_page' => 'harmonogram',
             'program_items' => $programItems
         ]);
     }
@@ -93,6 +119,28 @@ class DefaultController extends BaseController
             'message' => $heroValue === 1 ? 'Jsi náš hrdina!' : 'Jsi naše hrdinka!',
             'page' => $page,
         ]);
+    }
+
+    public function qrPlatba()
+    {
+        $castka = filter_input(INPUT_GET, 'castka', FILTER_VALIDATE_FLOAT);
+        $vs     = filter_input(INPUT_GET, 'vs', FILTER_SANITIZE_NUMBER_INT);
+
+        if ($castka === false || $castka === null || $vs === null || $vs === '') {
+            http_response_code(400);
+            echo 'Chybí parametry castka nebo vs.';
+            return;
+        }
+
+        $paymentConfig = payment_config();
+        $qrPlatba = new QRPlatba();
+        $qrPlatba->setIban($paymentConfig['iban'])
+            ->setAmount((float) $castka)
+            ->setScale(5)
+            ->setVariableSymbol((string) $vs);
+
+        header('Content-Type: image/png');
+        echo $qrPlatba->generateQr();
     }
 
     public function medailonky()
