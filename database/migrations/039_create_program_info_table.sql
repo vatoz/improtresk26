@@ -12,6 +12,5 @@ CREATE TABLE IF NOT EXISTS `program_info` (
     `is_active` TINYINT(1) NOT NULL DEFAULT 1,
     `order` INT NOT NULL DEFAULT 0,
     FOREIGN KEY (`program_item_id`) REFERENCES `program_items`(`id`) ON DELETE SET NULL,
-    INDEX `idx_group` (`description_group`),
     INDEX `idx_active` (`is_active`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
