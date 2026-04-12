@@ -658,6 +658,7 @@ a:hover {
   .countdown-value { font-size: var(--font-size-2xl); }
   .countdown-sep { font-size: var(--font-size-2xl); }
   .program_foto{ width:90%;}
+  span.program-type{ display:none;}
 }
 
 /* ========================================
@@ -856,22 +857,20 @@ a:hover {
   background: var(--color-primary);
   background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-active) 100%);
   padding: var(--space-12) var(--space-16);
-  border-radius: var(--radius-base) var(--radius-base) 0 0;
+  border-radius: var(--radius-base);
   text-align: center;
   font-size: var(--font-size-base);
   text-transform: uppercase;
   letter-spacing: 1px;
   color: white;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  margin-bottom: var(--space-8);
 }
 
 .program-track .program-item {
   display: block;
   margin-bottom: 0;
-  border-radius: 0 0 var(--radius-base) var(--radius-base);
-  border-top: none;
   flex-grow: 1;
-  height: 100%;
 }
 
 .program-item--full {
@@ -899,6 +898,25 @@ a:hover {
   font-style: italic;
   margin: 0;
   font-size: var(--font-size-sm);
+}
+
+/* Time-gap spacer inside a track column */
+.program-track-spacer {
+  background: var(--color-background);
+  border: 1px dashed var(--color-border);
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 40px;
+  opacity: 0.5;
+  margin-bottom: var(--space-8);
+}
+
+.program-spacer-text {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-secondary);
+  font-style: italic;
 }
 
 /* ========================================
@@ -1178,17 +1196,27 @@ a:hover {
     min-width: auto;
   }
 
+  /* Keep two columns on mobile — just tighten spacing and font sizes */
   .program-tracks {
-    grid-template-columns: 1fr;
-    gap: var(--space-16);
-  }
-
-  .program-track {
-    width: 100%;
+    gap: var(--space-8);
   }
 
   .program-track-label {
-    border-radius: var(--radius-base) var(--radius-base) 0 0;
+    font-size: var(--font-size-xs);
+    padding: var(--space-4) var(--space-8);
+    letter-spacing: 0;
+  }
+
+  .program-track .program-item {
+    padding: var(--space-8);
+  }
+
+  .program-track .program-title {
+    font-size: var(--font-size-base);
+  }
+
+  .program-track .program-type {
+    font-size: var(--font-size-xs);
   }
 
   .info-sections,

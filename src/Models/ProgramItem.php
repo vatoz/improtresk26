@@ -70,8 +70,12 @@ class ProgramItem
     }
 
     /**
-     * Get program items grouped by date with track support
-     * Returns structure: [date => [time_slot => ['full_width' => item, 'track_a' => item, 'track_b' => item]]]
+     * Get program items grouped by date with track support.
+     * Overlapping track items (across A/B) are merged into a single slot so that
+     * time offsets can be rendered as proportional spacers.
+     *
+     * Returns: [date => [ [start_time, end_time, total_mins, full_width, track_a, track_b], ... ]]
+     * track_a / track_b each have: {item, start_offset_mins, end_offset_mins, item_mins}
      *
      * @param PDO $db
      * @return array
@@ -86,36 +90,116 @@ class ProgramItem
         ");
         $items = $stmt->fetchAll();
 
-        $grouped = [];
+        // Bucket by date
+        $byDate = [];
         foreach ($items as $item) {
-            $date = $item['date'];
-            $timeSlot = $item['start_time'] . '-' . $item['end_time'];
+            $byDate[$item['date']][] = $item;
+        }
 
-            if (!isset($grouped[$date])) {
-                $grouped[$date] = [];
-            }
+        $grouped = [];
+        foreach ($byDate as $date => $dayItems) {
+            $trackItems = array_values(array_filter($dayItems, fn($i) => $i['track'] !== null));
+            $fullItems  = array_values(array_filter($dayItems, fn($i) => $i['track'] === null));
 
-            if (!isset($grouped[$date][$timeSlot])) {
-                $grouped[$date][$timeSlot] = [
+            // Full-width items become standalone slots
+            $allSlots = [];
+            foreach ($fullItems as $item) {
+                $allSlots[] = [
                     'start_time' => $item['start_time'],
-                    'end_time' => $item['end_time'],
-                    'full_width' => null,
-                    'track_a' => null,
-                    'track_b' => null
+                    'end_time'   => $item['end_time'],
+                    'total_mins' => self::timeDiffMinutes($item['start_time'], $item['end_time']),
+                    'full_width' => $item,
+                    'track_a'    => ['item' => null, 'start_offset_mins' => 0, 'end_offset_mins' => 0, 'item_mins' => 0],
+                    'track_b'    => ['item' => null, 'start_offset_mins' => 0, 'end_offset_mins' => 0, 'item_mins' => 0],
                 ];
             }
 
-            // Assign item to appropriate track
-            if ($item['track'] === null) {
-                $grouped[$date][$timeSlot]['full_width'] = $item;
-            } elseif ($item['track'] === 'A') {
-                $grouped[$date][$timeSlot]['track_a'] = $item;
-            } elseif ($item['track'] === 'B') {
-                $grouped[$date][$timeSlot]['track_b'] = $item;
+            // Group overlapping track items into shared slots
+            $groups = [];
+            foreach ($trackItems as $item) {
+                $trackKey      = 'track_' . strtolower((string)$item['track']); // track_a | track_b
+                $otherTrackKey = ($trackKey === 'track_a') ? 'track_b' : 'track_a';
+                $placed = false;
+
+                foreach ($groups as &$group) {
+                    // Slot is free for this track AND the item overlaps the group's time window
+                    if ($group[$trackKey]['item'] === null
+                        && $item['start_time'] < $group['end_time']
+                        && $item['end_time']   > $group['start_time']
+                    ) {
+                        $group[$trackKey] = ['item' => $item];
+                        if ($item['start_time'] < $group['start_time']) {
+                            $group['start_time'] = $item['start_time'];
+                        }
+                        if ($item['end_time'] > $group['end_time']) {
+                            $group['end_time'] = $item['end_time'];
+                        }
+                        $placed = true;
+                        break;
+                    }
+                }
+                unset($group);
+
+                if (!$placed) {
+                    $groups[] = [
+                        'start_time' => $item['start_time'],
+                        'end_time'   => $item['end_time'],
+                        'full_width' => null,
+                        $trackKey      => ['item' => $item],
+                        $otherTrackKey => ['item' => null],
+                    ];
+                }
             }
+
+            // Resolve offsets and item_mins for every group
+            foreach ($groups as &$group) {
+                $gs        = $group['start_time'];
+                $ge        = $group['end_time'];
+                $totalMins = self::timeDiffMinutes($gs, $ge);
+                $group['total_mins'] = $totalMins;
+
+                foreach (['track_a', 'track_b'] as $tk) {
+                    $it = $group[$tk]['item'];
+                    if ($it !== null) {
+                        $startOff = self::timeDiffMinutes($gs, $it['start_time']);
+                        $endOff   = self::timeDiffMinutes($it['end_time'], $ge);
+                        $itemMins = self::timeDiffMinutes($it['start_time'], $it['end_time']);
+                        $group[$tk] = [
+                            'item'               => $it,
+                            'start_offset_mins'  => $startOff,
+                            'end_offset_mins'    => $endOff,
+                            'item_mins'          => $itemMins,
+                        ];
+                    } else {
+                        $group[$tk] = [
+                            'item'               => null,
+                            'start_offset_mins'  => 0,
+                            'end_offset_mins'    => 0,
+                            'item_mins'          => $totalMins,
+                        ];
+                    }
+                }
+            }
+            unset($group);
+
+            // Merge full-width slots with track groups, order by start time
+            $allSlots = array_merge($allSlots, $groups);
+            usort($allSlots, fn($a, $b) => strcmp($a['start_time'], $b['start_time']));
+
+            $grouped[$date] = $allSlots;
         }
 
         return $grouped;
+    }
+
+    /**
+     * Return the number of whole minutes between two HH:MM[:SS] time strings.
+     */
+    private static function timeDiffMinutes(string $from, string $to): int
+    {
+        [$fh, $fm] = explode(':', $from);
+        [$th, $tm] = explode(':', $to);
+        return max(0, (int)$th * 60 + (int)$tm - ((int)$fh * 60 + (int)$fm));
     }
 
     /**

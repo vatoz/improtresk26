@@ -35,9 +35,17 @@ function fixCzechOrphans(string $text): string
 
 $twig->addFilter(new \Twig\TwigFilter('cz_nbsp', 'fixCzechOrphans', ['is_safe' => ['html']]));
 
+function trimStartZero(string $text): string
+{   if(substr($text,0,1)=="0"){return substr($text,1,22000);}else{return $text;}}
+
+$twig->addFilter(new \Twig\TwigFilter('trimStartZero', 'trimStartZero', ['is_safe' => ['html']]));
+
+
 
 
 // Sessions
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
+
+//ini_set('error_log', '../var/err.log');

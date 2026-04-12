@@ -10,23 +10,22 @@
         </div>
     {% else %}
         <div class="program-grid">
-            {% for date, timeSlots in program_items %}
+            {% for date, slots in program_items %}
                 <div class="program-day">
                     <h2 class="program-day-title">{{ date|date('j. n. Y') }}</h2>
 
-                    {% for timeSlot, slot in timeSlots %}
+                    {% for slot in slots %}
                         <div class="program-timeslot">
-                            <div class="program-time-label">
-                                {{ slot.start_time[:5] }} - {{ slot.end_time[:5] }}
-                            </div>
-
                             {% if slot.full_width %}
                                 {# Full-width item spanning both tracks #}
                                 {% set item = slot.full_width %}
                                 <div class="program-item program-item--full">
                                     <div class="program-content">
                                         <div class="program-header">
-                                            <h3 class="program-title">{{ item.title }}</h3>
+                                            <h3 class="program-title">
+                                              {{ slot.start_time[:5] |trimStartZero}} - {{ slot.end_time[:5] |trimStartZero}}
+                                            
+                                            {{ item.title }}</h3>
                                             <span class="program-type badge badge-{{ item.type }}">
                                                 {% if item.type == 'performance' %}Představení
                                                 {% elseif item.type == 'workshop' %}Workshop
@@ -59,20 +58,27 @@
                                     </div>
                                 </div>
                             {% else %}
-                                {# Concurrent tracks #}
+                                {# Concurrent tracks — always two columns #}
                                 <div class="program-tracks">
-                                    {% for track in ['track_a', 'track_b'] %}
+                                    {% for track_key, track_label in {'track_a': 'Blok A', 'track_b': 'Blok B'} %}
+                                        {% set track_data = slot[track_key] %}
                                         <div class="program-track">
-                                            <div class="program-track-label">
-                                                {{ track == 'track_a' ? 'Blok A' : 'Blok B' }}
-                                            </div>
+                                           <!-- <div class="program-track-label">{{ track_label }}</div>-->
 
-                                            {% if slot[track] %}
-                                                {% set item = slot[track] %}
+                                            {# Top spacer: empty time before this track's item starts #}
+                                            {% if track_data.start_offset_mins > 0 %}
+                                                <div class="program-track-spacer"
+                                                     style="min-height: {{ track_data.start_offset_mins * 2 }}px">
+                                                    <span class="program-spacer-text">Volno</span>
+                                                </div>
+                                            {% endif %}
+
+                                            {% if track_data.item %}
+                                                {% set item = track_data.item %}
                                                 <div class="program-item">
                                                     <div class="program-content">
                                                         <div class="program-header">
-                                                            <h3 class="program-title">{{ item.title }}</h3>
+                                                            <h3 class="program-title">   {{ item.start_time[:5] |trimStartZero}} - {{ item.end_time[:5] |trimStartZero}} {{ item.title }}</h3>
                                                             <span class="program-type badge badge-{{ item.type }}">
                                                                 {% if item.type == 'performance' %}Představení
                                                                 {% elseif item.type == 'workshop' %}Workshop
@@ -109,6 +115,14 @@
                                                     <div class="program-content">
                                                         <p class="program-empty-text">Žádný program</p>
                                                     </div>
+                                                </div>
+                                            {% endif %}
+
+                                            {# Bottom spacer: empty time after this track's item ends #}
+                                            {% if track_data.end_offset_mins > 0 %}
+                                                <div class="program-track-spacer"
+                                                     style="min-height: {{ track_data.end_offset_mins * 2 }}px">
+                                                    <span class="program-spacer-text">Volno</span>
                                                 </div>
                                             {% endif %}
                                         </div>
