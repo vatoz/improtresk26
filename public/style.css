@@ -644,10 +644,20 @@ a:hover {
   padding-top: 0;
 }
 
+.program_foto{
+  float:right;width:40em;margin-left:3em;margin-bottom:1em;
+       border:thick solid #7e4994ff;
+                                border-radius:5px;
+
+
+}
+
+
 @media (max-width: 480px) {
   .countdown-unit { min-width: 55px; }
   .countdown-value { font-size: var(--font-size-2xl); }
   .countdown-sep { font-size: var(--font-size-2xl); }
+  .program_foto{ width:90%;}
 }
 
 /* ========================================
@@ -1332,10 +1342,3 @@ blockquote::before {
 
 }
 
-.program_foto{
-  float:right;width:40em;margin-left:3em;margin-bottom:1em;
-                                border:thick solid #7e4994ff;
-                                border-radius:5px;
-
-
-}
