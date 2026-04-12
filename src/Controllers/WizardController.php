@@ -4,6 +4,7 @@ namespace App\Controllers;
 use App\Models\Workshop;
 use App\Models\Timeslot;
 use App\Models\User;
+use App\Models\StaticBlock;
 use vplacek\QRPlatba\QRPlatba;
 
 class WizardController extends BaseController
@@ -251,6 +252,7 @@ class WizardController extends BaseController
             'next_url'        => $nav['next'],
             'cur'             => $nav['cur'],
             'is_hero'         => $isHero,
+            'static' => (new StaticBlock)->getByPrefix($this->db,'wizard'),
         ]);
     }
 
@@ -327,7 +329,8 @@ class WizardController extends BaseController
             'wizard_step'        => 'tickets',
             'prev_url'           => $nav['prev'],
             'next_url'           => $nav['next'],
-             'cur'        => $nav['cur'],
+            'cur'        => $nav['cur'],
+            'static' => (new StaticBlock)->getByPrefix($this->db,'wizard'),
         ]);
     }
 
@@ -402,7 +405,8 @@ class WizardController extends BaseController
             'wizard_step'        => 'merch',
             'prev_url'           => $nav['prev'],
             'next_url'           => $nav['next'],
-             'cur'        => $nav['cur'],
+            'cur'        => $nav['cur'],
+            'static' => (new StaticBlock)->getByPrefix($this->db,'wizard'),
         ]);
     }
 
@@ -532,7 +536,8 @@ class WizardController extends BaseController
             'wizard_step'   => 'payment',
             'prev_url'      => $nav['prev'],
             'next_url'      => $nav['next'],
-             'cur'        => $nav['cur'],
+            'cur'        => $nav['cur'],
+            'static' => (new StaticBlock)->getByPrefix($this->db,'wizard'),
         ]);
     }
 }

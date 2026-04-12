@@ -22,11 +22,11 @@ class ProgramInfo
         $items = self::getAll($db);
         $grouped = [];
         foreach ($items as $item) {
-            $group = $item['description_group'];
-            if (!isset($grouped[$group])) {
-                $grouped[$group] = [];
-            }
-            $grouped[$group][] = $item;
+//            $group = $item['description_group'];
+            //if (!isset($grouped[$group])) {
+              //  $grouped[$group] = [];
+            //}
+            $grouped[''][] = $item;
         }
         return $grouped;
     }

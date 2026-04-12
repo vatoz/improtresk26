@@ -5,20 +5,13 @@
         <div class="card">
             <div class="card__body">
                 <h3> <img src="/sysimg/icon_z.png" style="height:1em"/> Místo konání večerního programu</h3>
-                
-                <p> Žižkostel<br>
-                náměstí Barikád 1520/1<br>  Praha 3 - Žižkov, Česko</p>
+                {% include 'inlines/static-block.twig' with {'field': 'info_1'} %}                
             </div>
         </div>
         <div class="card">
             <div class="card__body">
                 <h3> <img src="/sysimg/icon_w.png" style="height:1em"/> <img src="/sysimg/icon_z.png" style="height:1em"/> Místa konání workshopů</h3>
-                
-                <p> Žižkostel<br>
-                náměstí Barikád 1520/1<br>  Praha 3 - Žižkov, Česko</p>
-
-                <p> <a href="https:\\fostra.cz">Gymnázium Fostra</a><br>
-                Roháčova 1148/63<br>  Praha 3 - Žižkov, Česko</p>
+                {% include 'inlines/static-block.twig' with {'field': 'info_2'} %}
             </div>
         </div>
    
@@ -26,36 +19,24 @@
             <div class="card__body">
                 <h3>
                 
-                 <img src=" /sysimg/icon_u.png" style="height:1em"/>
-               
+                 <img src=" /sysimg/icon_u.png" style="height:1em"/>              
                 Ubytování</h3>
-                <p>I v Praze bude možné využít ubytování ve společném prostoru nedaleko Žižkostela. A to
-                 v <a href="https://4pvs.nipax.cz/kontakt">Skautské klubovně vodních skautů</a> na adrese Pitterova 2892/1, za budovou SUDOP, 
-                 130 00 - Praha 3 (20 min pěšky přes park Parukářka nebo cca 10 min MHD ze zastavky Černínova do Olšanská) za 500 Kč na celou dobu festivalu (čtvrtek - neděle). Jedná se o možnost pro nenáročné účastníky. 
-                 Počítejte prosím s tím, že bude potřeba vzít si s sebou vlastní karimatku nebo nafukovací matraci a taky spacák.
-                 <br>
-                 Kapacita je 30 lidí. 
-</p><p>
-
-Druhou možností je sehnat si střechu nad hlavou na vlastní pěst buď u známého Pražáka či Pražačky, nebo v jednom z mnoha ubytovacích zařízení v Praze. 
-
- </p>
+                {% include 'inlines/static-block.twig' with {'field': 'info_3'} %}
+                
             </div>
         </div>
         
 
-        <div class="card">
-            <div class="card__body">
-                <h3>Doprava</h3>
-                <p>
-                <img src="/sysimg/bus.png" style="height:20px;"/>  Autobus: Černínova - 136,133,207 <br>
-                <img src="/sysimg/tram.png" style="height:20px;"/>Tram: Ohrada - 1 , 2,5,7,9,11,15,25,36<br>
-                S parkováním je  v okolí komplikované. Vytipovali jsme pár míst, kde by to snad mohlo jít, najdeš je v <a href="/doc/parking.pdf">malém návodu</a>.
-                
-                
-                </p>
-            </div>
-        </div>
+        
+        {% for field in ['info_4','info_5','info_6','info_7'] %}
+            {% for block in static  %}{%  if block.block_name == field %}
+            <div class="card">
+                <div class="card__body">
+                        <h3>{{ block.title }} </h2>
+                        {{ block.content|raw}}
+                </div>
+            </div>                
+        {% endif %}{% endfor %}{% endfor %}
         
         
         

@@ -3,6 +3,7 @@ namespace App\Controllers;
 
 use App\Models\UserQuestion;
 use App\Models\UserAnswer;
+use App\Models\StaticBlock;
 
 class DashboardController extends BaseController
 {
@@ -70,6 +71,7 @@ class DashboardController extends BaseController
             'error'              => $session['error'],
             'success'            => $session['success'],
             'csrf'               => csrf_token('dashboard'),
+            'static' => (new StaticBlock)->getByPrefix($this->db,'dashboard')
         ]);
     }
 

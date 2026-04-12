@@ -992,6 +992,89 @@ class AdminController extends BaseController
         MailQueue::sendPaymentConfirmed($this->db, $user['email'], $user['name'], $workshops, $tickets, $merch, $dashboardUrl);
     }
 
+    public function staticBlocks()
+    {
+        $this->requireAdmin();
+
+        $success = $_SESSION['static_blocks_success'] ?? null;
+        $error   = $_SESSION['static_blocks_error']   ?? null;
+        unset($_SESSION['static_blocks_success'], $_SESSION['static_blocks_error']);
+
+        $stmt = $this->db->query("SELECT * FROM static_blocks ORDER BY block_name");
+
+        echo $this->twig->render('pages/admin-static-blocks.twig', [
+            'user'        => $this->getCurrentUser(),
+            'active_page' => 'admin',
+            'blocks'      => $stmt->fetchAll(\PDO::FETCH_ASSOC),
+            'csrf'        => csrf_token('admin-static-blocks'),
+            'success'     => $success,
+            'error'       => $error,
+        ]);
+    }
+
+    public function saveStaticBlock()
+    {
+        $this->requireAdmin();
+
+        if (!csrf_validate('admin-static-blocks', $_POST['_csrf'] ?? null)) {
+            http_response_code(403);
+            echo 'Neplatný CSRF token.';
+            exit;
+        }
+
+        $id          = (int) ($_POST['block_id'] ?? 0);
+        $blockName   = trim($_POST['block_name'] ?? '');
+        $title       = trim($_POST['title'] ?? '');
+        $description = trim($_POST['block_description'] ?? '');
+        $content     = $_POST['content'] ?? '';
+        $isActive    = isset($_POST['is_active']) ? 1 : 0;
+
+        if ($blockName === '' || $title === '') {
+            $_SESSION['static_blocks_error'] = 'Název bloku a nadpis jsou povinné.';
+            header('Location: /admin/static-blocks');
+            exit;
+        }
+
+        $data = [
+            'block_name'        => $blockName,
+            'title'             => $title,
+            'block_description' => $description !== '' ? $description : null,
+            'content'           => $content !== '' ? $content : null,
+            'is_active'         => $isActive,
+        ];
+
+        if ($id > 0) {
+            \App\Models\StaticBlock::update($this->db, $id, $data);
+            $_SESSION['static_blocks_success'] = 'Blok byl uložen.';
+        } else {
+            \App\Models\StaticBlock::create($this->db, $data);
+            $_SESSION['static_blocks_success'] = 'Blok byl vytvořen.';
+        }
+
+        header('Location: /admin/static-blocks');
+        exit;
+    }
+
+    public function deleteStaticBlock()
+    {
+        $this->requireAdmin();
+
+        if (!csrf_validate('admin-static-blocks', $_POST['_csrf'] ?? null)) {
+            http_response_code(403);
+            echo 'Neplatný CSRF token.';
+            exit;
+        }
+
+        $id = (int) ($_POST['block_id'] ?? 0);
+        if ($id > 0) {
+            \App\Models\StaticBlock::delete($this->db, $id);
+            $_SESSION['static_blocks_success'] = 'Blok byl smazán.';
+        }
+
+        header('Location: /admin/static-blocks');
+        exit;
+    }
+
     public function ticketSales()
     {
         $this->requireAdmin();

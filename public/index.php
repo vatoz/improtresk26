@@ -97,6 +97,9 @@ $router->map('GET', '/admin/pairing', 'AdminController#pairing', 'admin_pairing'
 $router->map('POST', '/admin/pairing/set-registration-status', 'AdminController#setRegistrationStatus', 'admin_pairing_reg_status');
 $router->map('POST', '/admin/pairing/set-purchase-status', 'AdminController#setPurchaseStatus', 'admin_pairing_purch_status');
 $router->map('POST', '/admin/pairing/complete-transaction', 'AdminController#completeTransaction', 'admin_pairing_complete');
+$router->map('GET',  '/admin/static-blocks',        'AdminController#staticBlocks',       'admin_static_blocks');
+$router->map('POST', '/admin/static-blocks/save',   'AdminController#saveStaticBlock',    'admin_static_blocks_save');
+$router->map('POST', '/admin/static-blocks/delete', 'AdminController#deleteStaticBlock',  'admin_static_blocks_delete');
 
 $match = $router->match();
 

@@ -1,0 +1,7 @@
+ {% for  block in static %}  
+  {% if block.block_name == field %}
+        {{ block.content|raw}}
+  {% endif %}
+{% endfor %}
+
+   

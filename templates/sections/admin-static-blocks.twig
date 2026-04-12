@@ -1,0 +1,145 @@
+<div class="card">
+    <div class="card__body">
+        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:.5rem; margin-bottom:1rem;">
+            <h3 style="margin:0;">Statické bloky</h3>
+            <button type="button" class="btn btn--primary btn--sm" onclick="openBlockModal(0)">+ Nový blok</button>
+        </div>
+
+        {% if success is defined and success %}
+            <div class="notification notification--success" style="margin-bottom:1rem;">{{ success }}</div>
+        {% endif %}
+        {% if error is defined and error %}
+            <div class="notification notification--error" style="margin-bottom:1rem;">{{ error }}</div>
+        {% endif %}
+
+        {% if blocks is empty %}
+            <p style="color:var(--color-text-secondary);">Žádné statické bloky. Vytvořte první kliknutím na „+ Nový blok".</p>
+        {% else %}
+            <table class="admin-table">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Název bloku</th>
+                        <th>Nadpis</th>
+                        <th>Popis</th>
+                        <th>Aktivní</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for block in blocks %}
+                        <tr>
+                            <td style="color:var(--color-text-secondary);">{{ block.id }}</td>
+                            <td><code>{{ block.block_name }}</code></td>
+                            <td>{{ block.title }}</td>
+                            <td style="color:var(--color-text-secondary); max-width:220px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">
+                                {{ block.block_description ?? '–' }}
+                            </td>
+                            <td>
+                                {% if block.is_active %}
+                                    <span class="badge badge-performance">Ano</span>
+                                {% else %}
+                                    <span class="badge badge-other" style="opacity:.6;">Ne</span>
+                                {% endif %}
+                            </td>
+                            <td style="white-space:nowrap;">
+                                <button type="button" class="btn btn--sm btn--outline"
+                                        onclick="openBlockModal({{ block.id }})">Upravit</button>
+                                <button type="button" class="btn btn--sm"
+                                        style="background:var(--color-error,#c0392b); color:#fff; border-color:transparent;"
+                                        onclick="confirmDelete({{ block.id }}, {{ block.block_name|json_encode }})">Smazat</button>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% endif %}
+    </div>
+</div>
+
+{# ── Create / Edit modal ────────────────────────────────────────────── #}
+<div id="block-modal" class="modal hidden">
+    <div class="modal-content" style="max-width:680px;">
+        <div class="modal-header">
+            <h3 id="block-modal-title">Blok</h3>
+            <button class="modal-close" type="button" onclick="closeBlockModal()">&times;</button>
+        </div>
+        <form method="post" action="/admin/static-blocks/save">
+            <input type="hidden" name="_csrf" value="{{ csrf }}">
+            <input type="hidden" name="block_id" id="block-id" value="0">
+
+            <div class="form-group">
+                <label for="block-name"><strong>Název bloku</strong> <small style="font-weight:normal;">(jedinečný identifikátor, např. <code>info_about</code>)</small></label>
+                <input type="text" id="block-name" name="block_name" class="form-control"
+                       pattern="[a-zA-Z0-9_]+" title="Pouze písmena, čísla a podtržítka" required>
+            </div>
+
+            <div class="form-group">
+                <label for="block-title"><strong>Nadpis</strong></label>
+                <input type="text" id="block-title" name="title" class="form-control" required>
+            </div>
+
+            <div class="form-group">
+                <label for="block-description"><strong>Popis bloku</strong> <small style="font-weight:normal;">(interní poznámka)</small></label>
+                <input type="text" id="block-description" name="block_description" class="form-control">
+            </div>
+
+            <div class="form-group">
+                <label for="block-content"><strong>Obsah</strong></label>
+                <textarea id="block-content" name="content" class="form-control"
+                          rows="10" style="font-family:monospace; font-size:var(--font-size-sm);"></textarea>
+            </div>
+
+            <div class="form-group" style="display:flex; align-items:center; gap:.5rem;">
+                <input type="checkbox" id="block-is-active" name="is_active" value="1">
+                <label for="block-is-active" style="margin:0; cursor:pointer;">Aktivní</label>
+            </div>
+
+            <div style="display:flex; justify-content:flex-end; gap:.5rem; padding-top:.5rem;">
+                <button type="button" class="btn btn--secondary" onclick="closeBlockModal()">Zrušit</button>
+                <button type="submit" class="btn btn--primary">Uložit</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+{# ── Delete form (hidden, submitted via JS) ─────────────────────────── #}
+<form id="delete-form" method="post" action="/admin/static-blocks/delete" style="display:none;">
+    <input type="hidden" name="_csrf" value="{{ csrf }}">
+    <input type="hidden" name="block_id" id="delete-block-id" value="0">
+</form>
+
+<script>
+ 
+const _blocks = {{ blocks| json_encode|raw }};
+
+
+function openBlockModal(id) {
+    const b = _blocks.find(x => x.id == id) || null;
+    document.getElementById('block-modal-title').textContent = b ? 'Upravit blok' : 'Nový blok';
+    document.getElementById('block-id').value          = b ? b.id : 0;
+    document.getElementById('block-name').value        = b ? b.block_name : '';
+    document.getElementById('block-title').value       = b ? b.title : '';
+    document.getElementById('block-description').value = b ? (b.block_description || '') : '';
+    document.getElementById('block-content').value     = b ? (b.content || '') : '';
+    document.getElementById('block-is-active').checked = b ? b.is_active == 1 : true;
+    document.getElementById('block-modal').classList.remove('hidden');
+}
+
+function closeBlockModal() {
+    document.getElementById('block-modal').classList.add('hidden');
+}
+
+function confirmDelete(id, name) {
+    if (!confirm('Opravdu smazat blok „' + name + '"?')) return;
+    document.getElementById('delete-block-id').value = id;
+    document.getElementById('delete-form').submit();
+}
+
+document.getElementById('block-modal').addEventListener('click', function(e) {
+    if (e.target === this) closeBlockModal();
+});
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') closeBlockModal();
+});
+</script>

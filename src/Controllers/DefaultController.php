@@ -5,6 +5,7 @@ use App\Models\ProgramItem;
 use App\Models\ProgramInfo;
 use App\Models\FAQ;
 use App\Models\Person;
+use App\Models\StaticBlock;
 use vplacek\QRPlatba\QRPlatba;
 
 class DefaultController extends BaseController
@@ -16,6 +17,7 @@ class DefaultController extends BaseController
             'user' => $this->getCurrentUser(),
             'active_page' => 'home',
             'registration_start' => $registrationStart,
+            'static' => (new StaticBlock)->getByPrefix($this->db,'home'),
         ]);
     }
 
@@ -59,7 +61,8 @@ class DefaultController extends BaseController
     {
         echo $this->twig->render('pages/info.twig', [
             'user' => $this->getCurrentUser(),
-            'active_page' => 'info'
+            'active_page' => 'info',
+            'static' => (new StaticBlock)->getByPrefix($this->db,'info'),
         ]);
     }
 
@@ -79,7 +82,9 @@ class DefaultController extends BaseController
     {
         echo $this->twig->render('pages/contact.twig', [
             'user' => $this->getCurrentUser(),
-            'active_page' => 'contact'
+            'active_page' => 'contact',
+            //'static' =>  [['name'=>'contact_org','content'=>'ahoj světe']]            
+            'static' => (new StaticBlock)->getByPrefix($this->db,'contact')
         ]);
     }
 

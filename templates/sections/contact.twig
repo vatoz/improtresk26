@@ -6,15 +6,8 @@
                 <div class="card__body">
                     <h3>Organizátor</h3>
                     <img style="margin-bottom:5px;" src="\sysimg\improliga.png">
-                    <p>Česká improvizační liga z.s.<br>
-                    Web: <a href="https:\\improliga.cz">improliga.cz</a><br>
-                    FB: <a href="https:\\improliga.cz">improliga.cz</a><br>
-                    Festivalový email: <a href="mailto:improtresk@improlab.art">improtresk@improlab.art</a><br>
-                    Program: +420 723 538 317<br>
-                    Web+registrace: +420 604 209 354
+                    {% include 'inlines/static-block.twig' with {'field': 'contact_org'} %}
                     
-                    
-                     </p>
                 </div>
             </div>
             
@@ -22,7 +15,8 @@
                 <div class="card__body">
                         <h3>Partner festivalu - Žižkostel </h2>
                         <img src="/sysimg/zizkostel.png" style="width:100%;">
-                        Web: <a href="https://komunitnikostel.cz/" target="_blank">komunitnikostel.cz</a>
+                        {% include 'inlines/static-block.twig' with {'field': 'contact_zizkostel'} %}
+                        
                 </div>
             </div>
 
@@ -31,11 +25,23 @@
                 <div class="card__body">
                         <h3>Partner festivalu - Fostra </h2>
                         <img src="/sysimg/fostra.png" style="width:100%;">
-                        Soukromé gymnázium Fostra v Praze 3 Žižkov a Praze 5 Anděl<br>
-                        Web:<a href="https://www.fostra.cz">www.fostra.cz</a>
-
+                        {% include 'inlines/static-block.twig' with {'field': 'contact_fostra'} %}
                 </div>
             </div>
+            
+
+            
+            {% for field in ['contact_sponsor1','contact_sponsor2','contact_sponsor3'] %}
+            {% for block in static  %}{%  if block.block_name == field %}
+            <div class="card">
+                <div class="card__body">
+                        <h3>{{ block.title }} </h2>
+                        {{ block.content|raw}}
+                </div>
+            </div>                
+        {% endif %}{% endfor %}{% endfor %}
+        
+
 
 
 
@@ -51,7 +57,7 @@
                     <a href="/medailonky#sekce_Organizátorstvo"><h3>Organizátorstvo</h3></a>
                     <ul>
                         <li>Martin Dočkal</li>
-                        <li>Dana Kardová </li>
+                        <li>Dana Kardová  (Baňule)</li>
                         <li>Václav Černý</li>
                     </ul>
                 </div>
@@ -64,11 +70,22 @@
                         <li>Michaela Konopásková</li>
                         <li>David Frinta</li>
                         <li>Barbora Danišová</li>
-                        <li>Klobouk</li>
+                        <li>Jan  Kloboučník (Klobouk)</li>
                     </ul>
 
                 </div>
             </div>
+
+            {% for field in ['contact_org3','contact_org4','contact_org4'] %}
+            {% for block in static  %}{%  if block.block_name == field %}
+            <div class="card">
+                <div class="card__body">
+                        <h3>{{ block.title }} </h2>
+                        {{ block.content|raw}}
+                </div>
+            </div>                
+            {% endif %}{% endfor %}{% endfor %}
+
         </div>    
     </div>
 </div>
