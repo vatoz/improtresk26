@@ -28,10 +28,18 @@
                         {% include 'inlines/static-block.twig' with {'field': 'contact_fostra'} %}
                 </div>
             </div>
+
+            <div class="card">
+                <div class="card__body">
+                        <h3>Sponzor festivalu  </h2>
+                        <img src="/sysimg/nzu.png" style="width:100%;">
+                        {% include 'inlines/static-block.twig' with {'field': 'contact_sponsor1'} %}
+                </div>
+            </div>
             
 
             
-            {% for field in ['contact_sponsor1','contact_sponsor2','contact_sponsor3'] %}
+            {% for field in ['contact_sponsor2','contact_sponsor3','contact_sponsor4'] %}
             {% for block in static  %}{%  if block.block_name == field %}
             <div class="card">
                 <div class="card__body">
