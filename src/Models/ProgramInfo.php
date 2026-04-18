@@ -12,7 +12,7 @@ class ProgramInfo
             FROM program_info pi
             LEFT JOIN program_items pr ON pi.program_item_id = pr.id
             WHERE pi.is_active = 1
-            ORDER BY pi.`order`, pi.name
+            ORDER BY  pr.date , pr.start_time , pi.`order`, pi.name
         ");
         return $stmt->fetchAll();
     }
