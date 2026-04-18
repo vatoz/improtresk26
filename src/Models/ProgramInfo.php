@@ -17,6 +17,20 @@ class ProgramInfo
         return $stmt->fetchAll();
     }
 
+    public static function getMapByProgramItemId(PDO $db): array
+    {
+        $stmt = $db->query("
+            SELECT id, program_item_id
+            FROM program_info
+            WHERE is_active = 1 AND program_item_id IS NOT NULL
+        ");
+        $map = [];
+        foreach ($stmt->fetchAll() as $row) {
+            $map[$row['program_item_id']] = $row['id'];
+        }
+        return $map;
+    }
+
     public static function getGroupedByGroup(PDO $db): array
     {
         $items = self::getAll($db);

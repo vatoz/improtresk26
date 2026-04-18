@@ -49,11 +49,13 @@ class DefaultController extends BaseController
     {
         // Get program items grouped by date and track for concurrent display
         $programItems = ProgramItem::getGroupedByDateAndTrack($this->db);
+        $programInfoMap = ProgramInfo::getMapByProgramItemId($this->db);
 
         echo $this->twig->render('pages/harmonogram.twig', [
             'user' => $this->getCurrentUser(),
             'active_page' => 'harmonogram',
-            'program_items' => $programItems
+            'program_items' => $programItems,
+            'program_info_map' => $programInfoMap,
         ]);
     }
 

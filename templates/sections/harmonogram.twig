@@ -55,6 +55,9 @@
                                                 <span class="program-capacity">👥 Kapacita: {{ item.max_capacity }}</span>
                                             {% endif %}
                                         </div>
+                                        {% if program_info_map[item.id] is defined %}
+                                            <a href="/program#program_{{ program_info_map[item.id] }}" class="program-read-more">Číst víc...</a>
+                                        {% endif %}
                                     </div>
                                 </div>
                             {% else %}
@@ -108,6 +111,9 @@
                                                                 <span class="program-capacity">👥 Kapacita: {{ item.max_capacity }}</span>
                                                             {% endif %}
                                                         </div>
+                                                        {% if program_info_map[item.id] is defined %}
+                                                            <a href="/program#program_{{ program_info_map[item.id] }}" class="program-read-more">Číst víc...</a>
+                                                        {% endif %}
                                                     </div>
                                                 </div>
                                             {% else %}
