@@ -1370,3 +1370,9 @@ blockquote::before {
 
 }
 
+#whatsapp{
+  border:thick solid#d45842ff;
+  border-radius:10px;
+  padding:10px 10px 10px 10px;
+
+}
