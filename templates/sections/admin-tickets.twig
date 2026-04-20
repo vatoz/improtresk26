@@ -6,6 +6,14 @@
         <span class="ticket-section__count">Prodáno: <strong>{{ ticket.sales|length }}</strong></span>
     </h2>
 
+    <div class="mailnote-section">
+        <label class="mailnote-label">Poznámka k mailu:</label>
+        <form method="post" action="/admin/tickets/{{ ticket.id }}/mailnote" class="mailnote-form">
+            <textarea name="mailnote" rows="2" class="mailnote-input">{{ mailnotes[ticket.id] ?? '' }}</textarea>
+            <button type="submit" class="btn btn--small">Uložit</button>
+        </form>
+    </div>
+
     {% if ticket.sales|length > 0 %}
     <table class="admin-table">
         <thead>
@@ -71,4 +79,9 @@
 }
 .status-badge--paid { background: #d4edda; color: #155724; }
 .status-badge--pending { background: #fff3cd; color: #856404; }
+.mailnote-section { display: flex; align-items: flex-start; gap: 0.5rem; margin-bottom: 0.75rem; }
+.mailnote-label { font-size: 0.85rem; white-space: nowrap; padding-top: 6px; }
+.mailnote-form { display: flex; align-items: flex-start; gap: 6px; flex: 1; }
+.mailnote-input { flex: 1; font-size: 0.85rem; padding: 4px; resize: vertical; }
+.btn--small { padding: 4px 10px; font-size: 0.8rem; white-space: nowrap; }
 </style>

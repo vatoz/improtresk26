@@ -1108,10 +1108,45 @@ class AdminController extends BaseController
             }
         }
 
+        $tickets = $this->db->query("SELECT id, mailnote FROM tickets ORDER BY id ASC")->fetchAll(\PDO::FETCH_ASSOC);
+        $mailnotes = [];
+        foreach ($tickets as $t) {
+            $mailnotes[$t['id']] = $t['mailnote'];
+        }
+
         echo $this->twig->render('pages/admin-tickets.twig', [
             'user'       => $this->getCurrentUser(),
             'active_page' => 'admin',
             'by_ticket'  => array_values($byTicket),
+            'mailnotes'  => $mailnotes,
         ]);
+    }
+
+    public function updateWorkshopMailnote($id)
+    {
+        $this->requireAdmin();
+
+        $id       = (int) $id;
+        $mailnote = trim($_POST['mailnote'] ?? '');
+
+        $stmt = $this->db->prepare("UPDATE workshops SET mailnote = ? WHERE id = ?");
+        $stmt->execute([$mailnote !== '' ? $mailnote : null, $id]);
+
+        header('Location: /admin/workshops');
+        exit;
+    }
+
+    public function updateTicketMailnote($id)
+    {
+        $this->requireAdmin();
+
+        $id       = (int) $id;
+        $mailnote = trim($_POST['mailnote'] ?? '');
+
+        $stmt = $this->db->prepare("UPDATE tickets SET mailnote = ? WHERE id = ?");
+        $stmt->execute([$mailnote !== '' ? $mailnote : null, $id]);
+
+        header('Location: /admin/tickets');
+        exit;
     }
 }

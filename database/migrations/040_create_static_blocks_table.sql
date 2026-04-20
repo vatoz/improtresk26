@@ -14,7 +14,7 @@ CREATE TABLE IF NOT EXISTS `static_blocks` (
 
 SET NAMES utf8mb4;
 
-INSERT INTO `static_blocks` (`id`, `block_name`, `title`, `block_description`, `content`, `is_active`) VALUES
+INSERT IGNORE INTO `static_blocks` (`id`, `block_name`, `title`, `block_description`, `content`, `is_active`) VALUES
 (1,	'contact_org',	'Organizátor',	'pod logem improligy',	'<p>Česká improvizační liga z.s.<br>\r\nWeb: <a href=\"https:\\\\improliga.cz\">improliga.cz</a><br>\r\nFB: <a href=\"https:\\\\improliga.cz\">improliga.cz</a><br>\r\nFestivalový email: <a href=\"mailto:improtresk@improlab.art\">improtresk@improlab.art</a><br>\r\nProgram: +420 723 538 317<br>\r\nWeb+registrace: +420 604 209 354\r\n</p>',	1),
 (2,	'contact_zizkostel',	'Žižkostel',	NULL,	'Web: <a href=\"https://komunitnikostel.cz/\" target=\"_blank\">komunitnikostel.cz</a>',	1),
 (3,	'contact_fostra',	'Fostra',	NULL,	'Soukromé gymnázium Fostra v Praze 3 Žižkov a Praze 5 Anděl<br>\r\n                        Web:<a href=\"https://www.fostra.cz\">www.fostra.cz</a>',	1),

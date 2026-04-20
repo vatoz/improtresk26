@@ -22,15 +22,17 @@
                     <p><strong>Jméno:</strong> {{ user.name }}</p>
                     <p><strong>Email:</strong> {{ user.email }}</p>
                     {% if user.hero and user.hero == 1 %}
+                    
+                    <div id=whatsapp>
                     <p><strong>Jsi náš hrdina!</strong></p>
                     Cenu přihlášky jsme v rozhraní nezměnili, ale kouknem na to při vyhodnocování plateb!
-                    <div id=whatsapp>
                     {% include 'inlines/static-block.twig' with {'field': 'dashboard_hero'} %}
                     </div >
                     {% elseif user.hero and user.hero == 2 %}
+                    
+                    <div id=whatsapp>
                     <p><strong>Jsi naše hrdinka!</strong></p>
                     Cenu přihlášky jsme v rozhraní nezměnili, ale kouknem na to při vyhodnocování plateb!
-                    <div id=whatsapp>
                     {% include 'inlines/static-block.twig' with {'field': 'dashboard_hero'} %}
                     </div>
                     {% else  %}
