@@ -82,9 +82,12 @@ class DefaultController extends BaseController
 
     public function contact()
     {
+
+        $people = Person::getAll($this->db);
         echo $this->twig->render('pages/contact.twig', [
             'user' => $this->getCurrentUser(),
             'active_page' => 'contact',
+            'people'=> $people,
             //'static' =>  [['name'=>'contact_org','content'=>'ahoj světe']]            
             'static' => (new StaticBlock)->getByPrefix($this->db,'contact')
         ]);

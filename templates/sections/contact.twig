@@ -63,11 +63,14 @@
             <div class="card">
                 <div class="card__body">
                     <a href="/medailonky#sekce_Organizátorstvo"><h3>Organizátorstvo</h3></a>
-                    <ul>
-                        <li>Martin Dočkal</li>
-                        <li>Dana Kardová  (Baňule)</li>
-                         <li>Jan  Kloboučník (Klobouk)</li>
-                        <li>Václav Černý</li>
+                             <ul>
+                            
+                            {% for person in people %}                            
+                            {% if person.section == 'Organizátorstvo'  %}                    
+                                <li>{{   person.name }}</li>
+                            {% endif %}
+                            {% endfor %}
+
                     </ul>
                 </div>
             </div>
@@ -75,11 +78,13 @@
                 <div class="card__body">
                     <a href="/medailonky#sekce_Spoluorganizátorstvo"><h3>Spoluorganizátorstvo</h3></a>
                     <ul>
-                        <li>Jana Pokorná</li>
-                        <li>Michaela Konopásková</li>
-                        <li>David Frinta</li>
-                        <li>Barbora Danišová</li>
-                       
+                          
+                            {% for person in people %}                            
+                            {% if person.section == 'Spoluorganizátorstvo'  %}                                                    
+                                    <li>{{   person.name }}</li>                                
+                            {% endif %}
+                            {% endfor %}
+                                        
                     </ul>
 
                 </div>
