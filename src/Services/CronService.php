@@ -22,9 +22,9 @@ use Twig\Environment as Twig;
 class CronService
 {
     private const JOBS = [
-        'mail'     => ['key' => 'cron_last_run_mail',     'interval' => 60*3],
-        'fio'      => ['key' => 'cron_last_run_fio',      'interval' => 60*5],
-        'reminder' => ['key' => 'cron_last_run_reminder', 'interval' => 60*2],
+        'mail'     => ['key' => 'cron_last_run_mail',     'interval' => 60],
+        'fio'      => ['key' => 'cron_last_run_fio',      'interval' => 60*60],
+        'reminder' => ['key' => 'cron_last_run_reminder', 'interval' => 60],
     ];
 
     private PDO  $db;
