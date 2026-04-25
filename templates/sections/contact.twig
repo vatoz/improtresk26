@@ -56,15 +56,13 @@
             <div class="card">
                 <div class="card__body">
                     <h3>Mediální partneři</h3>
-                    <p>Pro média a tiskové zprávy:<br>
-                    Email: improtresk@improlab.art</p>
+                     {% include 'inlines/static-block.twig' with {'field': 'contact_media'} %}                    
                 </div>
             </div>
             <div class="card">
                 <div class="card__body">
                     <a href="/medailonky#sekce_Organizátorstvo"><h3>Organizátorstvo</h3></a>
                              <ul>
-                            
                             {% for person in people %}                            
                             {% if person.section == 'Organizátorstvo'  %}                    
                                 <li>{{   person.name }}</li>
