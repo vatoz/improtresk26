@@ -101,3 +101,20 @@ function send_email(string $to, string $subject, string $templatePath, array $da
     // Send email
     return mail($to, $subject, $htmlBody, implode("\r\n", $headers));
 }
+
+
+function loadImages($rows, $prefix=""){        
+        $dir = __DIR__ . '/../public/img/';   // cesta ke složce
+        $allowedPattern = '/^'.$prefix.'(\d+)\.(jpg|png)$/i';
+        $files = scandir($dir);
+        foreach ($files as $file) {
+            if (preg_match($allowedPattern, $file, $matches)) {
+                foreach($rows as $id=>$row){
+                    if($matches[1]==$row['id']){
+                        $rows[$id]['photo']=$file;
+                    }
+                }
+            }
+        }
+        return $rows;
+    }

@@ -13,9 +13,10 @@ class StaticBlock
             WHERE is_active = 1
             ORDER BY block_name
         ");
-        return $stmt->fetchAll();
+        return loadImages($stmt->fetchAll());
     }
 
+    
     public static function getByName(PDO $db, string $blockName): array|false
     {
         $stmt = $db->prepare("
@@ -24,7 +25,8 @@ class StaticBlock
             WHERE block_name = ? AND is_active = 1
         ");
         $stmt->execute([$blockName]);
-        return $stmt->fetch();
+        $data=loadImages([$stmt->fetch()]);
+        return $data[0];
     }
 
     /**
@@ -41,14 +43,15 @@ class StaticBlock
         ");
         
         $stmt->execute([str_replace(['%', '_'], ['\\%', '\\_'], $prefix) . '%']);
-        return $stmt->fetchAll();
+        return loadImages($stmt->fetchAll());
     }
 
     public static function findById(PDO $db, int $id): array|false
     {
         $stmt = $db->prepare("SELECT * FROM static_blocks WHERE id = ?");
         $stmt->execute([$id]);
-        return $stmt->fetch();
+        $data=loadImages([$stmt->fetch()]);
+        return $data[0];
     }
 
     public static function create(PDO $db, array $data): int

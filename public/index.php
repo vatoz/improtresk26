@@ -102,6 +102,8 @@ $router->map('POST', '/admin/pairing/complete-transaction', 'AdminController#com
 $router->map('GET',  '/admin/static-blocks',        'AdminController#staticBlocks',       'admin_static_blocks');
 $router->map('POST', '/admin/static-blocks/save',   'AdminController#saveStaticBlock',    'admin_static_blocks_save');
 $router->map('POST', '/admin/static-blocks/delete', 'AdminController#deleteStaticBlock',  'admin_static_blocks_delete');
+$router->map('GET',  '/admin/images',               'AdminController#imageManager',       'admin_images');
+$router->map('POST', '/admin/images/upload',        'AdminController#uploadImage',        'admin_images_upload');
 
 $match = $router->match();
 

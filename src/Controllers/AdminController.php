@@ -820,6 +820,10 @@ class AdminController extends BaseController
                 $this->queuePaymentConfirmedMail($id);
                 break;
 
+            case 'schedule':
+                $this->queueScheduleMail($id);
+                break;
+
             case 'password-reset':
                 $token = \App\Models\User::createPasswordResetToken($this->db, $user['email']);
                 if ($token) {
@@ -992,6 +996,59 @@ class AdminController extends BaseController
         MailQueue::sendPaymentConfirmed($this->db, $user['email'], $user['name'], $workshops, $tickets, $merch, $dashboardUrl);
     }
 
+    private function queueScheduleMail(int $userId): void
+    {
+        $user = \App\Models\User::findById($this->db, $userId);
+        if (!$user) {
+            return;
+        }
+
+        
+        // User's paid workshops
+        $stmt = $this->db->prepare("
+            SELECT w.name, w.instructor, w.timeslot, w.mailnote, w.location
+            FROM registrations r
+            JOIN workshops w ON r.workshop_id = w.id
+            WHERE r.user_id = ? AND r.payment_status = 'paid'
+            ORDER BY w.timeslot, w.name
+        ");
+        $stmt->execute([$userId]);
+        $workshopsByTimeslot = [];
+    
+        foreach ($stmt->fetchAll(\PDO::FETCH_ASSOC) as $w) {
+            $workshopsByTimeslot[$w['timeslot']] = $w;
+            if($w['timeslot']=='ABCD'){
+                $workshopsByTimeslot['AB'] = $w;
+                $workshopsByTimeslot['CD'] = $w;
+            }
+        }
+        
+        // User's paid tickets
+        $stmt = $this->db->prepare("
+            SELECT t.id,t.name, p.quantity, t.mailnote
+            FROM purchases p
+            JOIN tickets t ON t.id = p.item_id AND p.item_type = 'ticket'
+            WHERE p.user_id = ? AND p.payment_status = 'paid'
+            ORDER BY t.name
+        ");
+        $stmt->execute([$userId]);
+        $tickets=[];
+        foreach($stmt->fetchAll(\PDO::FETCH_ASSOC) as $ticket){
+                $tickets[$ticket['id']]=$ticket;
+
+        };
+
+        $dashboardUrl = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? 'https' : 'http')
+            . '://' . $_SERVER['HTTP_HOST'] . '/dashboard';
+
+        MailQueue::addWithTemplate($this->db, $user['email'], 'Informace k festivalu Improtřesk 2026', 'schedule.twig', [
+            'name'         => $user['name'],
+            'workshops'         => $workshopsByTimeslot,
+            'tickets'      => $tickets,
+            'dashboardUrl' => $dashboardUrl,
+        ]);
+    }
+
     public function staticBlocks()
     {
         $this->requireAdmin();
@@ -1147,6 +1204,166 @@ class AdminController extends BaseController
         $stmt->execute([$mailnote !== '' ? $mailnote : null, $id]);
 
         header('Location: /admin/tickets');
+        exit;
+    }
+
+    public function imageManager(): void
+    {
+        $this->requireAdmin();
+
+        $imgDir = realpath(__DIR__ . '/../../public/img') . '/';
+
+        // Build sets of IDs that already have an image
+        $pairedPeople        = [];
+        $pairedProgramInfo   = [];
+        $pairedStaticBlocks  = [];
+        foreach (glob($imgDir . '*.{jpg,png}', GLOB_BRACE) ?: [] as $path) {
+            $name = basename($path);
+            if (str_contains($name, ':')) continue;
+            if (preg_match('/^c(\d+)\.(jpg|png)$/i', $name, $m)) {
+                $pairedProgramInfo[(int) $m[1]] = $name;
+            } elseif (preg_match('/^s(\d+)\.(jpg|png)$/i', $name, $m)) {
+                $pairedStaticBlocks[(int) $m[1]] = $name;
+            } elseif (preg_match('/^(\d+)\.(jpg|png)$/i', $name, $m)) {
+                $pairedPeople[(int) $m[1]] = $name;
+            }
+        }
+
+        // People without an image
+        $rows = $this->db->query("SELECT id, name, section FROM people ORDER BY id")->fetchAll(\PDO::FETCH_ASSOC);
+        $unpairedPeople = [];
+        foreach ($rows as $r) {
+            $id = (int) $r['id'];
+            if (!isset($pairedPeople[$id])) {
+                $unpairedPeople[] = $r;
+            }
+        }
+
+        // Program info items without an image
+        $rows = $this->db->query("SELECT id, name FROM program_info ORDER BY id")->fetchAll(\PDO::FETCH_ASSOC);
+        $unpairedProgramInfo = [];
+        foreach ($rows as $r) {
+            $id = (int) $r['id'];
+            if (!isset($pairedProgramInfo[$id])) {
+                $unpairedProgramInfo[] = $r;
+            }
+        }
+
+        // Static blocks without an image
+        $rows = $this->db->query("SELECT id, block_name, title FROM static_blocks ORDER BY id")->fetchAll(\PDO::FETCH_ASSOC);
+        $unpairedStaticBlocks = [];
+        foreach ($rows as $r) {
+            $id = (int) $r['id'];
+            if (!isset($pairedStaticBlocks[$id])) {
+                $unpairedStaticBlocks[] = $r;
+            }
+        }
+
+        // All existing images for the gallery
+        $images = [];
+        foreach (array_merge($pairedPeople, $pairedProgramInfo, $pairedStaticBlocks) as $name) {
+            $images[] = ['name' => $name, 'size' => filesize($imgDir . $name)];
+        }
+        usort($images, fn($a, $b) => strnatcmp($a['name'], $b['name']));
+
+        $success = $_SESSION['admin_images_success'] ?? null;
+        $error   = $_SESSION['admin_images_error']   ?? null;
+        unset($_SESSION['admin_images_success'], $_SESSION['admin_images_error']);
+
+        echo $this->twig->render('pages/admin-images.twig', [
+            'user'                  => $this->getCurrentUser(),
+            'active_page'           => 'admin',
+            'unpaired_people'       => $unpairedPeople,
+            'unpaired_program'      => $unpairedProgramInfo,
+            'unpaired_static_blocks'=> $unpairedStaticBlocks,
+            'images'                => $images,
+            'csrf'                  => csrf_token('admin-images'),
+            'success'               => $success,
+            'error'                 => $error,
+        ]);
+    }
+
+    public function uploadImage(): void
+    {
+        $this->requireAdmin();
+
+        if (!csrf_validate('admin-images', $_POST['_csrf'] ?? null)) {
+            http_response_code(403);
+            echo 'Invalid token.';
+            exit;
+        }
+
+        $targetType = $_POST['target_type'] ?? '';
+        $targetId   = (int) ($_POST['target_id'] ?? 0);
+
+        if (!in_array($targetType, ['person', 'program_info', 'static_block'], true) || $targetId <= 0) {
+            $_SESSION['admin_images_error'] = 'Neplatný cíl nahrání.';
+            header('Location: /admin/images');
+            exit;
+        }
+
+        // Verify target exists in DB
+        $table = match($targetType) {
+            'person'       => 'people',
+            'program_info' => 'program_info',
+            'static_block' => 'static_blocks',
+        };
+        $stmt = $this->db->prepare("SELECT id FROM {$table} WHERE id = ?");
+        $stmt->execute([$targetId]);
+        if (!$stmt->fetch()) {
+            $_SESSION['admin_images_error'] = 'Záznam v databázi nenalezen.';
+            header('Location: /admin/images');
+            exit;
+        }
+
+        $imgDir = realpath(__DIR__ . '/../../public/img') . '/';
+        $prefix = match($targetType) {
+            'program_info' => "c{$targetId}",
+            'static_block' => "s{$targetId}",
+            default        => (string) $targetId,
+        };
+
+        // Reject if an image already exists for this target
+        foreach (['jpg',  'png'] as $e) {
+            if (file_exists($imgDir . $prefix . '.' . $e)) {
+                $_SESSION['admin_images_error'] = "Obrázek pro tento záznam (ID {$targetId}) již existuje.";
+                header('Location: /admin/images');
+                exit;
+            }
+        }
+
+        $file = $_FILES['image'] ?? null;
+        if (!$file || $file['error'] !== UPLOAD_ERR_OK) {
+            $_SESSION['admin_images_error'] = 'Soubor nebyl nahrán.';
+            header('Location: /admin/images');
+            exit;
+        }
+
+        if ($file['size'] > 204800) {
+            $_SESSION['admin_images_error'] = 'Soubor je příliš velký (max. 200 kB).';
+            header('Location: /admin/images');
+            exit;
+        }
+
+        $finfo = new \finfo(FILEINFO_MIME_TYPE);
+        $mime  = $finfo->file($file['tmp_name']);
+        if (!in_array($mime, ['image/jpeg', 'image/png'], true)) {
+            $_SESSION['admin_images_error'] = 'Povoleny jsou pouze soubory JPG a PNG.';
+            header('Location: /admin/images');
+            exit;
+        }
+
+        $ext      = $mime === 'image/png' ? 'png' : 'jpg';
+        $filename = $prefix . '.' . $ext;
+
+        if (!move_uploaded_file($file['tmp_name'], $imgDir . $filename)) {
+            $_SESSION['admin_images_error'] = 'Nepodařilo se uložit soubor.';
+            header('Location: /admin/images');
+            exit;
+        }
+
+        $_SESSION['admin_images_success'] = "Soubor byl nahrán jako {$filename}.";
+        header('Location: /admin/images');
         exit;
     }
 }

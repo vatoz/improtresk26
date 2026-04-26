@@ -34,6 +34,8 @@ class Person
             $person['workshops'] = $workshopsByPerson[$person['id']] ?? [];
         }
 
+        $people=loadImages($people,"");
+
         return $people;
     }
 
@@ -63,6 +65,7 @@ class Person
             ORDER BY pw.`order`, p.section, p.`order`, p.name
         ");
         $rows = $stmt->fetchAll();
+        $rows=loadImages($rows,"");
 
         $grouped = [];
         foreach ($rows as $row) {

@@ -136,10 +136,10 @@
                             <div class="card__body">
 
                                 <h3 class="person-card__name" style="margin-bottom:4px;">{{ person.name }}</h3>
-                                {% if fotky[person.id] %}
+                                {% if person.photo %}
                                 <img style="float:right;width:12em;margin-left:3em;margin-bottom:1em;
                                 border:thick solid grey;
-                                " src="img/{{fotky[person.id]}}" alt="Medailonek osoby"/>
+                                " src="img/{{person.photo}}" alt="Medailonek osoby"/>
                                 {% endif %}
                                 <div class="person-card__links">
                                     {% if person.weblink %}

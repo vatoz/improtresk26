@@ -27,20 +27,10 @@ class DefaultController extends BaseController
     {
         $programInfo = ProgramInfo::getGroupedByGroup($this->db);
         
-        $photo=[];
-        $dir = __DIR__ . '/../../public/img/';   // cesta ke složce
-        $allowedPattern = '/^c(\d+)\.(jpg|png)$/i';
-        $files = scandir($dir);
-        foreach ($files as $file) {
-            if (preg_match($allowedPattern, $file, $matches)) {
-                $photo[(int)$matches[1]]=$file;        
-            }
-        }
-
+       
         echo $this->twig->render('pages/program.twig', [
             'user' => $this->getCurrentUser(),
-            'active_page' => 'program',
-            'photo' => $photo,
+            'active_page' => 'program',       
             'program_info' => $programInfo,
         ]);
     }
@@ -157,21 +147,8 @@ class DefaultController extends BaseController
     {
         $people = Person::getGroupedBySection($this->db);
 
-        $photo=[];
-        $dir = __DIR__ . '/../../public/img/';   // cesta ke složce
-        $allowedPattern = '/^(\d+)\.(jpg|png)$/i';
-        $files = scandir($dir);
-        foreach ($files as $file) {
-            if (preg_match($allowedPattern, $file, $matches)) {
-                $photo[(int)$matches[1]]=$file;        
-            }
-        }
-        //$photo[1]="logo.png";
-
-
         echo $this->twig->render('pages/medailonky.twig', [
             'user' => $this->getCurrentUser(),
-            'photo' => $photo,
             'active_page' => 'medailonky',
             'people' => $people,
         ]);

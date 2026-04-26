@@ -15,9 +15,9 @@
                     {% for item in items %}
                         <div class="person-card card" style="margin-bottom:8px;">
                             <div class="card__body">
-                                {% if photo[item.id] %}
+                                {% if item.photo %}
                                 <img class="program_foto"
-                                " src="img/{{photo[item.id]}}" alt="Promo foto"/>
+                                " src="img/{{item.photo}}" alt="Promo foto"/>
                                 {% endif %}
                                 <h3 class="person-card__name" style="margin-bottom:4px;" id="program_{{ item.id }}">{{ item.name }}</h3>
                                 <div class="person-card__links">

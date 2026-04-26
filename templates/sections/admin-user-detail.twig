@@ -87,6 +87,12 @@
             <button type="submit" class="btn btn--sm btn--success">Potvrzení platby</button>
         </form>
         <form method="POST" action="/admin/users/{{ profile_user.id }}/send-mail"
+              onsubmit="return confirm('Opravdu odeslat e-mail „Program" uživateli {{ profile_user.name }}?')">
+            <input type="hidden" name="_csrf" value="{{ csrf }}">
+            <input type="hidden" name="mail_type" value="schedule">
+            <button type="submit" class="btn btn--sm btn--primary">Program</button>
+        </form>
+        <form method="POST" action="/admin/users/{{ profile_user.id }}/send-mail"
               onsubmit="return confirm('Opravdu odeslat e-mail „Obnova hesla" uživateli {{ profile_user.name }}?')">
             <input type="hidden" name="_csrf" value="{{ csrf }}">
             <input type="hidden" name="mail_type" value="password-reset">

@@ -14,7 +14,7 @@ class ProgramInfo
             WHERE pi.is_active = 1
             ORDER BY  pr.date , pr.start_time , pi.`order`, pi.name
         ");
-        return $stmt->fetchAll();
+        return loadImages($stmt->fetchAll(),"c");
     }
 
     public static function getMapByProgramItemId(PDO $db): array

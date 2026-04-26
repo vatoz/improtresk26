@@ -1,0 +1,167 @@
+{% if success %}
+    <div class="notification notification--success" style="margin-bottom:1rem;">{{ success }}</div>
+{% endif %}
+{% if error %}
+    <div class="notification notification--error" style="margin-bottom:1rem;">{{ error }}</div>
+{% endif %}
+
+{# ── People without image ─────────────────────────────────────────────── #}
+<div class="card" style="margin-bottom:1.5rem;">
+    <div class="card__body">
+        <h3 style="margin-top:0; margin-bottom:.25rem;">Lidé bez obrázku</h3>
+        <p style="margin:0 0 1rem; color:var(--color-text-secondary); font-size:var(--font-size-sm);">
+            Nahraje se jako <code>{id}.jpg</code> nebo <code>{id}.png</code> 
+            <br>Maximální velikost je 200 kB
+        </p>
+
+        {% if unpaired_people is empty %}
+            <p style="color:var(--color-text-secondary);">Všichni lidé mají obrázek.</p>
+        {% else %}
+            <table class="admin-table">
+                <thead>
+                    <tr>
+                        <th style="width:3rem;">ID</th>
+                        <th>Jméno</th>
+                        <th>Sekce</th>
+                        <th>Nahrát obrázek</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for person in unpaired_people %}
+                        <tr>
+                            <td style="color:var(--color-text-secondary);">{{ person.id }}</td>
+                            <td><strong>{{ person.name }}</strong></td>
+                            <td style="color:var(--color-text-secondary);">{{ person.section }}</td>
+                            <td>
+                                <form method="post" action="/admin/images/upload"
+                                      enctype="multipart/form-data"
+                                      style="display:flex; gap:.5rem; align-items:center; flex-wrap:wrap;">
+                                    <input type="hidden" name="_csrf" value="{{ csrf }}">
+                                    <input type="hidden" name="target_type" value="person">
+                                    <input type="hidden" name="target_id" value="{{ person.id }}">
+                                    <input type="file" name="image" accept=".jpg,.png"
+                                           class="form-control" style="max-width:220px;" required>
+                                    <button type="submit" class="btn btn--primary btn--sm">Nahrát</button>
+                                </form>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% endif %}
+    </div>
+</div>
+
+{# ── Program info without image ───────────────────────────────────────── #}
+<div class="card" style="margin-bottom:1.5rem;">
+    <div class="card__body">
+        <h3 style="margin-top:0; margin-bottom:.25rem;">Program info bez obrázku</h3>
+        <p style="margin:0 0 1rem; color:var(--color-text-secondary); font-size:var(--font-size-sm);">
+            Nahraje se jako <code>c{id}.jpg</code> nebo <code>c{id}.png</code>
+            <br>Maximální velikost je 200 kB
+        </p>
+
+        {% if unpaired_program is empty %}
+            <p style="color:var(--color-text-secondary);">Všechny program info položky mají obrázek.</p>
+        {% else %}
+            <table class="admin-table">
+                <thead>
+                    <tr>
+                        <th style="width:3rem;">ID</th>
+                        <th>Název</th>
+                        <th>Nahrát obrázek</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in unpaired_program %}
+                        <tr>
+                            <td style="color:var(--color-text-secondary);">{{ item.id }}</td>
+                            <td><strong>{{ item.name }}</strong></td>
+                            <td>
+                                <form method="post" action="/admin/images/upload"
+                                      enctype="multipart/form-data"
+                                      style="display:flex; gap:.5rem; align-items:center; flex-wrap:wrap;">
+                                    <input type="hidden" name="_csrf" value="{{ csrf }}">
+                                    <input type="hidden" name="target_type" value="program_info">
+                                    <input type="hidden" name="target_id" value="{{ item.id }}">
+                                    <input type="file" name="image" accept=".jpg,.jpeg,.png"
+                                           class="form-control" style="max-width:220px;" required>
+                                    <button type="submit" class="btn btn--primary btn--sm">Nahrát</button>
+                                </form>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% endif %}
+    </div>
+</div>
+
+{# ── Static blocks without image ─────────────────────────────────────── #}
+<div class="card" style="margin-bottom:1.5rem;">
+    <div class="card__body">
+        <h3 style="margin-top:0; margin-bottom:.25rem;">Statické bloky bez obrázku</h3>
+        <p style="margin:0 0 1rem; color:var(--color-text-secondary); font-size:var(--font-size-sm);">
+            Nahraje se jako <code>s{id}.jpg</code> nebo <code>s{id}.png</code>
+            <br>Maximální velikost je 200 kB
+        </p>
+
+        {% if unpaired_static_blocks is empty %}
+            <p style="color:var(--color-text-secondary);">Všechny statické bloky mají obrázek.</p>
+        {% else %}
+            <table class="admin-table">
+                <thead>
+                    <tr>
+                        <th style="width:3rem;">ID</th>
+                        <th>Název bloku</th>
+                        <th>Titulek</th>
+                        <th>Nahrát obrázek</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for block in unpaired_static_blocks %}
+                        <tr>
+                            <td style="color:var(--color-text-secondary);">{{ block.id }}</td>
+                            <td><code>{{ block.block_name }}</code></td>
+                            <td style="color:var(--color-text-secondary);">{{ block.title }}</td>
+                            <td>
+                                <form method="post" action="/admin/images/upload"
+                                      enctype="multipart/form-data"
+                                      style="display:flex; gap:.5rem; align-items:center; flex-wrap:wrap;">
+                                    <input type="hidden" name="_csrf" value="{{ csrf }}">
+                                    <input type="hidden" name="target_type" value="static_block">
+                                    <input type="hidden" name="target_id" value="{{ block.id }}">
+                                    <input type="file" name="image" accept=".jpg,.jpeg,.png"
+                                           class="form-control" style="max-width:220px;" required>
+                                    <button type="submit" class="btn btn--primary btn--sm">Nahrát</button>
+                                </form>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% endif %}
+    </div>
+</div>
+
+{# ── Existing images gallery ──────────────────────────────────────────── #}
+<div class="card">
+    <div class="card__body">
+        <h3 style="margin-top:0; margin-bottom:1rem;">Nahrané obrázky ({{ images|length }})</h3>
+
+        {% if images is empty %}
+            <p style="color:var(--color-text-secondary);">Žádné obrázky.</p>
+        {% else %}
+            <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(130px,1fr)); gap:1rem;">
+                {% for img in images %}
+                    <div style="text-align:center; border:1px solid var(--color-border,#ddd); border-radius:4px; padding:.5rem;">
+                        <img src="/img/{{ img.name }}" alt="{{ img.name }}"
+                             style="max-width:100%; max-height:90px; object-fit:contain; display:block; margin:0 auto .4rem;">
+                        <code style="font-size:.7rem; word-break:break-all;">{{ img.name }}</code><br>
+                        <small style="color:var(--color-text-secondary);">{{ (img.size / 1024)|round(1) }} kB</small>
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+    </div>
+</div>
