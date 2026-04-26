@@ -1045,6 +1045,9 @@ class AdminController extends BaseController
             'name'         => $user['name'],
             'workshops'         => $workshopsByTimeslot,
             'tickets'      => $tickets,
+            'wa_skaut' => $_ENV['WA_SKAUT'],
+            'wa_default' => $_ENV['WA_DEFAULT'],
+            'user'         => $user,
             'dashboardUrl' => $dashboardUrl,
         ]);
     }

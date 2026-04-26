@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tvůj program – Improtřesk 2026</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .container {
+            background-color: #f9f9f9;
+            border-radius: 8px;
+            padding: 30px;
+            border: 1px solid #ddd;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 28px;
+        }
+        .content {
+            background-color: white;
+            padding: 25px;
+            border-radius: 5px;
+        }
+        .day-block {
+            margin-bottom: 24px;
+        }
+        .day-title {
+            font-size: 1rem;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            color: #555;
+            border-bottom: 2px solid #e0e0e0;
+            padding-bottom: 4px;
+            margin-bottom: 10px;
+        }
+        .workshop-item {
+            border-left: 4px solid #43a047;
+            background-color: #e8f5e9;
+            padding: 10px 14px;
+            margin-bottom: 8px;
+            border-radius: 0 4px 4px 0;
+        }
+        .workshop-name {
+            font-weight: bold;
+        }
+        .workshop-instructor {
+            font-size: 0.88rem;
+            color: #555;
+        }
+        .workshop-mailnote {
+            margin-top: 6px;
+            font-size: 0.88rem;
+            color: #2e6b31;
+            white-space: pre-line;
+        }
+        .ticket-block {
+            border-left: 4px solid #1976d2;
+            background-color: #e3f2fd;
+            padding: 12px 16px;
+            margin-bottom: 8px;
+            border-radius: 0 4px 4px 0;
+        }
+        .ticket-name {
+            font-weight: bold;
+        }
+        .ticket-mailnote {
+            margin-top: 6px;
+            font-size: 0.88rem;
+            color: #1a5276;
+            white-space: pre-line;
+        }
+        .section-label {
+            font-size: 1rem;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            color: #555;
+            border-bottom: 2px solid #e0e0e0;
+            padding-bottom: 4px;
+            margin: 24px 0 10px;
+        }
+        .empty-note {
+            color: #999;
+            font-style: italic;
+            font-size: 0.9rem;
+        }
+        .button {
+            display: inline-block;
+            padding: 12px 30px;
+            background-color: #d32f2f;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            margin: 20px 0;
+            font-weight: bold;
+        }
+        .footer {
+            margin-top: 30px;
+            text-align: center;
+            font-size: 12px;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1><span style="color:#a85f31ff">I</span><span style="color:#ecb737ff">M</span><span style="color:#d45842ff">P</span><span style="color:#47a8afff">R</span><span style="color:#98a239ff">O</span><span style="color:#3c66a6ff">T</span><span style="color:#7e4994ff">Ř</span><span style="color:#a44c7dff">E</span><span style="color:#768f89ff">S</span><span style="color:#7e8845ff">K</span></h1>
+            <p>Festival improvizace</p>
+        </div>
+
+        <div class="content">
+        
+            Ahoj!<br>
+Improtřesk už pomalu nakukuje oknem.<br>
+Nejdůležitější informace je adresa <strong class="adr">Žižkostel, <span class="street-address">Náměstí Barikád 1520/1</span>,
+<span class="locality">Praha 3</span>,
+ </strong>. Tam se budeme scházet na představení, tam se budeme scházet na workshopy.<br>
+Nejdřív otevřeme ve čtvrtek 7. května od <strong>17 hodin - na check-inu</strong>  (dveře vpravo od hlavního vchodu) , o hoďku a půl později začíná večerní program - dvě představení a DJ. <br>
+<br><br>
+Páteční ráno se sejdem v <strong>devět hodin</strong>, mimo jiné chceme vytvořit společnou fotku; a můžeš s ostatními pokecat. <br>
+
+
+Odtud se přesuneme na workshopy. <br> 
+{% if workshops.AB %}
+    Čeká tě workshop {{ workshops.AB.name }}. Místem konání bude {{ workshops.AB.location}}.<br>
+    Na místo workshopu si tě odvedem. <br>
+    <strong>{{ workshops.AB.mailnote }}</strong>
+{% else %}
+    Ty zatím nemáš na pátek žádný workshop vybraný. Nechceš to ještě napravit? Pár míst na workshopech máme!
+{% endif  %}
+<br><br>
+
+
+Večer nás  všechny čeká od <strong>18:30</strong>  hodinový workshop tanga, po kterém bude možné pokračovat v tanci na plese, nebo se zasmát na standupu. Pokud můžeš, doraž tento večer v barevné kombinaci rudé a černé  barvy, pánové mohou mít černou košili, klobouk nebo i šle.<br>
+<br>
+Sobotní ráno opět začíná v <strong>devět hodin</strong>.  A budem se přesouvat na workshopy.<br>
+{% if workshops.CD %}
+    Čeká tě workshop {{ workshops.CD.name }}. Místem konání bude {{ workshops.CD.location}}.<br>
+    Na místo workshopu si tě odvedem. <br>
+    <strong>{{ workshops.CD.mailnote }}</strong>
+{% else %}
+    Ty zatím nemáš na sobotu žádný workshop vybraný. Nechceš to ještě napravit? Pár míst na workshopech máme!
+{% endif  %}
+<br>
+<br>
+
+Večer nás od <strong>18:30</strong> čeká divadlo, a následně kapela či Open Mic.<br>
+
+V neděli se zase sejdeme v <strong>devět ráno</strong>. <br>
+{% if workshops.E %}
+    Čeká tě workshop {{ workshops.E.name }}. Místem konání bude {{ workshops.E.location}}.<br>    
+    <strong>{{ workshops.E.mailnote }}</strong>
+{% else %}
+    Ty zatím nemáš na nedělní dopoledne program  vybraný. Nechceš to ještě napravit? Pár míst na workshopech máme!
+{% endif  %}
+<br><br>
+
+Odpoledne bude bude program začínat ve dvě kakaovou ceremonií,
+{% if tickets.3 %} na kterou už máš lístek.
+{% else %}
+na kterou ještě nemáš lístek. Kvůli nadimenzování počtu porcí tě prosíme, že pokud budeš chtít dorazit, pořiď si ho radši brzo.
+{% endif %}
+
+ Pokračovat budeme na  ecstatic dance,  a zakončíme před 16:30 závěrečným kruhem. <br><br>
+
+ {% if tickets.2 %} Máš <strong>zaplacené ubytování</strong> ve skautské klubovně. Vem si prosím <strong>karimatku a spacák</strong>. 
+    Zároveň se pomocí tajného kódu <a href="{{wa_skaut}}">{{wa_skaut}}</a> můžeš přidat do WhatsApp komunikačního kanálu lidí tam ubytovaných. 
+    Zároveň s tím se přidáš do naší společné  komunikační improtřeskové skupiny. 
+{% else %}
+    Pomocí odkazu <a href="{{wa_default}}">{{wa_default}}</a> se můžeš přidat do společné WhatsAppové komunikační improtřeskové skupiny.
+ {% endif %}
+
+ {% if tickets.1 %}<br> <br>Máš <strong>zaplacenou vstupenku na celý festival</strong>.
+  Pokud se rozhodneš, že chceš dorazit na nějaké celodenní či vícedenní workshopy, přihlaš se a zaplať jen rozdíl, my si s tím poradíme. 
+    {% if workshops.CD  or  workshops.AB  %} 
+    <br><br>
+        Systém kouká, že  se ti povedlo  zaplatit celodenní či vícedenní workshop a vstupenku, kterou tím pádem nepotřebuješ. (A my jsme si toho nevšimli.) 
+        <strong> Ozvi se, my ti peníze za vstupenku vrátíme.</strong>
+    {% endif %}
+
+{% else %}
+
+ {% endif %}
+
+{% if user.hero %}
+    <br>
+    <br>Ještě jednou ti chceme poděkovat, že nám pomáháš udělat Improtřesk 2026 lepší.
+    <strong>{% if user.hero ==1%}Jsi náš hrdina!{% else %}Jsi naše hrdinka!  {% endif %}</strong>
+
+{% endif %}
+
+
+<br>
+<br>
+
+Work in progress
+Mail pro lidi týden před:
+PLES, ubytování, 
+<br>
+registrace
+harmonogram
+kontakty
+
+
+doprava
+
+
+
+
+
+            
+            <div style="text-align: center; margin-top: 24px;">
+                <a href="{{ dashboardUrl }}" class="button">Zobrazit můj profil</a>
+            </div>
+
+            <p>S pozdravem,<br>
+            Tým Improtřesk &amp; Vašek Černý</p>
+        </div>
+
+        <div class="footer">
+            <p>Tento e-mail byl odeslán automaticky, neodpovídej na něj.<br>
+            Pro dotazy nás kontaktuj na <a href="mailto:improtresk@improlab.art">improtresk@improlab.art</a></p>
+        </div>
+    </div>
+</body>
+</html>
