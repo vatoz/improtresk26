@@ -759,6 +759,14 @@ class AdminController extends BaseController
             "SELECT id, title, subject FROM mail_templates WHERE is_valid = 1 ORDER BY title"
         )->fetchAll(\PDO::FETCH_ASSOC);
 
+        $allWorkshops = $this->db->query(
+            "SELECT id, name, timeslot, price FROM workshops ORDER BY timeslot, name"
+        )->fetchAll(\PDO::FETCH_ASSOC);
+
+        $allTickets = $this->db->query(
+            "SELECT id, name, price FROM tickets ORDER BY name"
+        )->fetchAll(\PDO::FETCH_ASSOC);
+
         // Mails sent to this user (by e-mail address)
         $mStmt = $this->db->prepare("
             SELECT id, subject, template, status, queued_at, sent_at
@@ -785,6 +793,8 @@ class AdminController extends BaseController
             'mail_templates'        => $mailTemplates,
             'sent_mails'            => $sentMails,
             'questions_with_answers'=> $questionsWithAnswers,
+            'all_workshops'         => $allWorkshops,
+            'all_tickets'           => $allTickets,
         ]);
     }
 
@@ -869,6 +879,54 @@ class AdminController extends BaseController
         }
 
         $this->db->prepare("UPDATE users SET awaiting_payment = ? WHERE id = ?")->execute([$amount, $id]);
+
+        header('Location: /admin/users/' . $id);
+        exit;
+    }
+
+    public function addUserRegistration(int $id)
+    {
+        $this->requireAdmin();
+        csrf_validate('admin-pairing', $_POST['_csrf'] ?? null);
+
+        $workshopId = (int) ($_POST['workshop_id'] ?? 0);
+        $status     = $_POST['payment_status'] ?? 'pending';
+        $validStatuses = ['pending', 'paid', 'approved', 'upgradable', 'notpaid', 'cancelled', 'refunded', 'skipped'];
+
+        if (!$workshopId || !in_array($status, $validStatuses)) {
+            header('Location: /admin/users/' . $id);
+            exit;
+        }
+
+        $this->db->prepare(
+            "INSERT INTO registrations (user_id, workshop_id, payment_status) VALUES (?, ?, ?)"
+        )->execute([$id, $workshopId, $status]);
+
+        if ($status === 'paid') {
+            \App\Models\Workshop::recountRegistered($this->db, $workshopId);
+        }
+
+        header('Location: /admin/users/' . $id);
+        exit;
+    }
+
+    public function addUserPurchase(int $id)
+    {
+        $this->requireAdmin();
+        csrf_validate('admin-pairing', $_POST['_csrf'] ?? null);
+
+        $ticketId      = (int) ($_POST['ticket_id'] ?? 0);
+        $status        = $_POST['payment_status'] ?? 'pending';
+        $validStatuses = ['pending', 'paid', 'cancelled'];
+
+        if (!$ticketId || !in_array($status, $validStatuses)) {
+            header('Location: /admin/users/' . $id);
+            exit;
+        }
+
+        $this->db->prepare(
+            "INSERT INTO purchases (user_id, item_type, item_id, quantity, payment_status) VALUES (?, 'ticket', ?, 1, ?)"
+        )->execute([$id, $ticketId, $status]);
 
         header('Location: /admin/users/' . $id);
         exit;

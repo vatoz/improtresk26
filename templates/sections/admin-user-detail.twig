@@ -178,6 +178,26 @@
     {% else %}
     <p class="pairing-empty">Žádné registrace.</p>
     {% endif %}
+    {% if all_workshops is not empty %}
+    <div style="border-top:1px solid var(--color-border,#eee);padding:0.75rem 1.25rem;">
+        <form method="POST" action="/admin/users/{{ profile_user.id }}/add-registration"
+              style="display:flex;gap:0.5rem;align-items:center;flex-wrap:wrap;">
+            <input type="hidden" name="_csrf" value="{{ csrf }}">
+            <select name="workshop_id" class="pairing-select" required>
+                <option value="">— vyberte workshop —</option>
+                {% for w in all_workshops %}
+                    <option value="{{ w.id }}">[{{ w.timeslot }}] {{ w.name }}{% if w.price %} ({{ w.price|number_format(0, ',', ' ') }} Kč){% endif %}</option>
+                {% endfor %}
+            </select>
+            <select name="payment_status" class="pairing-select">
+                {% for val, label in reg_labels %}
+                    <option value="{{ val }}" {% if val == 'pending' %}selected{% endif %}>{{ label }}</option>
+                {% endfor %}
+            </select>
+            <button type="submit" class="btn btn--sm btn--primary">Přidat registraci</button>
+        </form>
+    </div>
+    {% endif %}
 </div>
 
 {# ── Purchases ── #}
@@ -237,6 +257,26 @@
     </div>
     {% else %}
     <p class="pairing-empty">Žádné nákupy.</p>
+    {% endif %}
+    {% if all_tickets is not empty %}
+    <div style="border-top:1px solid var(--color-border,#eee);padding:0.75rem 1.25rem;">
+        <form method="POST" action="/admin/users/{{ profile_user.id }}/add-purchase"
+              style="display:flex;gap:0.5rem;align-items:center;flex-wrap:wrap;">
+            <input type="hidden" name="_csrf" value="{{ csrf }}">
+            <select name="ticket_id" class="pairing-select" required>
+                <option value="">— vyberte vstupenku —</option>
+                {% for t in all_tickets %}
+                    <option value="{{ t.id }}">{{ t.name }}{% if t.price %} ({{ t.price|number_format(0, ',', ' ') }} Kč){% endif %}</option>
+                {% endfor %}
+            </select>
+            <select name="payment_status" class="pairing-select">
+                {% for val, label in purch_labels %}
+                    <option value="{{ val }}" {% if val == 'pending' %}selected{% endif %}>{{ label }}</option>
+                {% endfor %}
+            </select>
+            <button type="submit" class="btn btn--sm btn--primary">Přidat vstupenku</button>
+        </form>
+    </div>
     {% endif %}
 </div>
 
