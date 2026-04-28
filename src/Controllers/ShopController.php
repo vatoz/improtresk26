@@ -1,8 +1,65 @@
 <?php
 namespace App\Controllers;
 
+use vplacek\QRPlatba\QRPlatba;
+
 class ShopController extends BaseController
 {
+    public function ticketPlease()
+    {
+        $this->requireAuth();
+        $user = $this->getCurrentUser();
+
+        $stmt = $this->db->prepare("SELECT * FROM tickets WHERE id = 1 LIMIT 1");
+        $stmt->execute();
+        $ticket = $stmt->fetch();
+
+        if (!$ticket) {
+            echo $this->twig->render('pages/ticket-please.twig', [
+                'user'        => $user,
+                'active_page' => '',
+                'error'       => 'Vstupenka nebyla nalezena.',
+            ]);
+            return;
+        }
+
+        // Create pending purchase if not already existing
+        $existing = $this->db->prepare("
+            SELECT id FROM purchases
+            WHERE user_id = ? AND item_type = 'ticket' AND item_id = 1 AND payment_status != 'cancelled'
+        ");
+        $existing->execute([$user['id']]);
+        if (!$existing->fetch()) {
+            $this->db->prepare(
+                "INSERT INTO purchases (user_id, item_type, item_id) VALUES (?, 'ticket', 1)"
+            )->execute([$user['id']]);
+        }
+
+        $paymentConfig  = payment_config();
+        $variableSymbol = $user['id'];
+        $amount         = (float) $ticket['price'];
+
+        $qrPlatba = new QRPlatba();
+        $qrPlatba->setIban($paymentConfig['iban'])
+            ->setAmount($amount)
+            ->setScale(5)
+            ->setVariableSymbol($variableSymbol);
+
+        echo $this->twig->render('pages/ticket-please.twig', [
+            'user'        => $user,
+            'active_page' => '',
+            'ticket'      => $ticket,
+            'payment'     => [
+                'readable'        => $paymentConfig['readable'],
+                'variable_symbol' => $variableSymbol,
+                'amount'          => $amount,
+                'currency'        => $paymentConfig['currency'],
+                'message'         => $paymentConfig['message'],
+            ],
+            'qr'          => 'data:image/png;base64,' . base64_encode($qrPlatba->generateQr()),
+        ]);
+    }
+
     public function tickets()
     {
         $stmt = $this->db->query("SELECT * FROM tickets WHERE is_active = 1 ORDER BY date, time");

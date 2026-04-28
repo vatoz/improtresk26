@@ -90,7 +90,8 @@ class AuthController extends BaseController
                         ['name' => $name, 'email' => $email, 'loginUrl' => $loginUrl]
                     );
 
-                    header('Location: /profile');
+                    $redirect = ($_POST['ticket_only'] ?? '') === '1' ? '/ticket_please' : '/profile';
+                    header('Location: ' . $redirect);
                     exit;
                 }
             }

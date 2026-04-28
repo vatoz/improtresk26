@@ -55,6 +55,7 @@
                     {% if questions_blocking %}Doporučujem taky vyplnit povinné otázky.{% endif %}            
             {% endif %}    
         {% else %}
+            <a href="/ticket_please" class="btn btn--primary"  class="btn btn--outline">Chci jenom vstupenku na večerní program</a>   
                 {% if questions_blocking %}
                     <span class="btn btn--primary btn--disabled" title="Nejprve vyplňte povinné otázky">Nejprve vyplňte povinné otázky, pak tu bude Průvodce výběrem workshopů</span>
                 {% else %}
@@ -185,7 +186,8 @@
                         </p>
                      {% if user.role == 'admin' %}
                      <a href="/wizard" class="btn btn--primary"  class="btn btn--outline">Vybrat si workshopy (ADMIN)</a>
-                     {% endif %}    
+                     {% endif %} 
+                     
                     {% else %}
                         {% set showDrag = registrations|length > 1 %}
 

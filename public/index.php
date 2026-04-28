@@ -94,6 +94,7 @@ $router->map('POST', '/admin/users/[i:id]/send-mail', 'AdminController#sendUserM
 $router->map('POST', '/admin/users/[i:id]/set-awaiting-payment', 'AdminController#setAwaitingPayment', 'admin_user_set_awaiting_payment');
 $router->map('POST', '/admin/users/[i:id]/add-registration', 'AdminController#addUserRegistration', 'admin_user_add_registration');
 $router->map('POST', '/admin/users/[i:id]/add-purchase', 'AdminController#addUserPurchase', 'admin_user_add_purchase');
+$router->map('GET', '/ticket_please', 'ShopController#ticketPlease', 'ticket_please');
 $router->map('GET', '/admin/tickets', 'AdminController#ticketSales', 'admin_tickets');
 $router->map('POST', '/admin/tickets/[i:id]/mailnote', 'AdminController#updateTicketMailnote', 'admin_ticket_mailnote');
 $router->map('POST', '/admin/workshops/[i:id]/mailnote', 'AdminController#updateWorkshopMailnote', 'admin_workshop_mailnote');

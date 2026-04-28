@@ -1,0 +1,104 @@
+{% extends 'base.twig' %}
+
+{% block title %}Vstupenka na večerní program – Improtřesk 2026{% endblock %}
+
+{% block content %}
+<section class="section">
+    <div class="container">
+        <div class="content" style="max-width: 580px; margin: 0 auto;">
+
+            <h2>Jsme rádi, že přijdeš!</h2>
+
+            {% if error %}
+                <div class="alert alert-danger">{{ error }}</div>
+            {% else %}
+
+            <p>Tvoje vstupenka na celovečerní program je rezervovaná. Stačí ji zaplatit převodem a jsme domluveni.</p>
+
+            <div class="card" style="margin-bottom: 1.5rem;">
+                <div class="card__header">
+                    <h3 style="margin:0; font-size:1.1rem;">{{ ticket.name }}</h3>
+                </div>
+                <div class="card__body">
+                    {% if ticket.description %}
+                        <p style="margin-top:0;">{{ ticket.description }}</p>
+                    {% endif %}
+                    {% if ticket.date %}
+                        <p style="color:var(--color-muted,#666); margin:0 0 0.75rem;">
+                            {{ ticket.date|date('j.n.Y') }}{% if ticket.time %}&nbsp;v&nbsp;{{ ticket.time|slice(0,5) }}{% endif %}
+                        </p>
+                    {% endif %}
+                    <p style="font-size:1.4rem; font-weight:700; color:var(--color-primary); margin:0;">
+                        {{ ticket.price|number_format(0, ',', ' ') }} Kč
+                    </p>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card__header">
+                    <h3 style="margin:0; font-size:1.1rem;">Jak zaplatit</h3>
+                </div>
+                <div class="card__body">
+                    <div class="tp-qr-wrap">
+                        <img src="{{ qr }}" alt="QR kód pro platbu" class="tp-qr-img">
+                        <p class="tp-qr-caption">Naskenuj QR kód v mobilním bankovnictví</p>
+                    </div>
+                    <div class="tp-bank-details">
+                        <div class="tp-bank-row">
+                            <span class="tp-bank-label">Číslo účtu</span>
+                            <span class="tp-bank-value">{{ payment.readable }}</span>
+                        </div>
+                        <div class="tp-bank-row">
+                            <span class="tp-bank-label">Variabilní symbol</span>
+                            <span class="tp-bank-value">{{ payment.variable_symbol }}</span>
+                        </div>
+                        <div class="tp-bank-row">
+                            <span class="tp-bank-label">Částka</span>
+                            <span class="tp-bank-value">{{ payment.amount|number_format(0, ',', ' ') }} {{ payment.currency }}</span>
+                        </div>
+                        {% if payment.message %}
+                        <div class="tp-bank-row">
+                            <span class="tp-bank-label">Zpráva pro příjemce</span>
+                            <span class="tp-bank-value">{{ payment.message }}</span>
+                        </div>
+                        {% endif %}
+                    </div>
+                    <p class="tp-note">
+                        Po připsání platby tě budeme informovat e-mailem. Pokud budeš chtít přidat i workshopy, můžeš se přihlásit do svého účtu kdykoliv.
+                    </p>
+                </div>
+            </div>
+
+            {% endif %}
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block stylesheets %}
+{{ parent() }}
+<style>
+.tp-qr-wrap    { text-align: center; margin-bottom: 1.25rem; }
+.tp-qr-img     { max-width: 180px; height: auto; border: 1px solid var(--color-border, #e0e0e0); border-radius: 6px; padding: 0.5rem; }
+.tp-qr-caption { margin: 0.4rem 0 0; font-size: 0.82rem; color: var(--color-muted, #777); }
+.tp-bank-details { display: flex; flex-direction: column; gap: 0; margin-bottom: 1rem; }
+.tp-bank-row {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    font-size: 0.95rem;
+    padding: 0.4rem 0;
+    border-bottom: 1px solid var(--color-border, #f0f0f0);
+}
+.tp-bank-label { color: var(--color-muted, #666); white-space: nowrap; }
+.tp-bank-value { font-weight: 600; word-break: break-all; text-align: right; }
+.tp-note {
+    font-size: 0.85rem;
+    color: var(--color-muted, #666);
+    background: #f8f9fa;
+    border-radius: 6px;
+    padding: 0.75rem;
+    margin: 0;
+}
+</style>
+{% endblock %}
