@@ -24,6 +24,7 @@ $router->map('GET', '/info', 'DefaultController#info', 'info');
 $router->map('GET', '/faq', 'DefaultController#faq', 'faq');
 $router->map('GET', '/contact', 'DefaultController#contact', 'contact');
 $router->map('GET', '/medailonky', 'DefaultController#medailonky', 'medailonky');
+$router->map('GET', '/children', 'DefaultController#children', 'children');
 
 // Auth
 $router->map('GET|POST', '/login', 'AuthController#login', 'login');
@@ -107,6 +108,7 @@ $router->map('POST', '/admin/static-blocks/save',   'AdminController#saveStaticB
 $router->map('POST', '/admin/static-blocks/delete', 'AdminController#deleteStaticBlock',  'admin_static_blocks_delete');
 $router->map('GET',  '/admin/images',               'AdminController#imageManager',       'admin_images');
 $router->map('POST', '/admin/images/upload',        'AdminController#uploadImage',        'admin_images_upload');
+
 
 $match = $router->match();
 

@@ -1,0 +1,115 @@
+<div class="container">
+    <h1>Dětský Třesk</h1>
+
+    {% if items is empty %}
+        <div class="card">
+            <div class="card__body">
+                <p>Momentálně nejsou k dispozici žádné informace o dětském programu.</p>
+            </div>
+        </div>
+    {% else %}
+        {% for item in items %}
+            <section class="children-date-section" id="den_{{ item.date }}">
+                <h2 class="children-date-heading random{{ loop.index }}">{{ item.date|date('j. n. Y') }} {{ item.start_time[:5] }}</h2>
+                
+                    <div class="children-item card">
+                        <div class="card__body">
+                            <div class="children-item-grid">
+                                <div class="children-item-left">
+                                    <h3 class="children-item-title">{{ item.title }}</h3>
+                                    {% if item.performer %}
+                                        <div class="children-item-performer">{{ item.performer }}</div>
+                                    {% endif %}
+                                    <div class="children-item-time">
+ 
+                                        {% if item.location %}
+                                            &mdash; {{ item.location }}
+                                        {% endif %}
+                                    </div>
+                                    {% if item.description %}
+                                        <p class="children-item-description">{{ item.description|raw|nl2br|cz_nbsp }}</p>
+                                    {% endif %}
+                                </div>
+                                {% if item.bio_name or item.bio_description or item.bio_photo %}
+                                <div class="children-item-right">
+                                    <div class="person-card card" style="margin-bottom:0;">
+                                        <div class="card__body">
+                                            {% if item.bio_name %}
+                                                <h3 class="person-card__name" style="margin-bottom:4px;">{{ item.bio_name }}</h3>
+                                            {% endif %}
+                                            {% if item.bio_photo %}
+                                                <img style="float:right;width:12em;margin-left:3em;margin-bottom:1em;border:thick solid grey;"
+                                                     src="img/{{ item.bio_photo }}" alt="Medailonek"/>
+                                            {% endif %}
+                                            <div class="person-card__links">
+                                                {% if item.bio_web_link %}
+                                                    <a href="{{ item.bio_web_link }}" target="_blank" rel="noopener noreferrer"
+                                                       class="person-card__link person-card__link--web" title="Web">Web</a>
+                                                {% endif %}
+                                                {% if item.bio_facebook_link %}
+                                                    <a href="{{ item.bio_facebook_link }}" target="_blank" rel="noopener noreferrer"
+                                                       class="person-card__link person-card__link--fb" title="Facebook">FB</a>
+                                                {% endif %}
+                                                {% if item.bio_instagram_link %}
+                                                    <a href="{{ item.bio_instagram_link }}" target="_blank" rel="noopener noreferrer"
+                                                       class="person-card__link person-card__link--ig" title="Instagram">IG</a>
+                                                {% endif %}
+                                                {% if item.bio_web_link or item.bio_facebook_link or item.bio_instagram_link %}
+                                                    <br>
+                                                {% endif %}
+                                                {% if item.bio_description %}
+                                                    <p class="person-card__description">{{ item.bio_description|raw|nl2br|cz_nbsp }}</p>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                
+            </section>
+        {% endfor %}
+    {% endif %}
+</div>
+
+<style>
+.children-date-section {
+    margin-bottom: 2.5rem;
+}
+.children-date-heading {
+    margin-bottom: 1rem;
+    padding-bottom: 0.4rem;
+    border-bottom: 2px solid var(--color-primary, #c0392b);
+}
+.children-item {
+    margin-bottom: 1rem;
+}
+.children-item-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+}
+@media (max-width: 700px) {
+    .children-item-grid {
+        grid-template-columns: 1fr;
+    }
+}
+.children-item-title {
+    margin-bottom: 0.3rem;
+}
+.children-item-performer {
+    color: var(--color-text-secondary, #666);
+    margin-bottom: 0.4rem;
+    font-style: italic;
+}
+.children-item-time {
+    font-size: 0.9rem;
+    color: var(--color-muted, #888);
+    margin-bottom: 0.6rem;
+}
+.children-item-description {
+    margin-top: 0.5rem;
+}
+</style>

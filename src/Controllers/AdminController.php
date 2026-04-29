@@ -1,6 +1,7 @@
 <?php
 namespace App\Controllers;
 
+use App\Models\ChildrenItem;
 use App\Models\MailQueue;
 use App\Models\Workshop;
 use App\Models\TransactionList;
@@ -1278,6 +1279,7 @@ class AdminController extends BaseController
         $pairedPeople        = [];
         $pairedProgramInfo   = [];
         $pairedStaticBlocks  = [];
+        $pairedChildrenItem  = [];
         foreach (glob($imgDir . '*.{jpg,png}', GLOB_BRACE) ?: [] as $path) {
             $name = basename($path);
             if (str_contains($name, ':')) continue;
@@ -1285,6 +1287,8 @@ class AdminController extends BaseController
                 $pairedProgramInfo[(int) $m[1]] = $name;
             } elseif (preg_match('/^s(\d+)\.(jpg|png)$/i', $name, $m)) {
                 $pairedStaticBlocks[(int) $m[1]] = $name;
+            } elseif (preg_match('/^d(\d+)\.(jpg|png)$/i', $name, $m)) {
+                $pairedChildrenItem[(int) $m[1]] = $name;
             } elseif (preg_match('/^(\d+)\.(jpg|png)$/i', $name, $m)) {
                 $pairedPeople[(int) $m[1]] = $name;
             }
@@ -1320,9 +1324,19 @@ class AdminController extends BaseController
             }
         }
 
+        //Children items without an image
+        $rows = $this->db->query("SELECT id, title name FROM children_items ORDER BY id")->fetchAll(\PDO::FETCH_ASSOC);
+        $unpairedChildrenItems = [];
+        foreach ($rows as $r) {
+            $id = (int) $r['id'];
+            if (!isset($pairedChildrenItems[$id])) {
+                $unpairedChildrenItems[] = $r;
+            }
+        }
+
         // All existing images for the gallery
         $images = [];
-        foreach (array_merge($pairedPeople, $pairedProgramInfo, $pairedStaticBlocks) as $name) {
+        foreach (array_merge($pairedPeople, $pairedProgramInfo, $pairedStaticBlocks,$pairedChildrenItem) as $name) {
             $images[] = ['name' => $name, 'size' => filesize($imgDir . $name)];
         }
         usort($images, fn($a, $b) => strnatcmp($a['name'], $b['name']));
@@ -1337,6 +1351,7 @@ class AdminController extends BaseController
             'unpaired_people'       => $unpairedPeople,
             'unpaired_program'      => $unpairedProgramInfo,
             'unpaired_static_blocks'=> $unpairedStaticBlocks,
+            'unpaired_children_item'=> $unpairedChildrenItems,
             'images'                => $images,
             'csrf'                  => csrf_token('admin-images'),
             'success'               => $success,
@@ -1357,7 +1372,7 @@ class AdminController extends BaseController
         $targetType = $_POST['target_type'] ?? '';
         $targetId   = (int) ($_POST['target_id'] ?? 0);
 
-        if (!in_array($targetType, ['person', 'program_info', 'static_block'], true) || $targetId <= 0) {
+        if (!in_array($targetType, ['person', 'program_info', 'static_block','children_item'], true) || $targetId <= 0) {
             $_SESSION['admin_images_error'] = 'Neplatný cíl nahrání.';
             header('Location: /admin/images');
             exit;
@@ -1368,6 +1383,7 @@ class AdminController extends BaseController
             'person'       => 'people',
             'program_info' => 'program_info',
             'static_block' => 'static_blocks',
+            'children_item' => 'children_items'
         };
         $stmt = $this->db->prepare("SELECT id FROM {$table} WHERE id = ?");
         $stmt->execute([$targetId]);
@@ -1381,6 +1397,7 @@ class AdminController extends BaseController
         $prefix = match($targetType) {
             'program_info' => "c{$targetId}",
             'static_block' => "s{$targetId}",
+            'children_item' => "d{$targetId}",
             default        => (string) $targetId,
         };
 
@@ -1427,4 +1444,5 @@ class AdminController extends BaseController
         header('Location: /admin/images');
         exit;
     }
+
 }

@@ -97,6 +97,53 @@
     </div>
 </div>
 
+{# ── Children without image ───────────────────────────────────────── #}
+<div class="card" style="margin-bottom:1.5rem;">
+    <div class="card__body">
+        <h3 style="margin-top:0; margin-bottom:.25rem;">Dětský program bez obrázku</h3>
+        <p style="margin:0 0 1rem; color:var(--color-text-secondary); font-size:var(--font-size-sm);">
+            Nahraje se jako <code>d{id}.jpg</code> nebo <code>d{id}.png</code>
+            <br>Maximální velikost je 200 kB
+        </p>
+
+        {% if unpaired_children_item is empty %}
+            <p style="color:var(--color-text-secondary);">Všechny  položky mají obrázek.</p>
+        {% else %}
+            <table class="admin-table">
+                <thead>
+                    <tr>
+                        <th style="width:3rem;">ID</th>
+                        <th>Název</th>
+                        <th>Nahrát obrázek</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in unpaired_children_item %}
+                        <tr>
+                            <td style="color:var(--color-text-secondary);">{{ item.id }}</td>
+                            <td><strong>{{ item.name }}</strong></td>
+                            <td>
+                                <form method="post" action="/admin/images/upload"
+                                      enctype="multipart/form-data"
+                                      style="display:flex; gap:.5rem; align-items:center; flex-wrap:wrap;">
+                                    <input type="hidden" name="_csrf" value="{{ csrf }}">
+                                    <input type="hidden" name="target_type" value="children_item">
+                                    <input type="hidden" name="target_id" value="{{ item.id }}">
+                                    <input type="file" name="image" accept=".jpg,.jpeg,.png"
+                                           class="form-control" style="max-width:220px;" required>
+                                    <button type="submit" class="btn btn--primary btn--sm">Nahrát</button>
+                                </form>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% endif %}
+    </div>
+</div>
+
+
+
 {# ── Static blocks without image ─────────────────────────────────────── #}
 <div class="card" style="margin-bottom:1.5rem;">
     <div class="card__body">

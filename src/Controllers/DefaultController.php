@@ -3,6 +3,7 @@ namespace App\Controllers;
 
 use App\Models\ProgramItem;
 use App\Models\ProgramInfo;
+use App\Models\ChildrenItem;
 use App\Models\FAQ;
 use App\Models\Person;
 use App\Models\StaticBlock;
@@ -151,6 +152,17 @@ class DefaultController extends BaseController
             'user' => $this->getCurrentUser(),
             'active_page' => 'medailonky',
             'people' => $people,
+        ]);
+    }
+
+    public function children()
+    {
+        $items = ChildrenItem::getAll($this->db);
+
+        echo $this->twig->render('pages/children.twig', [
+            'user' => $this->getCurrentUser(),
+            'active_page' => 'children',
+            'items' => $items,
         ]);
     }
 }
