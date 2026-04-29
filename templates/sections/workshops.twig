@@ -67,9 +67,12 @@
     {% set isFull = workshop.paid  <= workshop.capacity %}
     
     
-    <div class="workshop-card {{ isFull ? 'full' : '' }}" data-workshop-id="{{ workshop.id }}" id="workshop-{{ workshop.id }}">
+    <div class="workshop-card {{ isFull ? 'full' : '' }}{% if workshop.cancelled %} cancelled{% endif %}" data-workshop-id="{{ workshop.id }}" id="workshop-{{ workshop.id }}">
         <div class="workshop-header">
             <h3 class="workshop-title">{{ workshop.name }} </h3>
+            {% if workshop.cancelled %}
+                <span class="workshop-cancelled-badge">Zrušeno</span>
+            {% endif %}
             {% if workshop.instructor %}
                 <div class="workshop-instructor">Lektor: {{ workshop.instructor }}</div>
             {% endif %}
@@ -188,5 +191,20 @@
     font-size: 0.85rem;
     font-weight: normal;
     color: var(--color-muted, #777);
+}
+.workshop-card.cancelled {
+    opacity: 0.7;
+}
+.workshop-cancelled-badge {
+    display: inline-block;
+    background: #c0392b;
+    color: #fff;
+    font-size: 0.85rem;
+    font-weight: 700;
+    padding: 0.15em 0.7em;
+    border-radius: 3px;
+    margin-bottom: 0.4rem;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
 }
 </style>

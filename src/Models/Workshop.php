@@ -263,6 +263,7 @@ class Workshop
             FROM workshops w
             LEFT JOIN registrations r ON w.id = r.workshop_id AND r.payment_status NOT IN ('cancelled', 'skipped', 'notpaid')
             WHERE w.is_active = 1
+              AND w.cancelled = 0
               AND w.timeslot IS NOT NULL
             GROUP BY w.id
             ORDER BY w.timeslot
@@ -464,6 +465,11 @@ class Workshop
             if (!$workshop || !$workshop['is_active']) {
                 $_SESSION['error'] = 'Workshop nebyl nalezen.';
                return false;
+            }
+
+            if ($workshop['cancelled']) {
+                $_SESSION['error'] = 'Tento workshop byl zrušen.';
+                return false;
             }
 
             // Duplicate registration check

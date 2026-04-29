@@ -26,7 +26,7 @@
                             <td>{{ w.capacity }}</td>
                             <td>{{ w.registered_count }}</td>
                             <td>{{ w.paid_count }}</td>
-                            <td>{{ w.is_active ? 'Ano' : 'Ne' }}</td>
+                            <td>{{ w.is_active ? 'Ano' : 'Ne' }}</td>                            
                             <td>
                                 <form method="post" action="/admin/workshops/{{ w.id }}/mailnote" class="mailnote-form">
                                     <textarea name="mailnote" rows="2" class="mailnote-input">{{ w.mailnote ?? '' }}</textarea>

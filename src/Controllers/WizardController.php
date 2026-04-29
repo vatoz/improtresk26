@@ -101,7 +101,10 @@ class WizardController extends BaseController
                 $ws = Workshop::findById($this->db, $selectedWorkshopId);
                 $blocked = false;
 
-                if (!$isHero && $ws) {
+                if ($ws && $ws['cancelled']) {
+                    $_SESSION['error'] = 'Tento workshop byl zrušen.';
+                    $blocked = true;
+                } elseif (!$isHero && $ws) {
                     if ((int)$ws['paid'] >= (int)$ws['capacity']) {
                         $_SESSION['error'] = 'Workshop je plně obsazen.';
                         $blocked = true;
