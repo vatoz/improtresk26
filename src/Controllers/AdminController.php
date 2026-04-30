@@ -1329,7 +1329,7 @@ class AdminController extends BaseController
         $unpairedChildrenItems = [];
         foreach ($rows as $r) {
             $id = (int) $r['id'];
-            if (!isset($pairedChildrenItems[$id])) {
+            if (!isset($pairedChildrenItem[$id])) {
                 $unpairedChildrenItems[] = $r;
             }
         }
