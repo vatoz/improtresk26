@@ -34,11 +34,7 @@
                                     {% if item.description %}
                                         <p class="children-item-description">{{ item.description|raw|nl2br|cz_nbsp }}</p>
                                     {% endif %}
-                                </div>
-                                {% if item.bio_name or item.bio_description or item.photo %}
-                                <div class="children-item-right">
-                                    <div class="person-card card" style="margin-bottom:0;">
-                                        <div class="card__body">
+                                    
                                             {% if item.bio_name %}
                                                 <h3 class="person-card__name" style="margin-bottom:4px;">{{ item.bio_name }}</h3>
                                             {% endif %}
@@ -62,7 +58,10 @@
                                                     <p class="person-card__description">{{ item.bio_description|raw|nl2br|cz_nbsp }}</p>
                                                 {% endif %}
                                             </div>
+
+
                                         </div>
+
                                     </div>
                                 </div>
                                 {% endif %}
