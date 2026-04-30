@@ -1,6 +1,19 @@
 <div class="container">
     <h1>Dětský Třesk</h1>
 
+     {% for field in ['children_start_1','children_start_2','children_start_3','children_start_4'] %}
+            {% for block in static  %}{%  if block.block_name == field %}
+            <div class="card">
+                <div class="card__body">
+                        <h3>{{ block.title }} </h2>
+                        {{ block.content|raw}}
+                </div>
+            </div>                
+        {% endif %}{% endfor %}{% endfor %}
+
+
+
+
     {% if items is empty %}
         <div class="card">
             <div class="card__body">
@@ -67,6 +80,18 @@
             </section>
         {% endfor %}
     {% endif %}
+ {% for field in ['children_end_1','children_end_2','children_end_3','children_end_4'] %}
+            {% for block in static  %}{%  if block.block_name == field %}
+            <div class="card">
+                <div class="card__body">
+                        <h3>{{ block.title }} </h2>
+                        {{ block.content|raw}}
+                </div>
+            </div>                
+        {% endif %}{% endfor %}{% endfor %}
+
+
+
 </div>
 
 <style>

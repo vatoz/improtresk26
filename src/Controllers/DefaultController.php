@@ -163,6 +163,7 @@ class DefaultController extends BaseController
             'user' => $this->getCurrentUser(),
             'active_page' => 'children',
             'items' => $items,
+            'static' => (new StaticBlock)->getByPrefix($this->db,'children')
         ]);
     }
 }
