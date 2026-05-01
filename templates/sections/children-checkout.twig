@@ -1,0 +1,461 @@
+{% set type_labels = {child: 'Dětská vstupenka', adult: 'Dospělá vstupenka', family: 'Rodinná vstupenka (2+2)'} %}
+
+<div class="container">
+    <h1>Vstupenky – Dětský Třesk</h1>
+
+    {# ── Payment confirmation (after successful submit) ── #}
+    {% if submitted and payment %}
+
+        <div class="co-success-banner">
+            <div class="co-success-icon">&#10003;</div>
+            <div>
+                <h2 style="margin:0 0 0.25rem;">Objednávka přijata!</h2>
+                <p style="margin:0;">Vaše vstupenky jsou rezervovány – čekají na platbu.</p>
+            </div>
+        </div>
+
+        <div class="card co-payment-card">
+            <div class="card__header">
+                <h3 style="margin:0;">Shrnutí objednávky</h3>
+            </div>
+            <div class="card__body">
+                <table class="co-summary-table">
+                    {% for t in payment.tickets %}
+                    <tr>
+                        <td>{{ t.name }}</td>
+                        <td class="co-qty">{{ t.quantity }}&times;</td>
+                        <td class="co-price">{{ t.price|number_format(0, ',', ' ') }} Kč</td>
+                        <td class="co-total">{{ t.total|number_format(0, ',', ' ') }} Kč</td>
+                    </tr>
+                    {% endfor %}
+                    <tr class="co-summary-total">
+                        <td colspan="3"><strong>Celkem</strong></td>
+                        <td class="co-total"><strong>{{ payment.amount|number_format(0, ',', ' ') }} {{ payment.currency }}</strong></td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+
+        <div class="card co-payment-card">
+            <div class="card__header">
+                <h3 style="margin:0;">Platební údaje</h3>
+            </div>
+            <div class="card__body">
+                <p class="co-urgent"><strong>Prosím zaplaťte okamžitou platbou. Pokud do šesti hodin platba nedorazí, budeme muset vaši rezervaci zrušit.</strong></p>
+
+                <div class="co-qr-wrap">
+                    <img src="{{ payment.qr }}" alt="QR kód pro platbu" class="co-qr-img">
+                    <p class="co-qr-caption">Naskenujte QR kód v mobilním bankovnictví</p>
+                </div>
+
+                <div class="tp-bank-details">
+                    <div class="tp-bank-row">
+                        <span class="tp-bank-label">Číslo účtu</span>
+                        <span class="tp-bank-value">{{ payment.readable }}</span>
+                    </div>
+                    <div class="tp-bank-row">
+                        <span class="tp-bank-label">Variabilní symbol</span>
+                        <span class="tp-bank-value">{{ payment.variable_symbol }}</span>
+                    </div>
+                    <div class="tp-bank-row">
+                        <span class="tp-bank-label">Částka</span>
+                        <span class="tp-bank-value">{{ payment.amount|number_format(0, ',', ' ') }} {{ payment.currency }}</span>
+                    </div>
+                    {% if payment.message %}
+                    <div class="tp-bank-row">
+                        <span class="tp-bank-label">Zpráva pro příjemce</span>
+                        <span class="tp-bank-value">{{ payment.message }}</span>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+    {% else %}
+
+    {# ── Checkout form ── #}
+    {% if errors %}
+    <div class="co-errors">
+        <ul>
+            {% for e in errors %}<li>{{ e }}</li>{% endfor %}
+        </ul>
+    </div>
+    {% endif %}
+
+    <form method="POST" action="/children/checkout" id="checkout-form">
+        <input type="hidden" name="_csrf" value="{{ csrf }}">
+
+        {# Static intro blocks #}
+        {% for field in ['children_start_1','children_start_2','children_start_3','children_start_4'] %}
+            {% for block in static %}{% if block.block_name == field %}
+            <div class="card">
+                <div class="card__body">
+                    <h3>{{ block.title }}</h3>
+                    {{ block.content|raw }}
+                </div>
+            </div>
+            {% endif %}{% endfor %}
+        {% endfor %}
+
+        {# ── Program items with ticket selection ── #}
+        {% if items is empty %}
+            <div class="card">
+                <div class="card__body">
+                    <p>Momentálně nejsou k dispozici žádné informace o dětském programu.</p>
+                </div>
+            </div>
+        {% else %}
+            {% for item in items %}
+            <section class="children-date-section" id="den_{{ item.date }}">
+                <h2 class="children-date-heading random{{ loop.index }}">{{ item.date|date('j. n. Y') }} {{ item.start_time[:5] }}</h2>
+
+                <div class="children-item card"  id="item_{{ item.id }}" >
+                    <div class="card__body">
+                        <h3 class="children-item-title">{{ item.title }}</h3>
+                        {% if item.performer %}
+                            <div class="children-item-performer">{{ item.performer|raw }}</div>
+                        {% endif %}
+                        <div class="children-item-time">
+                            {% if item.location %}&mdash; {{ item.location }}{% endif %}
+                        </div>
+                        {% if item.photo %}
+                            <img style="float:right;width:50%;margin-left:3em;margin-bottom:1em;border:thick solid grey;"
+                                 src="img/{{ item.photo }}" alt="Medailonek"/>
+                        {% endif %}
+                        {% if item.description %}
+                            <p class="children-item-description">{{ item.description|raw|nl2br|cz_nbsp }}</p>
+                        {% endif %}
+                        {% if item.bio_name %}
+                            <h3 class="person-card__name" style="margin-bottom:4px;">{{ item.bio_name }}</h3>
+                        {% endif %}
+                        <div class="person-card__links">
+                            {% if item.bio_web_link %}
+                                <a href="{{ item.bio_web_link }}" target="_blank" rel="noopener noreferrer"
+                                   class="person-card__link person-card__link--web" title="Web">Web</a>
+                            {% endif %}
+                            {% if item.bio_facebook_link %}
+                                <a href="{{ item.bio_facebook_link }}" target="_blank" rel="noopener noreferrer"
+                                   class="person-card__link person-card__link--fb" title="Facebook">FB</a>
+                            {% endif %}
+                            {% if item.bio_instagram_link %}
+                                <a href="{{ item.bio_instagram_link }}" target="_blank" rel="noopener noreferrer"
+                                   class="person-card__link person-card__link--ig" title="Instagram">IG</a>
+                            {% endif %}
+                            {% if item.bio_web_link or item.bio_facebook_link or item.bio_instagram_link %}<br>{% endif %}
+                            {% if item.bio_description %}
+                                <p class="person-card__description">{{ item.bio_description|raw|nl2br|cz_nbsp }}</p>
+                            {% endif %}
+                        </div>
+
+                        {# ── Ticket selection for this item ── #}
+                        {% if item.tickets is not empty %}
+                        <div class="co-ticket-block" style="clear:both;">
+                            <h4 class="co-ticket-heading">Vstupenky na toto představení</h4>
+                            {% for ticket in item.tickets %}
+                            <div class="co-ticket-row" data-price="{{ ticket.price }}" data-id="{{ ticket.id }}">
+                                <div class="co-ticket-info">
+                                    <span class="co-ticket-name"> {{ type_labels[ticket.type]  }}</span>
+                                    <span class="co-ticket-name-summary" style="display:none;"> {{ item.title }} ({{ item.date|date('j. n. Y') }} {{ item.start_time[:5] }}) - {{ type_labels[ticket.type] }}</span>
+                                    <span class="co-ticket-price">{{ ticket.price|number_format(0, ',', ' ') }} Kč / ks</span>
+                                </div>
+                                <div class="co-ticket-qty">
+                                    <button type="button" class="co-qty-btn co-qty-minus" data-target="qty_{{ ticket.id }}">−</button>
+                                    <input type="number"
+                                           name="tickets[{{ ticket.id }}]"
+                                           id="qty_{{ ticket.id }}"
+                                           value="0" min="0" max="20"
+                                           class="co-qty-input"
+                                           data-price="{{ ticket.price }}">
+                                    <button type="button" class="co-qty-btn co-qty-plus" data-target="qty_{{ ticket.id }}">+</button>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+
+                    </div>
+                </div>
+            </section>
+            {% endfor %}
+        {% endif %}
+
+        {# Static outro blocks #}
+        {% for field in ['children_end_1','children_end_2','children_end_3','children_end_4'] %}
+            {% for block in static %}{% if block.block_name == field %}
+            <div class="card">
+                <div class="card__body">
+                    <h3>{{ block.title }}</h3>
+                    {{ block.content|raw }}
+                </div>
+            </div>
+            {% endif %}{% endfor %}
+        {% endfor %}
+
+        {# ── Registration form ── #}
+        <div class="card co-reg-card" id="registration">
+            <div class="card__header">
+                <h3 style="margin:0;">Vaše údaje</h3>
+            </div>
+            <div class="card__body">
+
+                {# Live order summary #}
+                <div id="co-live-summary" class="co-live-summary" style="display:none;">
+                    <h4 style="margin:0 0 0.5rem;">Výběr vstupenek</h4>
+                    <div id="co-live-rows"></div>
+                    <div class="co-live-total">
+                        Celkem: <strong id="co-live-amount">0 Kč</strong>
+                    </div>
+                </div>
+
+                <div class="co-field">
+                    <label for="co-name" class="co-label">Jméno a příjmení <span class="co-required">*</span></label>
+                    <input type="text" name="name" id="co-name" class="co-input" required
+                           value="{{ _post.name ?? '' }}" placeholder="Jan Novák">
+                </div>
+                <div class="co-field">
+                    <label for="co-email" class="co-label">E-mail</label>
+                    <input type="email" name="email" id="co-email" class="co-input"
+                           value="{{ _post.email ?? '' }}" placeholder="jan@example.com">
+                </div>
+                <div class="co-field">
+                    <label for="co-phone" class="co-label">Telefon <span class="co-optional">(nepovinné)</span></label>
+                    <input type="tel" name="phone" id="co-phone" class="co-input"
+                           value="{{ _post.phone ?? '' }}" placeholder="+420 123 456 789">
+                </div>
+
+                <button type="submit" class="btn btn--primary co-submit-btn" id="co-submit">
+                    Objednat a zobrazit platební údaje
+                </button>
+            </div>
+        </div>
+
+    </form>
+    {% endif %}
+</div>
+
+<script>
+(function () {
+    var inputs  = document.querySelectorAll('.co-qty-input');
+    var summary = document.getElementById('co-live-summary');
+    var rows    = document.getElementById('co-live-rows');
+    var amount  = document.getElementById('co-live-amount');
+    var submit  = document.getElementById('co-submit');
+
+    function fmt(n) {
+        return n.toLocaleString('cs-CZ') + ' Kč';
+    }
+
+    function update() {
+        var lines = [];
+        var total = 0;
+        inputs.forEach(function (inp) {
+            var qty = parseInt(inp.value, 10) || 0;
+            if (qty < 0) { inp.value = 0; qty = 0; }
+            var price = parseFloat(inp.dataset.price) || 0;
+            if (qty > 0) {
+                var row = inp.closest('.co-ticket-row');
+                var name = row ? row.querySelector('.co-ticket-name-summary').textContent : '';
+                lines.push('<div class="co-live-row"><span>' + name + ' &times; ' + qty + '</span><span>' + fmt(price * qty) + '</span></div>');
+                total += price * qty;
+            }
+        });
+        if (lines.length > 0) {
+            summary.style.display = '';
+            rows.innerHTML = lines.join('');
+            amount.textContent = fmt(total);
+        } else {
+            summary.style.display = 'none';
+        }
+        if (submit) {
+            submit.disabled = lines.length === 0;
+        }
+    }
+
+    // +/- buttons
+    document.querySelectorAll('.co-qty-plus').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+            var inp = document.getElementById(btn.dataset.target);
+            if (inp) { inp.value = Math.min(20, (parseInt(inp.value, 10) || 0) + 1); update(); }
+        });
+    });
+    document.querySelectorAll('.co-qty-minus').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+            var inp = document.getElementById(btn.dataset.target);
+            if (inp) { inp.value = Math.max(0, (parseInt(inp.value, 10) || 0) - 1); update(); }
+        });
+    });
+    inputs.forEach(function (inp) {
+        inp.addEventListener('input', update);
+    });
+
+    update();
+})();
+</script>
+
+<style>
+/* ── Ticket selection ── */
+.co-ticket-block {
+    margin-top: 1.25rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--color-border, #e8e8e8);
+}
+.co-ticket-heading {
+    margin: 0 0 0.6rem;
+    font-size: 0.95rem;
+    color: var(--color-muted, #555);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+}
+.co-ticket-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 0.5rem 0;
+    border-bottom: 1px solid var(--color-border, #f2f2f2);
+    flex-wrap: wrap;
+}
+.co-ticket-row:last-child { border-bottom: none; }
+.co-ticket-info { display: flex; flex-direction: column; gap: 0.1rem; }
+.co-ticket-name { font-weight: 600; font-size: 0.95rem; }
+.co-ticket-price { font-size: 0.82rem; color: var(--color-muted, #888); }
+.co-ticket-qty {
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+}
+.co-qty-btn {
+    width: 2rem; height: 2rem;
+    border: 1px solid var(--color-border, #ccc);
+    border-radius: 4px;
+    background: #f7f7f7;
+    font-size: 1.1rem;
+    line-height: 1;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    user-select: none;
+    padding: 0;
+}
+.co-qty-btn:hover { background: #eee; }
+.co-qty-input {
+    width: 3rem;
+    text-align: center;
+    border: 1px solid var(--color-border, #ccc);
+    border-radius: 4px;
+    padding: 0.25rem 0.3rem;
+    font-size: 1rem;
+    -moz-appearance: textfield;
+}
+.co-qty-input::-webkit-outer-spin-button,
+.co-qty-input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+
+/* ── Live summary ── */
+.co-live-summary {
+    background: #f0f7ee;
+    border: 1px solid #b7dfca;
+    border-radius: 6px;
+    padding: 0.75rem 1rem;
+    margin-bottom: 1.25rem;
+}
+.co-live-row {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.9rem;
+    padding: 0.15rem 0;
+}
+.co-live-total {
+    border-top: 1px solid #b7dfca;
+    margin-top: 0.4rem;
+    padding-top: 0.4rem;
+    font-size: 0.95rem;
+    text-align: right;
+}
+
+/* ── Registration form ── */
+.co-reg-card { margin-top: 2rem; }
+.co-field { margin-bottom: 1rem; }
+.co-label { display: block; font-size: 0.9rem; font-weight: 600; margin-bottom: 0.3rem; }
+.co-required { color: #c0392b; }
+.co-optional { font-weight: 400; color: var(--color-muted, #999); font-size: 0.82rem; }
+.co-input {
+    width: 100%;
+    max-width: 420px;
+    padding: 0.5rem 0.75rem;
+    border: 1px solid var(--color-border, #ccc);
+    border-radius: 5px;
+    font-size: 1rem;
+    box-sizing: border-box;
+}
+.co-submit-btn {
+    margin-top: 0.5rem;
+    font-size: 1rem;
+    padding: 0.65rem 1.5rem;
+}
+.co-submit-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+/* ── Errors ── */
+.co-errors {
+    background: #fdecea;
+    border: 1px solid #f5c6cb;
+    border-radius: 6px;
+    padding: 0.75rem 1rem;
+    margin-bottom: 1.25rem;
+    color: #721c24;
+}
+.co-errors ul { margin: 0; padding-left: 1.2rem; }
+
+/* ── Success / payment ── */
+.co-success-banner {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    background: #e6f5ec;
+    border: 1px solid #b7dfca;
+    border-radius: 8px;
+    padding: 1rem 1.25rem;
+    margin-bottom: 1.5rem;
+    color: #1a5c33;
+}
+.co-success-icon {
+    font-size: 2rem;
+    font-weight: 700;
+    color: #27ae60;
+    flex-shrink: 0;
+}
+.co-payment-card { margin-bottom: 1.5rem; }
+.co-urgent {
+    font-size: 1.1rem;
+    color: #c0392b;
+    background: #fdecea;
+    border: 1px solid #f5c6cb;
+    border-radius: 6px;
+    padding: 0.75rem 1rem;
+    margin-bottom: 1.25rem;
+}
+.co-qr-wrap { text-align: center; margin-bottom: 1.25rem; }
+.co-qr-img  { max-width: 180px; height: auto; border: 1px solid var(--color-border, #e0e0e0); border-radius: 6px; padding: 0.5rem; }
+.co-qr-caption { margin: 0.4rem 0 0; font-size: 0.82rem; color: var(--color-muted, #777); }
+.co-summary-table { width: 100%; border-collapse: collapse; margin-bottom: 0.5rem; }
+.co-summary-table td { padding: 0.35rem 0.5rem; font-size: 0.93rem; }
+.co-summary-table tr { border-bottom: 1px solid var(--color-border, #eee); }
+.co-qty   { text-align: center; color: var(--color-muted, #666); }
+.co-price { text-align: right; color: var(--color-muted, #666); }
+.co-total { text-align: right; font-weight: 600; }
+.co-summary-total td { border-top: 2px solid var(--color-border, #ccc); padding-top: 0.5rem; }
+
+/* ── Reuse children page styles ── */
+.children-date-section  { margin-bottom: 2.5rem; }
+.children-date-heading  { margin-bottom: 1rem; padding-bottom: 0.4rem; border-bottom: 2px solid var(--color-primary, #c0392b); }
+.children-item          { margin-bottom: 1rem; }
+.children-item-title    { margin-bottom: 0.3rem; }
+.children-item-performer{ color: var(--color-text-secondary, #666); margin-bottom: 0.4rem; font-style: italic; }
+.children-item-time     { font-size: 0.9rem; color: var(--color-muted, #888); margin-bottom: 0.6rem; }
+.children-item-description { margin-top: 0.5rem; }
+
+/* ── Payment bank details (reused from ticket-please) ── */
+.tp-bank-details { display: flex; flex-direction: column; gap: 0; margin-bottom: 1rem; }
+.tp-bank-row     { display: flex; justify-content: space-between; gap: 1rem; font-size: 0.95rem; padding: 0.4rem 0; border-bottom: 1px solid var(--color-border, #f0f0f0); }
+.tp-bank-label   { color: var(--color-muted, #666); white-space: nowrap; }
+.tp-bank-value   { font-weight: 600; word-break: break-all; text-align: right; }
+</style>

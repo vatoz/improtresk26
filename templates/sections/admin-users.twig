@@ -9,6 +9,7 @@
             <th title="Počet aktivních registrací">Reg.</th>
             <th title="Počet aktivních nákupů">Nák.</th>
             <th title="Počet spárovaných transakcí">Tx</th>
+            <th>Poznámka</th>
         </tr>
     </thead>
     <tbody>
@@ -34,9 +35,16 @@
                     <span class="user-no-tx">–</span>
                 {% endif %}
             </td>
+            <td class="user-note-cell">
+                {% if u.note %}
+                    <span class="user-note-preview" title="{{ u.note }}">{{ u.note|slice(0, 60) }}{% if u.note|length > 60 %}…{% endif %}</span>
+                {% else %}
+                    <span class="user-no-tx">–</span>
+                {% endif %}
+            </td>
         </tr>
         {% else %}
-        <tr><td colspan="6">Žádní uživatelé.</td></tr>
+        <tr><td colspan="7">Žádní uživatelé.</td></tr>
         {% endfor %}
     </tbody>
 </table>
@@ -56,5 +64,7 @@
     vertical-align: middle;
 }
 .user-no-tx { color: var(--color-muted, #bbb); }
+.user-note-cell { max-width: 220px; }
+.user-note-preview { font-size: 0.83rem; color: var(--color-muted, #555); cursor: default; }
 .pairing-badge--hero { background: #fff3cd; color: #856404; }
 </style>

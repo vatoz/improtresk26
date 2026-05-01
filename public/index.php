@@ -25,6 +25,7 @@ $router->map('GET', '/faq', 'DefaultController#faq', 'faq');
 $router->map('GET', '/contact', 'DefaultController#contact', 'contact');
 $router->map('GET', '/medailonky', 'DefaultController#medailonky', 'medailonky');
 $router->map('GET', '/children', 'DefaultController#children', 'children');
+$router->map('GET|POST', '/children/checkout', 'DefaultController#childrenCheckout', 'children_checkout');
 
 // Auth
 $router->map('GET|POST', '/login', 'AuthController#login', 'login');
@@ -93,6 +94,7 @@ $router->map('GET', '/admin/users', 'AdminController#userList', 'admin_users');
 $router->map('GET', '/admin/users/[i:id]', 'AdminController#userDetail', 'admin_user_detail');
 $router->map('POST', '/admin/users/[i:id]/send-mail', 'AdminController#sendUserMail', 'admin_user_send_mail');
 $router->map('POST', '/admin/users/[i:id]/set-awaiting-payment', 'AdminController#setAwaitingPayment', 'admin_user_set_awaiting_payment');
+$router->map('POST', '/admin/users/[i:id]/set-note', 'AdminController#setUserNote', 'admin_user_set_note');
 $router->map('POST', '/admin/users/[i:id]/add-registration', 'AdminController#addUserRegistration', 'admin_user_add_registration');
 $router->map('POST', '/admin/users/[i:id]/add-purchase', 'AdminController#addUserPurchase', 'admin_user_add_purchase');
 $router->map('GET', '/ticket_please', 'ShopController#ticketPlease', 'ticket_please');

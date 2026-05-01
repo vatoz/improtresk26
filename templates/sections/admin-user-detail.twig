@@ -63,6 +63,25 @@
     </div>
 </div>
 
+{# ── Note ── #}
+<div class="pairing-card">
+    <div class="pairing-tx-header">
+        <strong>Poznámka</strong>
+    </div>
+    <div class="pairing-section">
+        <form method="POST" action="/admin/users/{{ profile_user.id }}/set-note"
+              style="display:flex;flex-direction:column;gap:0.5rem;">
+            <input type="hidden" name="_csrf" value="{{ csrf }}">
+            <textarea name="note" rows="3"
+                      class="pairing-select"
+                      style="width:100%;resize:vertical;font-size:0.9rem;">{{ profile_user.note }}</textarea>
+            <div>
+                <button type="submit" class="btn btn--sm btn--primary">Uložit poznámku</button>
+            </div>
+        </form>
+    </div>
+</div>
+
 {# ── Send mail ── #}
 {% if mail_sent %}
 <div class="pairing-alert pairing-alert--ok">

@@ -677,7 +677,7 @@ class AdminController extends BaseController
         $this->requireAdmin();
 
         $stmt = $this->db->query("
-            SELECT u.id, u.name, u.email, u.hero, u.created_at,
+            SELECT u.id, u.name, u.email, u.hero, u.created_at, u.note,
                    (SELECT COUNT(*) FROM registrations r WHERE r.user_id = u.id AND r.payment_status != 'cancelled') AS registration_count,
                    (SELECT COUNT(*) FROM purchases pu WHERE pu.user_id = u.id AND pu.payment_status != 'cancelled') AS purchase_count,
                    (SELECT COUNT(*) FROM transaction_lists tl WHERE  CAST(tl.variable_symbol AS INT) = u.id ) AS transaction_count
@@ -696,7 +696,7 @@ class AdminController extends BaseController
     {
         $this->requireAdmin();
 
-        $uStmt = $this->db->prepare("SELECT id, name, email, hero, created_at, awaiting_payment FROM users WHERE id = ? LIMIT 1");
+        $uStmt = $this->db->prepare("SELECT id, name, email, hero, created_at, awaiting_payment, note FROM users WHERE id = ? LIMIT 1");
         $uStmt->execute([$id]);
         $profileUser = $uStmt->fetch(\PDO::FETCH_ASSOC);
 
@@ -880,6 +880,18 @@ class AdminController extends BaseController
         }
 
         $this->db->prepare("UPDATE users SET awaiting_payment = ? WHERE id = ?")->execute([$amount, $id]);
+
+        header('Location: /admin/users/' . $id);
+        exit;
+    }
+
+    public function setUserNote(int $id)
+    {
+        $this->requireAdmin();
+        csrf_validate('admin-pairing', $_POST['_csrf'] ?? null);
+
+        $note = trim($_POST['note'] ?? '');
+        $this->db->prepare("UPDATE users SET note = ? WHERE id = ?")->execute([$note ?: null, $id]);
 
         header('Location: /admin/users/' . $id);
         exit;

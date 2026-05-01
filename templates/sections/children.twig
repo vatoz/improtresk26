@@ -26,8 +26,14 @@
                 <h2 class="children-date-heading random{{ loop.index }}">{{ item.date|date('j. n. Y') }} {{ item.start_time[:5] }}</h2>
                 
                     <div class="children-item card">
-                        <div class="card__body">
+                        <div class="card__body vstupenka_father">
+ <A href="/children/checkout#item_{{item.id}}" class="vstupenky">
+    Vstupenky
+  </a>
+
+
                              <h3 class="children-item-title">{{ item.title }}</h3>
+                             
                                     {% if item.performer %}
                                         <div class="children-item-performer">{{ item.performer |raw}}</div>
                                     {% endif %}
@@ -80,7 +86,7 @@
             </section>
         {% endfor %}
     {% endif %}
- {% for field in ['children_end_1','children_end_2','children_end_3','children_end_4'] %}
+        {% for field in ['children_end_1','children_end_2','children_end_3','children_end_4'] %}
             {% for block in static  %}{%  if block.block_name == field %}
             <div class="card">
                 <div class="card__body">
@@ -131,5 +137,25 @@
 }
 .children-item-description {
     margin-top: 0.5rem;
+}
+.vstupenka_father{
+    overflow: hidden;
+    position: relative;
+
+}
+a.vstupenky{
+    position: absolute;
+    top: 28px;
+    right: -36px;
+    width: 160px;
+    background: #D85A30;
+    color: #fff;
+    text-align: center;
+    font-size: 13px;
+    font-weight: 500;
+    letter-spacing: 0.04em;
+    padding: 7px 0;
+    transform: rotate(45deg);
+    transform-origin: center;    
 }
 </style>

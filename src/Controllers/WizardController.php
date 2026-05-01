@@ -308,7 +308,7 @@ class WizardController extends BaseController
             exit;
         }
 
-        $stmt = $this->db->query("SELECT * FROM tickets WHERE is_active = 1 ORDER BY date, time");
+        $stmt = $this->db->query("SELECT * FROM tickets WHERE is_active = 1 AND type='standard' ORDER BY date, time");
         $tickets = $stmt->fetchAll();
 
         $stmt = $this->db->prepare("
