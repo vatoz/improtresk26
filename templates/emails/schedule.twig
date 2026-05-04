@@ -123,14 +123,23 @@
 
         <div class="content">
         
-            Ahoj!<br>
+        Ahoj!<br>
+{% if user.hero %} 
+    Úvodem ti chceme poděkovat, že nám pomáháš udělat Improtřesk 2026 lepší.
+    <strong>{% if user.hero ==1%}Jsi náš hrdina!{% else %}Jsi naše hrdinka!  {% endif %}</strong><br><br>
+
+{% endif %}
+
 Improtřesk už pomalu nakukuje oknem.<br>
 Nejdůležitější informace je adresa <strong class="adr">Žižkostel, <span class="street-address">Náměstí Barikád 1520/1</span>,
-<span class="locality">Praha 3</span>,
+<span class="locality">Praha 3</span>
  </strong>. Tam se budeme scházet na představení, networking, doprovodný program, odsud budem vyrážet i na workshopy.<br>
-Nejdřív otevřeme ve čtvrtek 7. května od <strong>17 hodin - na check-inu</strong>  (dveře vpravo od hlavního vchodu) , o hoďku a půl později začíná večerní program - dvě představení a DJ. <br>
+Nejdřív otevřeme ve čtvrtek 7. května od <strong>17 hodin - na check-inu</strong>  (dveře vpravo od hlavního vchodu), o hoďku a půl později začíná večerní program - dvě představení a DJ. <br>
 <br><br>
-Páteční ráno se sejdem v <strong>devět hodin</strong> v hlavním sále Žizkostela, mimo jiné chceme vytvořit společnou fotku; a můžeš s ostatními pokecat nebo si dát nějakou mňamku v kavárně ŽižCafé Therapy. <br>
+Páteční ráno se sejdem v <strong>devět hodin</strong> v hlavním sále Žizkostela, mimo jiné chceme vytvořit společnou fotku;
+ a můžeš s ostatními pokecat nebo si dát nějakou mňamku v kavárně ŽižCafé Therapy. <br>
+ Když si vezmeš <strong>bavlněné triko</strong> či něco jiného, můžem ti na něj zkusit zažehlit logo festivalu. A pokud někdo dorazí na checkin až sem, nějakou omezenou kapacitu zvládneme vyřídit.
+  <br>
 
 
 Odtud se přesuneme na workshopy. <br> 
@@ -144,9 +153,10 @@ Odtud se přesuneme na workshopy. <br>
 <br><br>
 
 
-Večer nás  všechny čeká od <strong>18:30</strong>  hodinový workshop tanga, po kterém bude možné pokračovat v tanci na plese, nebo se zasmát na standupu. Pokud můžeš, doraž tento večer v barevné kombinaci rudé a černé  barvy, pánové mohou mít černou košili, klobouk nebo i šle.<br>
+Večer nás  všechny čeká od <strong>18:30</strong>  hodinový workshop tanga, po kterém bude možné pokračovat v tanci na plese, nebo se zasmát na standupu. 
+Pokud můžeš, doraž tento večer v barevné kombinaci rudé a černé  barvy, pánové mohou mít černou košili, klobouk nebo i šle.<br>
 <br><br>
-Sobotní ráno opět začíná v <strong>devět hodin</strong>.  Kavárna bude opět otevřena.  Opět si tě odvedm na workshopy.<br>
+Sobotní ráno opět začíná v <strong>devět hodin</strong>.  Kavárna bude opět otevřena.  Opět si tě odvedem na workshopy.<br>
 {% if workshops.CD %}
     Čeká tě workshop {{ workshops.CD.name }}. Místem konání bude {{ workshops.CD.location}}.<br>
     Na místo workshopu si tě odvedem. <br>
@@ -181,68 +191,33 @@ Pokračovat budeme na  ecstatic dance ,  a zakončíme před 16:30 závěrečný
 {% else %}
     Pomocí odkazu <a href="{{wa_default}}">{{wa_default}}</a> se můžeš přidat do společné WhatsAppové komunikační improtřeskové skupiny.
  {% endif %}
-
+<br>
  {% if tickets.1 %}<br> <br>Máš <strong>zaplacenou vstupenku na celý festival</strong>.
   Pokud se rozhodneš, že chceš dorazit na nějaké celodenní či vícedenní workshopy, přihlaš se a zaplať jen rozdíl, my si s tím poradíme. 
     {% if workshops.CD  or  workshops.AB  %} 
-    <br><br>
+    <br>
         Systém kouká, že  se ti povedlo  zaplatit celodenní či vícedenní workshop a vstupenku, kterou tím pádem nepotřebuješ. (A my jsme si toho nevšimli.) 
         <strong> Ozvi se, my ti peníze za vstupenku vrátíme.</strong>
     {% endif %}
-
-{% else %}
-
- {% endif %}
-
-{% if user.hero %}
     <br>
-    <br>Ještě jednou ti chceme poděkovat, že nám pomáháš udělat Improtřesk 2026 lepší.
-    <strong>{% if user.hero ==1%}Jsi náš hrdina!{% else %}Jsi naše hrdinka!  {% endif %}</strong>
-
+{% else %}
 {% endif %}
 
+Letos máme  nově také <strong>Dětský Třesk!</strong> Co to znamená - představení  a aktivity pro děti v průběhu celého festivalu. Lístky na tyhle představení se dají koupit na našem webu.
+Zároveň k celodenním či vícedením workshopům máš nárok na doprovodnou rodinnou vstupenku zdarma, jen tě prosíme, kvůli odhadu kapacity si je zarezervuj na webu. 
+Použij stejný mail jako na hlavní vstupenku, my si to spárujeme.  A klidně pozvi kamarády.<br>
+
 
 <br>
+Z užitečných věcí s ssebou:
+ {% if tickets.2 %}  karimatka, spacák, ručník apod. , {% endif %}
+<strong>oblečení na ples</strong> (rudá a černá   barva, stačí  smart casual :) ), 
+hrneček na kávu/čaj v průběhu workshopů (kuchyňka bude), láhev na vodu, pohodlné oblečení ve kterém se můžeš válet po zemi, podsedák/karimatka/deka, papír na poznámky
+<br><br>
+Moc děkujeme našim partnerům  - Žižkostel a Fostra  - Soukromé gymnázium Fostra v Praze 3 Žižkov a Praze 5 Anděl  poskytly své skvělé prostory na festival, Nadace život umělce přispěla finančně.
 <br>
-
-Poděkování partnerům
-hrnečky
-Deky
-dětský program, 
-Work in progress
-Mail pro lidi týden před:
-PLES, ubytování, 
-<br>
-registrace
-harmonogram
-kontakty
-Co připsat
-kontakty
-doprava
-Vstup na vecerni programy - placka, pásek
-program pro děti
-o s sebou
-pohodlné oblečení
-lahev na pití
-karimatku/jógamatku
-deku
-psací potřeby
-šátek
-nabíječku
-ručník
-kartáček a pastu
-léky
-hrneček/plecháček/kelímek
-půllitr/půllitrový kelímek
-
-Nebo jim napsat, atbsi vetmou neco bavlnenyho, ze si to muzou nazehlit sami.
-dětský třesk
-
-doprava
-
-
-
-
+Vstup na večerní programy  (i na doprovodný Dětský Třesk) je v ceně celodenních i vícedenních workshopů, nebo se dá koupit samostatně.
+V případě problému s přihlašováním volej na 604 209 354 nebo piš na improtresk@improlab.art<br>
 
             
             <div style="text-align: center; margin-top: 24px;">
@@ -250,7 +225,7 @@ doprava
             </div>
 
             <p>S pozdravem,<br>
-            Tým Improtřesk &amp; Vašek Černý</p>
+            Tým Improtřesku 2026 &amp; Dana, Martin, Vašek, Jan</p>
         </div>
 
         <div class="footer">
