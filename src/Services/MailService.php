@@ -25,7 +25,7 @@ class MailService
      * @param int $limit Maximum number of mails to process in one run
      * @return array{sent: int, failed: int}
      */
-    public function processQueue(int $limit = 3): array
+    public function processQueue(int $limit = 10): array
     {
         $pending = MailQueue::getPending($this->db, $limit);
         $stats   = ['sent' => 0, 'failed' => 0];
