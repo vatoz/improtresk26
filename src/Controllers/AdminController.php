@@ -18,13 +18,26 @@ class AdminController extends BaseController
             FROM registrations r
             JOIN users u ON r.user_id = u.id
             LEFT JOIN workshops w ON r.workshop_id = w.id
-            ORDER BY r.created_at DESC
+            ORDER BY r.created_at DESC limit 15
+        ");
+
+        $purchaseStmt = $this->db->query("
+            SELECT p.id, p.user_id, u.name AS user_name, u.email AS user_email,
+                   p.item_type, p.quantity, p.payment_status, p.created_at,
+                   COALESCE(t.name, m.name) AS item_name,
+                   COALESCE(t.price, m.price) AS price
+            FROM purchases p
+            JOIN users u ON p.user_id = u.id
+            LEFT JOIN tickets t ON t.id = p.item_id AND p.item_type = 'ticket'
+            LEFT JOIN merch m ON m.id = p.item_id AND p.item_type = 'merch'
+            ORDER BY p.created_at DESC limit 30
         ");
 
         echo $this->twig->render('pages/admin.twig', [
             'user'         => $this->getCurrentUser(),
             'active_page'  => 'admin',
             'participants' => $stmt->fetchAll(\PDO::FETCH_ASSOC),
+            'purchases'    => $purchaseStmt->fetchAll(\PDO::FETCH_ASSOC),
         ]);
     }
 
@@ -175,8 +188,11 @@ class AdminController extends BaseController
                 w.capacity,
                 ts.start_datetime,
                 ts.end_datetime,
+                u.id    AS user_id,
                 u.name  AS user_name,
                 u.email AS user_email,
+                u.note AS user_note,
+                u.checked_in,
                 r.payment_status,
                 r.variable_symbol
             FROM workshops w
@@ -185,7 +201,7 @@ class AdminController extends BaseController
                 AND r.payment_status IN ('paid', 'approved')
             LEFT JOIN users u ON r.user_id = u.id
             WHERE w.is_active = 1
-            ORDER BY ts.start_datetime, w.name, u.name
+            ORDER BY ts.start_datetime, w.name, r.created_at, u.name
         ");
 
         $rows = $stmt->fetchAll(\PDO::FETCH_ASSOC);
@@ -207,10 +223,13 @@ class AdminController extends BaseController
             }
             if ($row['user_name'] !== null) {
                 $workshops[$wid]['participants'][] = [
-                    'name'   => $row['user_name'],
-                    'email'  => $row['user_email'],
-                    'status' => $row['payment_status'],
-                    'vs'     => $row['variable_symbol'],
+                    'id'         => $row['user_id'],
+                    'name'       => $row['user_name'],
+                    'email'      => $row['user_email'],
+                    'note'       => $row['user_note'],
+                    'checked_in' => $row['checked_in'],
+                    'status'     => $row['payment_status'],
+                    'vs'         => $row['variable_symbol'],
                 ];
             }
         }
@@ -696,7 +715,7 @@ class AdminController extends BaseController
     {
         $this->requireAdmin();
 
-        $uStmt = $this->db->prepare("SELECT id, name, email, hero, created_at, awaiting_payment, note FROM users WHERE id = ? LIMIT 1");
+        $uStmt = $this->db->prepare("SELECT id, name, email, hero, created_at, awaiting_payment, note, checked_in FROM users WHERE id = ? LIMIT 1");
         $uStmt->execute([$id]);
         $profileUser = $uStmt->fetch(\PDO::FETCH_ASSOC);
 
@@ -892,6 +911,17 @@ class AdminController extends BaseController
 
         $note = trim($_POST['note'] ?? '');
         $this->db->prepare("UPDATE users SET note = ? WHERE id = ?")->execute([$note ?: null, $id]);
+
+        header('Location: /admin/users/' . $id);
+        exit;
+    }
+
+    public function checkIn(int $id)
+    {
+        $this->requireAdmin();
+        csrf_validate('admin-pairing', $_POST['_csrf'] ?? null);
+
+        $this->db->prepare("UPDATE users SET checked_in = NOW() WHERE id = ?")->execute([$id]);
 
         header('Location: /admin/users/' . $id);
         exit;
@@ -1213,7 +1243,8 @@ class AdminController extends BaseController
         $stmt = $this->db->query("
             SELECT t.id AS ticket_id, t.name AS ticket_name, t.price,
                    p.id AS purchase_id, p.quantity, p.payment_status, p.created_at,
-                   u.id AS user_id, u.name AS user_name, u.email AS user_email
+                   u.id AS user_id, u.name AS user_name, u.email AS user_email,
+                   u.note AS user_note, u.checked_in
             FROM tickets t
             LEFT JOIN purchases p ON p.item_id = t.id AND p.item_type = 'ticket' AND p.payment_status = 'paid'
             LEFT JOIN users u ON u.id = p.user_id

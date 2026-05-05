@@ -1,0 +1,37 @@
+<div class="card" style="margin-top: 1.5rem;">
+    <div class="card__body">
+        <h3>Přehled nákupů vstupenek a merche</h3>
+        {% if purchases is empty %}
+            <p>Žádné nákupy.</p>
+        {% else %}
+            <table class="admin-table">
+                <thead>
+                    <tr>
+                        <th>Jméno</th>
+                        <th>E-mail</th>
+                        <th>Položka</th>
+                        <th>Typ</th>
+                        <th>Množství</th>
+                        <th>Cena (ks)</th>
+                        <th>Stav platby</th>
+                        <th>Datum nákupu</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for p in purchases %}
+                        <tr>
+                            <td><a href="/admin/users/{{ p.user_id }}">{{ p.user_name }}</a></td>
+                            <td>{{ p.user_email }}</td>
+                            <td>{{ p.item_name ?? '–' }}</td>
+                            <td>{{ p.item_type == 'ticket' ? 'Vstupenka' : 'Merch' }}</td>
+                            <td class="text-center">{{ p.quantity }}</td>
+                            <td>{{ p.price is not null ? p.price|number_format(0, ',', ' ') ~ ' Kč' : '–' }}</td>
+                            <td><span class="badge badge--{{ p.payment_status }}">{{ p.payment_status }}</span></td>
+                            <td>{{ p.created_at|date('d. m. Y H:i') }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% endif %}
+    </div>
+</div>

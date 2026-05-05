@@ -24,6 +24,8 @@
                 <th>Množství</th>
                 <th>Stav platby</th>
                 <th>Datum nákupu</th>
+                <th>Check-in</th>
+                <th>Poznámka</th>
             </tr>
         </thead>
         <tbody>
@@ -43,6 +45,10 @@
                     {% endif %}
                 </td>
                 <td>{{ s.created_at|date('d. m. Y H:i') }}</td>
+                <td class="text-center{% if s.checked_in %} checkin--set{% endif %}">
+                    {{ s.checked_in ? s.checked_in|date('j.n.Y H:i') : '–' }}
+                </td>
+                <td>{{ s.user_note ?? '–' }}</td>
             </tr>
             {% endfor %}
         </tbody>
@@ -79,6 +85,7 @@
 }
 .status-badge--paid { background: #d4edda; color: #155724; }
 .status-badge--pending { background: #fff3cd; color: #856404; }
+.checkin--set { color: #155724; font-weight: 600; }
 .mailnote-section { display: flex; align-items: flex-start; gap: 0.5rem; margin-bottom: 0.75rem; }
 .mailnote-label { font-size: 0.85rem; white-space: nowrap; padding-top: 6px; }
 .mailnote-form { display: flex; align-items: flex-start; gap: 6px; flex: 1; }

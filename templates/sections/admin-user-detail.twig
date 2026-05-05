@@ -32,6 +32,20 @@
         </div>
         <div class="pairing-tx-status">
             <span class="pairing-tx-date" style="font-size:0.85rem;">Registrace: {{ profile_user.created_at|date('j.n.Y') }}</span>
+            {% if profile_user.checked_in %}
+                <span class="pairing-tx-date" style="font-size:0.85rem;color:#155724;font-weight:600;">
+                    Check-in: {{ profile_user.checked_in|date('j.n.Y H:i') }}
+                </span>
+            {% else %}
+                <span class="pairing-tx-date" style="font-size:0.85rem;color:#999;">Check-in: –</span>
+            {% endif %}
+            <form method="POST" action="/admin/users/{{ profile_user.id }}/checkin" style="display:inline;">
+                <input type="hidden" name="_csrf" value="{{ csrf }}">
+                <button type="submit" class="btn btn--small btn--{{ profile_user.checked_in ? 'secondary' : 'primary' }}"
+                        onclick="return confirm('{{ profile_user.checked_in ? 'Přepsat čas check-inu na nyní?' : 'Zaznamenat check-in nyní?' }}')">
+                    Check-in
+                </button>
+            </form>
         </div>
     </div>
 </div>

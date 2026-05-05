@@ -25,18 +25,22 @@
                     <th>#</th>
                     <th>Jméno</th>
                     <th>E-mail</th>
-                    <th>VS</th>
                     <th class="attendance-check">Přítomen</th>
+                    <th>Check-in</th>
+                    <th>Poznámka</th>
                 </tr>
             </thead>
             <tbody>
                 {% for p in workshop.participants %}
                 <tr>
                     <td>{{ loop.index }}</td>
-                    <td>{{ p.name }}</td>
+                    <td><a href="/admin/users/{{ p.id }}" class="no-print">{{ p.name }}</a><span class="print-only">{{ p.name }}</span></td>
                     <td>{{ p.email }}</td>
-                    <td>{{ p.vs }}</td>
-                    <td class="attendance-check">☐</td>
+                    <td class="attendance-check">{% if p.checked_in %}✓{% else %}☐{% endif %}</td>
+                    <td class="attendance-checkin{% if p.checked_in %} attendance-checkin--set{% endif %}">
+                        {{ p.checked_in ? p.checked_in|date('j.n.Y H:i') : '–' }}
+                    </td>
+                    <td>{{ p.note }}</td>
                 </tr>
                 {% endfor %}
             </tbody>
@@ -100,6 +104,16 @@
     color: var(--color-muted, #999);
     font-style: italic;
 }
+.attendance-checkin {
+    font-size: 0.85rem;
+    color: var(--color-muted, #999);
+    white-space: nowrap;
+}
+.attendance-checkin--set {
+    color: #155724;
+    font-weight: 600;
+}
+.print-only { display: none; }
 
 @media print {
     .no-print,
@@ -109,6 +123,7 @@
     footer {
         display: none !important;
     }
+    .print-only { display: inline !important; }
     .attendance-sheet {
         page-break-after: always;
         border-bottom: none;
