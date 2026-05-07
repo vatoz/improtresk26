@@ -696,18 +696,26 @@ class AdminController extends BaseController
         $this->requireAdmin();
 
         $stmt = $this->db->query("
-            SELECT u.id, u.name, u.email, u.hero, u.created_at, u.note,
-                   (SELECT COUNT(*) FROM registrations r WHERE r.user_id = u.id AND r.payment_status != 'cancelled') AS registration_count,
-                   (SELECT COUNT(*) FROM purchases pu WHERE pu.user_id = u.id AND pu.payment_status != 'cancelled') AS purchase_count,
+            SELECT u.id, u.name, u.email, u.hero, u.created_at, u.note, u.checked_in,
+                   (SELECT COUNT(*) FROM registrations r WHERE r.user_id = u.id AND r.payment_status = 'paid') AS registration_count,
+                   (SELECT COUNT(*) FROM purchases pu WHERE pu.user_id = u.id AND pu.payment_status = 'paid') AS purchase_count,
                    (SELECT COUNT(*) FROM transaction_lists tl WHERE  CAST(tl.variable_symbol AS INT) = u.id ) AS transaction_count
             FROM users u
             ORDER BY u.id
         ");
 
+        $allUsers = $stmt->fetchAll(\PDO::FETCH_ASSOC);
+
+        $notCheckedIn = array_filter($allUsers, fn($u) => !$u['checked_in'] && ($u['registration_count'] > 0 || $u['purchase_count'] > 0));
+        $checkedIn    = array_filter($allUsers, fn($u) => (bool)$u['checked_in']);
+        $noPaidItems  = array_filter($allUsers, fn($u) => !$u['checked_in'] && $u['registration_count'] == 0 && $u['purchase_count'] == 0);
+
         echo $this->twig->render('pages/admin-users.twig', [
-            'user'        => $this->getCurrentUser(),
-            'active_page' => 'admin',
-            'users'       => $stmt->fetchAll(\PDO::FETCH_ASSOC),
+            'user'           => $this->getCurrentUser(),
+            'active_page'    => 'admin',
+            'users_not_checked_in' => array_values($notCheckedIn),
+            'users_checked_in'    => array_values($checkedIn),
+            'users_no_paid_items' => array_values($noPaidItems),
         ]);
     }
 

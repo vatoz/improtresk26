@@ -1,5 +1,4 @@
-<p class="admin-users-count">Celkem uživatelů: <strong>{{ users|length }}</strong></p>
-
+{% macro user_table(users, empty_label) %}
 <table class="admin-table admin-users-table">
     <thead>
         <tr>
@@ -44,15 +43,45 @@
             </td>
         </tr>
         {% else %}
-        <tr><td colspan="7">Žádní uživatelé.</td></tr>
+        <tr><td colspan="7">{{ empty_label }}</td></tr>
         {% endfor %}
     </tbody>
 </table>
+{% endmacro %}
+
+{% import _self as m %}
+
+<p class="admin-users-count">
+    Celkem uživatelů: <strong>{{ (users_not_checked_in|length) + (users_checked_in|length) + (users_no_paid_items|length) }}</strong>
+</p>
+
+<h2 class="admin-users-section-heading">Čekají na checkin<span class="admin-users-section-count">{{ users_not_checked_in|length }}</span></h2>
+{{ m.user_table(users_not_checked_in, 'Žádní uživatelé v této skupině.') }}
+
+<h2 class="admin-users-section-heading admin-users-section-heading--checked">Prošli checkinem<span class="admin-users-section-count">{{ users_checked_in|length }}</span></h2>
+{{ m.user_table(users_checked_in, 'Žádní uživatelé v této skupině.') }}
+
+<h2 class="admin-users-section-heading admin-users-section-heading--empty">Bez zaplaceného workshopu nebo vstupenky <span class="admin-users-section-count">{{ users_no_paid_items|length }}</span></h2>
+{{ m.user_table(users_no_paid_items, 'Žádní uživatelé v této skupině.') }}
 
 <style>
 .admin-users-count { margin-bottom: 1rem; color: var(--color-muted, #666); }
 .admin-users-table td, .admin-users-table th { vertical-align: middle; }
 .text-center { text-align: center; }
+.admin-users-section-heading {
+    font-size: 1.1rem;
+    margin: 2rem 0 0.5rem;
+    padding-bottom: 0.3rem;
+    border-bottom: 2px solid #e0e0e0;
+}
+.admin-users-section-heading--checked { border-color: #27ae60; }
+.admin-users-section-heading--empty   { border-color: #e67e22; }
+.admin-users-section-count {
+    font-size: 0.85rem;
+    font-weight: normal;
+    color: var(--color-muted, #666);
+    margin-left: 0.4rem;
+}
 .user-row--has-tx > td:first-child::before {
     content: '';
     display: inline-block;
