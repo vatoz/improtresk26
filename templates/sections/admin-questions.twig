@@ -24,7 +24,7 @@
                         {% for u in q.users %}
                             <tr>
                                 <td>{{ loop.index }}</td>
-                                <td>{{ u.name }}</td>
+                                <td><a href="/admin/users/{{ u.id }}">{{ u.name }}</a></td>
                                 <td><a href="mailto:{{ u.email }}">{{ u.email }}</a></td>
                             </tr>
                         {% endfor %}

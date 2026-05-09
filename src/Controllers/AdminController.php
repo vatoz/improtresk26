@@ -467,7 +467,7 @@ class AdminController extends BaseController
 
         $stmt = $this->db->query("
             SELECT q.id, q.question_name, q.question,q.in_admin,
-                   u.name AS user_name, u.email AS user_email
+                  u.id as user_id, u.name AS user_name, u.email AS user_email
             FROM user_questions q
             LEFT JOIN user_answers ua ON ua.question_id = q.id 
             LEFT JOIN users u ON u.id = ua.user_id
@@ -495,6 +495,7 @@ class AdminController extends BaseController
                 $questions[$qid]['users'][] = [
                     'name'  => $row['user_name'],
                     'email' => $row['user_email'],
+                    'id' => $row['user_id'],
                 ];
             }
         }
