@@ -12,7 +12,7 @@ require_once __DIR__ . '/../src/bootstrap.php';
 require_once __DIR__ . '/migration_helpers.php';
 
 echo "═══════════════════════════════════════════════════════\n";
-echo "  Improtřesk 2026 - Database Setup\n";
+echo "  Improtřesk 2027 - Database Setup\n";
 echo "═══════════════════════════════════════════════════════\n\n";
 
 // ── Step 1: Migrations ──────────────────────────────────────

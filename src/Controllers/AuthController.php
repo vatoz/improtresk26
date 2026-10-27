@@ -85,7 +85,7 @@ class AuthController extends BaseController
                     MailQueue::addWithTemplate(
                         $this->db,
                         $email,
-                        'Vítej na Improtřesku 2026!',
+                        'Vítej na Improtřesku 2027!',
                         'registration.twig',
                         ['name' => $name, 'email' => $email, 'loginUrl' => $loginUrl]
                     );
@@ -142,7 +142,7 @@ class AuthController extends BaseController
             MailQueue::addWithTemplate(
                         $this->db,
                         $email,
-                        'Obnova hesla - Improtřesk 2026',
+                        'Obnova hesla - Improtřesk 2027',
                     'password-reset.twig',
                     [
                         'resetUrl' => $resetUrl,

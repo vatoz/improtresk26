@@ -1,6 +1,6 @@
 # Database Migrations and Seeds
 
-This directory contains database migrations and seed data for the Improtřesk 2026 application.
+This directory contains database migrations and seed data for the Improtřesk 2027 application.
 
 ## Structure
 

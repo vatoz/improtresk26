@@ -1,8 +1,8 @@
-# Zadávací dokumentace – Improtřesk 2026
+# Zadávací dokumentace – Improtřesk 2027
 
 ## 1. Úvod
 
-**Název projektu:** Improtřesk 2026
+**Název projektu:** Improtřesk 2027
 
 **Cíl projektu:** Vytvořit web malého festivalu s možností online registrace účastníků na workshopy a doprovodný program.
 

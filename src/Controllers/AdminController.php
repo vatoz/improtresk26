@@ -848,7 +848,7 @@ class AdminController extends BaseController
 
         switch ($type) {
             case 'registration':
-                MailQueue::addWithTemplate($this->db, $user['email'], 'Vítej na Improtřesku 2026!', 'registration.twig', [
+                MailQueue::addWithTemplate($this->db, $user['email'], 'Vítej na Improtřesk 2027!', 'registration.twig', [
                     'name'     => $user['name'],
                     'email'    => $user['email'],
                     'loginUrl' => $baseUrl . '/login',
@@ -866,7 +866,7 @@ class AdminController extends BaseController
             case 'password-reset':
                 $token = \App\Models\User::createPasswordResetToken($this->db, $user['email']);
                 if ($token) {
-                    MailQueue::addWithTemplate($this->db, $user['email'], 'Obnova hesla - Improtřesk 2026', 'password-reset.twig', [
+                    MailQueue::addWithTemplate($this->db, $user['email'], 'Obnova hesla - Improtřesk 2027', 'password-reset.twig', [
                         'resetUrl' => $baseUrl . '/reset-password?token=' . $token,
                         'email'    => $user['email'],
                     ]);
@@ -1151,7 +1151,7 @@ class AdminController extends BaseController
         $dashboardUrl = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? 'https' : 'http')
             . '://' . $_SERVER['HTTP_HOST'] . '/dashboard';
 
-        MailQueue::addWithTemplate($this->db, $user['email'], 'Informace k festivalu Improtřesk 2026', 'schedule.twig', [
+        MailQueue::addWithTemplate($this->db, $user['email'], 'Informace k festivalu Improtřesk 2027', 'schedule.twig', [
             'name'         => $user['name'],
             'workshops'         => $workshopsByTimeslot,
             'tickets'      => $tickets,
