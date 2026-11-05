@@ -102,3 +102,39 @@ const menuToggle = document.getElementById('menu-toggle');
         });
     }
  
+
+// Cart icon: gold blink + star instead of the item count after the cart content changed.
+// Called directly after AJAX actions (with the new count) and on page load when the server
+// flagged a change (data-cart-changed on the icon, set after form POST + redirect).
+(function () {
+    var timer = null;
+
+    window.cartChanged = function (newCount) {
+        var link  = document.querySelector('.nav-cart');
+        if (!link) return;
+        var badge = link.querySelector('.nav-cart__count');
+        var toggle = document.getElementById('menu-toggle'); // on mobile the icon hides in the menu
+        if (typeof newCount === 'number') link.dataset.count = newCount;
+
+        [link, toggle].forEach(function (el) {
+            if (!el) return;
+            el.classList.remove('nav-cart--changed');
+            void el.offsetWidth; // restart the animation when triggered repeatedly
+            el.classList.add('nav-cart--changed');
+        });
+        badge.textContent = '★';
+        badge.hidden = false;
+
+        clearTimeout(timer);
+        timer = setTimeout(function () {
+            var count = parseInt(link.dataset.count, 10) || 0;
+            badge.textContent = count;
+            badge.hidden = count === 0;
+            link.classList.remove('nav-cart--changed');
+            if (toggle) toggle.classList.remove('nav-cart--changed');
+        }, 1800);
+    };
+
+    var link = document.querySelector('.nav-cart[data-cart-changed]');
+    if (link) window.cartChanged();
+}());

@@ -1,54 +1,90 @@
 <div class="container">
     <h1>Vstupenky</h1>
-    <a href="/dashboard" class="btn btn--primary btn--block">Vrátit se na přehled</a>
-    {% if tickets is empty %}
+    <p>Vstupenky na večerní a doprovodný program pro jednotlivé dny.
+       Pokud máte registraci na celodenní či vícedenní workshop, vstupenky na večerní/odpolední program nepotřebujete.</p>
+
+    {% if error %}
+        <div class="alert alert-error">{{ error }}</div>
+    {% endif %}
+    {% if success %}
+        <div class="alert alert-success">{{ success }}</div>
+    {% endif %}
+
+    {% set dayNames = ['', 'Pondělí', 'Úterý', 'Středa', 'Čtvrtek', 'Pátek', 'Sobota', 'Neděle'] %}
+
+    {% if days is empty %}
         <div class="card">
             <div class="card__body">
                 <p>Momentálně nejsou k dispozici žádné vstupenky. Zkuste to prosím později.</p>
             </div>
         </div>
     {% else %}
-        <div class="shop-grid">
-            {% for ticket in tickets %}
-                {% set alreadyOrdered = ticket.id in user_purchased_ids %}
-                <div class="shop-card">
-                    <div class="shop-card__body">
-                        <h3 class="shop-card__name">{{ ticket.name }}</h3>
+        {% for day in days %}
+            <section class="tickets-day">
+                {% if day.date or days|length > 1 %}
+                <h2 class="tickets-day__heading">
+                    {% if day.date %}
+                        {{ dayNames[day.date|date('N')] }} {{ day.date|date('j. n. Y') }}
+                    {% else %}
+                        Ostatní vstupenky
+                    {% endif %}
+                </h2>
+                {% endif %}
+                <div class="shop-grid">
+                    {% for ticket in day.tickets %}
+                        {% set status = user_purchases[ticket.id] ?? null %}
+                        <div class="shop-card{% if status %} shop-card--ordered{% endif %}">
+                            <div class="shop-card__body">
+                                <h3 class="shop-card__name">{{ ticket.name }}</h3>
 
-                        {% if ticket.description %}
-                            <p class="shop-card__desc">{{ ticket.description }}</p>
-                        {% endif %}
-
-                        <div class="shop-card__meta">
-                            {% if ticket.date %}
-                                <span>📅 {{ ticket.date|date('j.n.Y') }}{% if ticket.time %} v {{ ticket.time|slice(0,5) }}{% endif %}</span>
-                            {% endif %}
-                            {% if ticket.capacity %}
-                                <span>👥 Kapacita: {{ ticket.capacity }}</span>
-                            {% endif %}
-                        </div>
-
-                        <div class="shop-card__footer">
-                            <span class="shop-card__price">{{ ticket.price|number_format(0, ',', ' ') }} Kč</span>
-
-                            {% if user %}
-                                {% if alreadyOrdered %}
-                                    <button class="btn btn--success btn--sm" disabled>✓ Objednáno</button>
-                                {% else %}
-                                    <form method="POST" action="/shop/buy">
-                                        <input type="hidden" name="_csrf"      value="{{ csrf }}">
-                                        <input type="hidden" name="item_type" value="ticket">
-                                        <input type="hidden" name="item_id"   value="{{ ticket.id }}">
-                                        <button type="submit" class="btn btn--primary btn--sm">Objednat</button>
-                                    </form>
+                                {% if ticket.description %}
+                                    <p class="shop-card__desc">{{ ticket.description }}</p>
                                 {% endif %}
-                            {% else %}
-                                <a href="/login" class="btn btn--outline btn--sm">Přihlásit se</a>
-                            {% endif %}
+
+                                <div class="shop-card__meta">
+                                    {% if ticket.time %}
+                                        <span>🕗 {{ ticket.time|slice(0,5) }}</span>
+                                    {% endif %}
+                                    {% if ticket.capacity %}
+                                        <span>👥 Kapacita: {{ ticket.capacity }}</span>
+                                    {% endif %}
+                                </div>
+
+                                <div class="shop-card__footer">
+                                    <span class="shop-card__price">{{ ticket.price|number_format(0, ',', ' ') }} Kč</span>
+
+                                    {% if not user %}
+                                        <a href="/login" class="btn btn--outline btn--sm">Přihlásit se</a>
+                                    {% elseif status == 'paid' %}
+                                        <span class="shop-badge">✓ Zaplaceno</span>
+                                    {% elseif status %}
+                                        <span class="shop-badge">✓ Objednáno</span>
+                                        <form method="POST" action="/shop/remove-ticket">
+                                            <input type="hidden" name="_csrf"     value="{{ csrf }}">
+                                            <input type="hidden" name="ticket_id" value="{{ ticket.id }}">
+                                            <button type="submit" class="btn btn--outline btn--sm">Odebrat</button>
+                                        </form>
+                                    {% else %}
+                                        <form method="POST" action="/shop/buy">
+                                            <input type="hidden" name="_csrf"      value="{{ csrf }}">
+                                            <input type="hidden" name="item_type" value="ticket">
+                                            <input type="hidden" name="item_id"   value="{{ ticket.id }}">
+                                            <button type="submit" class="btn btn--primary btn--sm">Objednat</button>
+                                        </form>
+                                    {% endif %}
+                                </div>
+                            </div>
                         </div>
-                    </div>
+                    {% endfor %}
                 </div>
-            {% endfor %}
+            </section>
+        {% endfor %}
+    {% endif %}
+
+    {% if user %}
+        <div class="shop-nav">
+            <a href="/cart" class="btn btn--primary">Košík a platební údaje</a>
+            <a href="/dashboard" class="btn btn--outline">Můj přehled</a>
         </div>
     {% endif %}
 </div>
@@ -99,4 +135,14 @@
     font-weight: 700;
     color: var(--color-primary, #c0392b);
 }
+.tickets-day { margin-top: 2rem; }
+.tickets-day__heading {
+    margin-bottom: 0;
+    padding-bottom: 0.4rem;
+    border-bottom: 2px solid var(--color-primary, #c0392b);
+}
+.shop-card--ordered { border-color: #27ae60; background: #f7fdf9; }
+.shop-card__footer { flex-wrap: wrap; gap: 0.5rem; }
+.shop-badge { font-size: 0.85rem; font-weight: 600; color: #27ae60; }
+.shop-nav { display: flex; gap: 0.75rem; flex-wrap: wrap; margin-top: 2rem; }
 </style>

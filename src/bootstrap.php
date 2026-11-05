@@ -39,6 +39,7 @@ function trimStartZero(string $text): string
 {   if(substr($text,0,1)=="0"){return substr($text,1,22000);}else{return $text;}}
 
 $twig->addFilter(new \Twig\TwigFilter('trimStartZero', 'trimStartZero', ['is_safe' => ['html']]));
+$twig->addGlobal('merch_enabled', merch_enabled());
 
 
 
@@ -46,6 +47,19 @@ $twig->addFilter(new \Twig\TwigFilter('trimStartZero', 'trimStartZero', ['is_saf
 // Sessions
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
+}
+
+// Cart icon in navigation: number of unpaid items + "cart just changed" flag (set by
+// BaseController::markCartChanged() before a redirect; consumed by the next full page load)
+if (!empty($_SESSION['user']['id'])) {
+    $twig->addGlobal('cart_count', cart_count($db, (int) $_SESSION['user']['id']));
+
+    $isPageLoad = ($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'GET'
+        && str_contains($_SERVER['HTTP_ACCEPT'] ?? 'text/html', 'text/html');
+    if ($isPageLoad && !empty($_SESSION['cart_changed'])) {
+        unset($_SESSION['cart_changed']);
+        $twig->addGlobal('cart_changed', true);
+    }
 }
 
 //ini_set('error_log', '../var/err.log');

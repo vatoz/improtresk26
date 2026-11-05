@@ -25,7 +25,7 @@ $router->map('GET', '/faq', 'DefaultController#faq', 'faq');
 $router->map('GET', '/contact', 'DefaultController#contact', 'contact');
 $router->map('GET', '/medailonky', 'DefaultController#medailonky', 'medailonky');
 $router->map('GET', '/children', 'DefaultController#children', 'children');
-$router->map('GET|POST', '/children/checkout', 'DefaultController#childrenCheckout', 'children_checkout');
+$router->map('POST', '/children/add-to-cart', 'ShopController#addChildrenTickets', 'children_add_to_cart');
 
 // Auth
 $router->map('GET|POST', '/login', 'AuthController#login', 'login');
@@ -37,6 +37,7 @@ $router->map('POST', '/request-password-reset', 'AuthController#requestPasswordR
 
 // Workshops
 $router->map('GET', '/workshops', 'WorkshopController#index', 'workshops');
+$router->map('POST', '/workshops/register', 'WorkshopController#register', 'workshop_register');
 //$router->map('GET|POST', '/workshop/register', 'WorkshopController#register', 'workshop_register');
 //$router->map('GET|POST', '/workshop/unregister', 'WorkshopController#unregister', 'workshop_unregister');
 
@@ -47,19 +48,15 @@ $router->map('GET', '/profile', 'DashboardController#index', 'profile');
 $router->map('POST', '/dashboard/cancel-registration', 'DashboardController#cancelRegistration', 'cancel_registration');
 $router->map('POST', '/dashboard/reorder-registrations', 'DashboardController#reorderRegistrations', 'reorder_registrations');
 $router->map('POST', '/dashboard/save-answer', 'DashboardController#saveAnswer', 'save_answer');
+$router->map('GET', '/cart', 'DashboardController#cart', 'cart');
+$router->map('GET|POST', '/cart/pay', 'DashboardController#pay', 'cart_pay');
 
 // Shop
 $router->map('GET',  '/tickets',              'ShopController#tickets',       'tickets');
 $router->map('GET',  '/merch',                'ShopController#merch',         'merch');
 $router->map('POST', '/shop/buy',             'ShopController#buy',           'shop_buy');
 $router->map('POST', '/shop/cancel-purchase', 'ShopController#cancelPurchase','shop_cancel_purchase');
-
-// Registration wizard
-$router->map('GET|POST', '/wizard/workshops', 'WizardController#workshops', 'wizard_workshops');
-$router->map('GET|POST', '/wizard/tickets',   'WizardController#tickets',   'wizard_tickets');
-$router->map('GET|POST', '/wizard/merch',     'WizardController#merch',     'wizard_merch');
-$router->map('GET',      '/wizard/payment',   'WizardController#payment',   'wizard_payment');
-$router->map('GET', '/wizard', 'WizardController#workshops', 'wizard');
+$router->map('POST', '/shop/remove-ticket',   'ShopController#removeTicket',  'shop_remove_ticket');
 
 // QR platba
 $router->map('GET', '/qr-platba', 'DefaultController#qrPlatba', 'qr_platba');

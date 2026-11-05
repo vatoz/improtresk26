@@ -1,5 +1,10 @@
+{% set type_labels = {child: 'Dětská vstupenka', adult: 'Dospělá vstupenka', family: 'Rodinná vstupenka (2+2)'} %}
 <div class="container">
     <h1>Dětský Třesk</h1>
+
+    {% if success %}
+        <div class="alert alert-success">{{ success }} <a href="/cart">Přejít do košíku</a></div>
+    {% endif %}
 
      {% for field in ['children_start_1','children_start_2','children_start_3','children_start_4'] %}
             {% for block in static  %}{%  if block.block_name == field %}
@@ -25,11 +30,13 @@
             <section class="children-date-section" id="den_{{ item.date }}">
                 <h2 class="children-date-heading random{{ loop.index }}">{{ item.date|date('j. n. Y') }} {{ item.start_time[:5] }}</h2>
                 
-                    <div class="children-item card">
+                    <div class="children-item card" id="item_{{ item.id }}">
                         <div class="card__body vstupenka_father">
- <A href="/children/checkout#item_{{item.id}}" class="vstupenky">
-    Vstupenky
-  </a>
+                            {% if user and item.tickets is not empty %}
+                                <button type="button" class="vstupenky" aria-expanded="false" aria-controls="tickets_{{ item.id }}">
+                                    Vstupenky
+                                </button>
+                            {% endif %}
 
 
                              <h3 class="children-item-title">{{ item.title }}</h3>
@@ -76,10 +83,30 @@
                                                 {% endif %}
                                             </div>
 
-
-                                 
-                                   
-                            
+                            {% if user and item.tickets is not empty %}
+                                <form method="POST" action="/children/add-to-cart" class="children-tickets" id="tickets_{{ item.id }}" hidden>
+                                    <input type="hidden" name="_csrf" value="{{ csrf }}">
+                                    <input type="hidden" name="children_item_id" value="{{ item.id }}">
+                                    <h4 class="children-tickets__heading">Vstupenky na toto představení</h4>
+                                    {% for ticket in item.tickets %}
+                                        <div class="children-tickets__row">
+                                            <div>
+                                                <span class="children-tickets__name">{{ type_labels[ticket.type] ?? ticket.name }}</span>
+                                                <span class="children-tickets__price">{{ ticket.price|number_format(0, ',', ' ') }} Kč / ks</span>
+                                                {% if in_cart[ticket.id] ?? 0 %}
+                                                    <span class="children-tickets__incart">V košíku: {{ in_cart[ticket.id] }}&times;</span>
+                                                {% endif %}
+                                            </div>
+                                            <div class="children-tickets__qty">
+                                                <button type="button" class="children-qty-btn" data-step="-1" aria-label="Ubrat">−</button>
+                                                <input type="number" name="tickets[{{ ticket.id }}]" value="0" min="0" max="20" class="children-qty-input">
+                                                <button type="button" class="children-qty-btn" data-step="1" aria-label="Přidat">+</button>
+                                            </div>
+                                        </div>
+                                    {% endfor %}
+                                    <button type="submit" class="btn btn--primary btn--sm children-tickets__submit">Přidat do košíku</button>
+                                </form>
+                            {% endif %}
                         </div>
                     </div>
                 
@@ -143,7 +170,11 @@
     position: relative;
 
 }
-a.vstupenky{
+button.vstupenky{
+    border: none;
+    cursor: pointer;
+    font-family: inherit;
+    z-index: 1;
     position: absolute;
     top: 28px;
     right: -36px;
@@ -158,4 +189,82 @@ a.vstupenky{
     transform: rotate(45deg);
     transform-origin: center;    
 }
+button.vstupenky:hover,
+button.vstupenky[aria-expanded="true"] { background: #b8461f; }
+.children-tickets {
+    clear: both;
+    margin-top: 1.25rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--color-border, #e8e8e8);
+}
+.children-tickets__heading {
+    margin: 0 0 0.6rem;
+    font-size: 0.95rem;
+    color: var(--color-muted, #555);
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+}
+.children-tickets__row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 0.5rem 0;
+    border-bottom: 1px solid var(--color-border, #f2f2f2);
+    flex-wrap: wrap;
+}
+.children-tickets__row > div:first-child { display: flex; flex-direction: column; gap: 0.1rem; }
+.children-tickets__name   { font-weight: 600; }
+.children-tickets__price  { font-size: 0.82rem; color: var(--color-muted, #888); }
+.children-tickets__incart { font-size: 0.82rem; font-weight: 600; color: #27ae60; }
+.children-tickets__qty { display: flex; align-items: center; gap: 0.3rem; }
+.children-qty-btn {
+    width: 2rem; height: 2rem;
+    border: 1px solid var(--color-border, #ccc);
+    border-radius: 4px;
+    background: #f7f7f7;
+    font-size: 1.1rem;
+    cursor: pointer;
+    padding: 0;
+}
+.children-qty-input {
+    width: 3rem;
+    text-align: center;
+    border: 1px solid var(--color-border, #ccc);
+    border-radius: 4px;
+    padding: 0.25rem;
+    -moz-appearance: textfield;
+}
+.children-qty-input::-webkit-outer-spin-button,
+.children-qty-input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+.children-tickets__submit { margin-top: 0.75rem; }
 </style>
+
+<script>
+(function () {
+    // Ribbon toggles the ticket section of its card
+    document.querySelectorAll('button.vstupenky').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+            var section = document.getElementById(btn.getAttribute('aria-controls'));
+            if (!section) return;
+            section.hidden = !section.hidden;
+            btn.setAttribute('aria-expanded', section.hidden ? 'false' : 'true');
+            if (!section.hidden) section.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        });
+    });
+    // +/- quantity buttons
+    document.querySelectorAll('.children-qty-btn').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+            var input = btn.parentNode.querySelector('.children-qty-input');
+            var val = (parseInt(input.value, 10) || 0) + parseInt(btn.dataset.step, 10);
+            input.value = Math.max(0, Math.min(20, val));
+        });
+    });
+    // Open the section after returning from "add to cart"
+    var m = location.hash.match(/^#item_(\d+)$/);
+    if (m) {
+        var btn = document.querySelector('button.vstupenky[aria-controls="tickets_' + m[1] + '"]');
+        if (btn) btn.click();
+    }
+}());
+</script>

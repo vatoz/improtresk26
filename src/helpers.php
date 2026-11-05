@@ -13,6 +13,14 @@ function env(string $key, $default = null)
 }
 
 /**
+ * Is the merch section enabled? (.env MERCH_ENABLED, default true)
+ */
+function merch_enabled(): bool
+{
+    return filter_var(env('MERCH_ENABLED', 'true'), FILTER_VALIDATE_BOOLEAN);
+}
+
+/**
  * Generate CSRF token
  *
  * @param string $key
@@ -102,6 +110,20 @@ function send_email(string $to, string $subject, string $templatePath, array $da
     return mail($to, $subject, $htmlBody, implode("\r\n", $headers));
 }
 
+
+/**
+ * Number of unpaid (pending) items in a user's cart – workshop registrations + purchases.
+ */
+function cart_count(PDO $db, int $userId): int
+{
+    $stmt = $db->prepare("
+        SELECT
+            (SELECT COUNT(*) FROM registrations WHERE user_id = ? AND payment_status = 'pending')
+          + (SELECT COUNT(*) FROM purchases     WHERE user_id = ? AND payment_status = 'pending')
+    ");
+    $stmt->execute([$userId, $userId]);
+    return (int) $stmt->fetchColumn();
+}
 
 function loadImages($rows, $prefix=""){        
         $dir = __DIR__ . '/../public/img/';   // cesta ke složce

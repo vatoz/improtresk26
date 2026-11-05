@@ -16,6 +16,10 @@
                 <div class="navbar-links" id="navbar-links">
                     <a href="/" {% if active_page == 'home' or not active_page %}class="active"{% endif %}>Domů</a>
                     <a href="/workshops" {% if active_page == 'workshops' %}class="active"{% endif %}>Workshopy</a>
+                    <a href="/tickets" {% if active_page == 'tickets' %}class="active"{% endif %}>Vstupenky</a>
+                    {% if merch_enabled %}
+                    <a href="/merch" {% if active_page == 'merch' %}class="active"{% endif %}>Merch</a>
+                    {% endif %}
                     <a href="/program" {% if active_page == 'program' %}class="active"{% endif %}>Program</a>
                     <a href="/harmonogram" {% if active_page == 'harmonogram' %}class="active"{% endif %}>Harmonogram</a>
                     <a href="/children" {% if active_page == 'children' %}class="active"{% endif %}>DětskýTřesk</a>
@@ -25,6 +29,12 @@
                     <a href="/contact" {% if active_page == 'contact' %}class="active"{% endif %}>Kontakt</a>
                     <div class="auth-buttons">
                         {% if user %}
+                            <a href="/cart" class="nav-cart{% if active_page == 'cart' %} active{% endif %}" title="Košík"
+                               data-count="{{ cart_count ?? 0 }}"{% if cart_changed ?? false %} data-cart-changed="1"{% endif %}>
+                                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
+                                <span class="nav-cart__count"{% if not (cart_count ?? 0) %} hidden{% endif %}>{{ cart_count ?? 0 }}</span>
+                                <span class="nav-cart__label">Košík</span>
+                            </a>
                             <a href="/dashboard" class="btn btn--outline btn--sm">U:{{ user.name }}</a>
                             {% if user.role == 'admin' %}
                                 <a href="/admin" class="btn btn--secondary btn--sm">Admin</a>

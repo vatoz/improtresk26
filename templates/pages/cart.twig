@@ -1,84 +1,98 @@
 {% extends 'base.twig' %}
 
-{% block title %}Průvodce registrací – Platba – Improtřesk 2027{% endblock %}
+{% block title %}Košík – Improtřesk 2027{% endblock %}
 
 {% block content %}
 <section class="section">
     <div class="container">
 
-        {{ include('inlines/wizard-progress.twig') }}
+        <h1>Košík</h1>
 
-        <h1>Krok 4: Platební údaje</h1>
+        {% if error %}
+            <div class="alert alert-error">{{ error }}</div>
+        {% endif %}
+        {% if success %}
+            <div class="alert alert-success">{{ success }}</div>
+        {% endif %}
+
+        {% set unpaidRegs  = registrations|filter(r => r.payment_status != 'paid') %}
+        {% set unpaidPurch = purchases|filter(p => p.payment_status != 'paid') %}
+
+        {% if unpaidRegs is empty and unpaidPurch is empty %}
+        <div class="card">
+            <div class="card__body">
+                <p>Košík je prázdný – nemáte žádné nezaplacené položky.</p>
+            </div>
+        </div>
+        {% else %}
 
         <div class="wizard-payment-grid">
 
             {# Order summary #}
             <div class="card">
                 <div class="card__header">
-                    <h2 class="wizard-section-title">Přehled objednávky</h2>
+                    <h2 class="wizard-section-title">Nezaplacené položky</h2>
                 </div>
                 <div class="card__body">
 
-                    {% if registrations is not empty %}
+                    {% if unpaidRegs is not empty %}
                         <h3 class="wizard-subsection">Workshopy</h3>
                         <table class="wizard-summary-table">
-                            {% for r in registrations %}
+                            {% for r in unpaidRegs %}
                             <tr{% if r.likely_no_spot is defined and r.likely_no_spot %} class="wps-row--nospot"{% endif %}>
                                 <td>
                                     {{ r.workshop_name }}
+                                    <div class="cart-sub">{{ r.timeslot_name }}</div>
                                     {% if r.likely_no_spot is defined and r.likely_no_spot %}
                                         <div class="wps-nospot-warn">
                                             ⚠ Na workshop se pravděpodobně nedostanete – do platby nezahrnuto.<br>
-                                            doporučujeme změnit workshop.
+                                            Doporučujeme změnit workshop.
                                         </div>
+                                    {% elseif r.payment_status == 'timeblock' %}
+                                        <div class="wps-nospot-warn">⚠ Překrývá se s jiným workshopem – do platby nezahrnuto.</div>
                                     {% endif %}
                                 </td>
-                                <td class="wizard-summary-status">
-                                    <span class="wizard-status wizard-status--{{ r.payment_status }}">
-                                        {% if r.payment_status == 'pending' %}čeká 
-                                        {% elseif r.payment_status == 'approved' %}schváleno
-                                        {% elseif r.payment_status == 'timeblock' %}Překryv, do platby nezahrnuto
-                                        {% elseif r.payment_status == 'paid' %}Již zaplaceno
-                                        {% else %}{{ r.payment_status }}{% endif %}
-                                    </span>
-                                </td>
-                                <td>{{ r.timeslot_name }}</td>
                                 <td class="wizard-summary-price">
-                                    {% if r.price > 0 %}{{ r.price|number_format(0, ',', ' ') }} Kč
-                                    {% elseif r.gray_price %}
-                                   <!-- <span style="color: #666">{{ r.gray_price|number_format(0, ',', ' ') }} Kč</span>-->
-
-                                    {% endif %}
-                                    
-
+                                    {% if r.price > 0 %}{{ r.price|number_format(0, ',', ' ') }} Kč{% endif %}
+                                </td>
+                                <td class="cart-remove">
+                                    <form method="POST" action="/dashboard/cancel-registration">
+                                        <input type="hidden" name="_csrf" value="{{ csrf }}">
+                                        <input type="hidden" name="_back" value="cart">
+                                        <input type="hidden" name="registration_id" value="{{ r.id }}">
+                                        <button type="submit" class="cart-remove-btn" title="Odebrat z košíku">✕</button>
+                                    </form>
                                 </td>
                             </tr>
                             {% endfor %}
                         </table>
                     {% endif %}
 
-                    {% if purchases is not empty %}
-                        <h3 class="wizard-subsection">Vstupenky a merch</h3>
-                        <table class="wizard-summary-table">
-                            {% for p in purchases %}
-                            <tr>
-                                <td>
-                                    {{ p.item_name }}
-                                    {% if p.quantity > 1 %}&nbsp;×&nbsp;{{ p.quantity }}{% endif %}
-                                </td>
-                                <td class="wizard-summary-status">
-                                    <span class="wizard-status wizard-status--{{ p.payment_status }}">
-                                        {% if p.payment_status == 'pending' %}čeká
-                                        {% elseif p.payment_status == 'approved' %}schváleno
-                                        {% elseif p.payment_status == 'paid' %}již zaplaceno
-                                        {% else %}{{ p.payment_status }}{% endif %}
-                                    </span>
-                                </td>
-                                <td class="wizard-summary-price">{{ (p.item_price * p.quantity)|number_format(0, ',', ' ') }} Kč</td>
-                            </tr>
-                            {% endfor %}
-                        </table>
-                    {% endif %}
+                    {% for group, label in {'ticket': 'Vstupenky', 'children': 'Vstupenky na Dětský třesk', 'merch': 'Merch'} %}
+                        {% set items = unpaidPurch|filter(p => p.cart_group == group) %}
+                        {% if items is not empty %}
+                            <h3 class="wizard-subsection">{{ label }}</h3>
+                            <table class="wizard-summary-table">
+                                {% for p in items %}
+                                <tr>
+                                    <td>
+                                        {{ p.item_name }}
+                                        {% if p.quantity > 1 %}&nbsp;×&nbsp;{{ p.quantity }}{% endif %}
+                                    </td>
+                                    <td class="wizard-summary-price">{{ (p.item_price * p.quantity)|number_format(0, ',', ' ') }} Kč</td>
+                                    <td class="cart-remove">
+                                        <form method="POST" action="/shop/cancel-purchase">
+                                            <input type="hidden" name="_csrf" value="{{ csrf }}">
+                                            <input type="hidden" name="_back" value="cart">
+                                            <input type="hidden" name="purchase_id" value="{{ p.id }}">
+                                            <button type="submit" class="cart-remove-btn" title="Odebrat z košíku">✕</button>
+                                        </form>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </table>
+                        {% endif %}
+                    {% endfor %}
 
                     <div class="wizard-total-row">
                         <span>Celkem k úhradě</span>
@@ -113,12 +127,58 @@
                 </div>
             </div>
 
-            {# Payment details #}
+            {% if not show_payment %}
+            {# Step 1: "Chci zaplatit" – required questions (if needed) + reminder opt-in #}
+            <div class="card">
+                <div class="card__header">
+                    <h2 class="wizard-section-title">Platba</h2>
+                </div>
+                <div class="card__body">
+                    <form method="POST" action="/cart/pay" class="cart-pay-form">
+                        <input type="hidden" name="_csrf" value="{{ csrf }}">
+
+                        {% if needs_questions is not empty %}
+                            <p class="cart-pay-intro"><strong>Před platbou prosím vyplňte povinné otázky</strong> (najdete je i ve <a href="/dashboard">svém přehledu</a>):</p>
+                            {% for q in needs_questions %}
+                                <div class="uq-question-block">
+                                    <p class="uq-question-text"><strong>{{ q.question }}</strong><span class="uq-required-mark" title="Povinná otázka"> *</span></p>
+                                    {% if q.description %}
+                                        <p class="uq-description">{{ q.description|nl2br }}</p>
+                                    {% endif %}
+                                    {% if q.ticket_id %}
+                                        <p>Při odpovědi „Ano“ vám do košíku automaticky přidáme patřičnou vstupenku.</p>
+                                    {% endif %}
+                                    {% if q.type == 'yes_no' %}
+                                        <label class="uq-radio"><input type="radio" name="answers[{{ q.id }}]" value="yes" required> Ano</label>
+                                        <label class="uq-radio"><input type="radio" name="answers[{{ q.id }}]" value="no"> Ne</label>
+                                    {% elseif q.type == 'phone' %}
+                                        <input type="tel" name="answers[{{ q.id }}]" class="uq-input" placeholder="+420 ..." required>
+                                    {% else %}
+                                        <input type="text" name="answers[{{ q.id }}]" class="uq-input" required>
+                                    {% endif %}
+                                </div>
+                            {% endfor %}
+                        {% endif %}
+
+                        <label class="cart-remind">
+                            <input type="checkbox" name="remind" value="1">
+                            Pošli mi připomínku mailem
+                        </label>
+
+                        <button type="submit" class="btn btn--primary btn--block">Chci zaplatit</button>
+                    </form>
+                </div>
+            </div>
+            {% else %}
+            {# Step 2: payment details #}
             <div class="card">
                 <div class="card__header">
                     <h2 class="wizard-section-title">Jak zaplatit</h2>
                 </div>
                 <div class="card__body">
+                    {% if reminder_on %}
+                        <p class="cart-remind-note">✉ Platební údaje vám za pár minut pošleme i e-mailem.</p>
+                    {% endif %}
                     <div class="wizard-qr-wrap">
                         <img src="{{ qr }}" alt="QR kód pro platbu" class="wizard-qr-img">
                         <p class="wizard-qr-caption">Naskenujte QR kód v mobilním bankovnictví</p>
@@ -151,10 +211,20 @@
                     </p>
                 </div>
             </div>
+            {% endif %}
 
         </div>
-        
-        {{ include('inlines/wizard-nav.twig') }}
+        {% endif %}
+
+        <div class="wizard-nav">
+            <a href="/workshops" class="btn btn--outline">Workshopy</a>
+            <a href="/tickets" class="btn btn--outline">Vstupenky</a>
+            {% if merch_enabled %}
+            <a href="/merch" class="btn btn--outline">Merch</a>
+            {% endif %}
+            <a href="/children" class="btn btn--outline">Dětský třesk</a>
+            <a href="/dashboard" class="btn btn--primary">Přejít na můj přehled</a>
+        </div>
 
     </div>
 </section>
@@ -275,6 +345,44 @@
     font-size: .8rem;
     color: #888;
     margin-top: .4rem !important;
+}
+.cart-sub { font-size: 0.8rem; color: var(--color-muted, #777); }
+.cart-remove { width: 2rem; text-align: right; }
+.cart-remove form { margin: 0; }
+.cart-remove-btn {
+    border: none;
+    background: none;
+    color: #c0392b;
+    font-size: 1rem;
+    cursor: pointer;
+    padding: 0.2rem 0.4rem;
+}
+.cart-remove-btn:hover { background: #fdecea; border-radius: 4px; }
+.cart-pay-intro { margin-top: 0; }
+.cart-remind {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin: 1rem 0;
+    cursor: pointer;
+}
+.cart-remind-note {
+    margin: 0 0 1rem;
+    font-size: 0.9rem;
+    color: #1a6fa8;
+}
+.uq-question-block { margin-bottom: 1rem; }
+.uq-question-text { margin: 0 0 0.25rem; }
+.uq-description { margin: 0 0 0.4rem; font-size: 0.85rem; color: var(--color-muted, #666); }
+.uq-required-mark { color: #c0392b; }
+.uq-radio { margin-right: 1rem; cursor: pointer; }
+.uq-input {
+    width: 100%;
+    padding: 0.45rem 0.6rem;
+    border: 1px solid var(--color-border, #ccc);
+    border-radius: 5px;
+    font-size: 1rem;
+    box-sizing: border-box;
 }
 </style>
 {% endblock %}

@@ -3,6 +3,7 @@ namespace App\Controllers;
 
 use App\Models\ChildrenItem;
 use App\Models\MailQueue;
+use App\Models\Merch;
 use App\Models\Workshop;
 use App\Models\TransactionList;
 use App\Services\FioService;
@@ -1027,6 +1028,7 @@ class AdminController extends BaseController
         if ($purchId > 0 && in_array($status, $allowed)) {
             $this->db->prepare("UPDATE purchases SET payment_status = ? WHERE id = ?")
                      ->execute([$status, $purchId]);
+            Merch::recountForPurchase($this->db, $purchId);
         }
 
         $back = $_POST['back'] ?? '/admin/pairing';
@@ -1332,6 +1334,7 @@ class AdminController extends BaseController
         $pairedProgramInfo   = [];
         $pairedStaticBlocks  = [];
         $pairedChildrenItem  = [];
+        $pairedMerch         = [];
         foreach (glob($imgDir . '*.{jpg,png}', GLOB_BRACE) ?: [] as $path) {
             $name = basename($path);
             if (str_contains($name, ':')) continue;
@@ -1341,6 +1344,8 @@ class AdminController extends BaseController
                 $pairedStaticBlocks[(int) $m[1]] = $name;
             } elseif (preg_match('/^d(\d+)\.(jpg|png)$/i', $name, $m)) {
                 $pairedChildrenItem[(int) $m[1]] = $name;
+            } elseif (preg_match('/^m(\d+)\.(jpg|png)$/i', $name, $m)) {
+                $pairedMerch[(int) $m[1]] = $name;
             } elseif (preg_match('/^(\d+)\.(jpg|png)$/i', $name, $m)) {
                 $pairedPeople[(int) $m[1]] = $name;
             }
@@ -1386,9 +1391,19 @@ class AdminController extends BaseController
             }
         }
 
+        // Merch items without an image
+        $rows = $this->db->query("SELECT id, name FROM merch ORDER BY id")->fetchAll(\PDO::FETCH_ASSOC);
+        $unpairedMerch = [];
+        foreach ($rows as $r) {
+            $id = (int) $r['id'];
+            if (!isset($pairedMerch[$id])) {
+                $unpairedMerch[] = $r;
+            }
+        }
+
         // All existing images for the gallery
         $images = [];
-        foreach (array_merge($pairedPeople, $pairedProgramInfo, $pairedStaticBlocks,$pairedChildrenItem) as $name) {
+        foreach (array_merge($pairedPeople, $pairedProgramInfo, $pairedStaticBlocks, $pairedChildrenItem, $pairedMerch) as $name) {
             $images[] = ['name' => $name, 'size' => filesize($imgDir . $name)];
         }
         usort($images, fn($a, $b) => strnatcmp($a['name'], $b['name']));
@@ -1404,6 +1419,7 @@ class AdminController extends BaseController
             'unpaired_program'      => $unpairedProgramInfo,
             'unpaired_static_blocks'=> $unpairedStaticBlocks,
             'unpaired_children_item'=> $unpairedChildrenItems,
+            'unpaired_merch'        => $unpairedMerch,
             'images'                => $images,
             'csrf'                  => csrf_token('admin-images'),
             'success'               => $success,
@@ -1424,7 +1440,7 @@ class AdminController extends BaseController
         $targetType = $_POST['target_type'] ?? '';
         $targetId   = (int) ($_POST['target_id'] ?? 0);
 
-        if (!in_array($targetType, ['person', 'program_info', 'static_block','children_item'], true) || $targetId <= 0) {
+        if (!in_array($targetType, ['person', 'program_info', 'static_block', 'children_item', 'merch'], true) || $targetId <= 0) {
             $_SESSION['admin_images_error'] = 'Neplatný cíl nahrání.';
             header('Location: /admin/images');
             exit;
@@ -1435,7 +1451,8 @@ class AdminController extends BaseController
             'person'       => 'people',
             'program_info' => 'program_info',
             'static_block' => 'static_blocks',
-            'children_item' => 'children_items'
+            'children_item' => 'children_items',
+            'merch'        => 'merch',
         };
         $stmt = $this->db->prepare("SELECT id FROM {$table} WHERE id = ?");
         $stmt->execute([$targetId]);
@@ -1450,6 +1467,7 @@ class AdminController extends BaseController
             'program_info' => "c{$targetId}",
             'static_block' => "s{$targetId}",
             'children_item' => "d{$targetId}",
+            'merch'        => "m{$targetId}",
             default        => (string) $targetId,
         };
 

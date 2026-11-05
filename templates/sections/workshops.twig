@@ -2,72 +2,74 @@
 <div class="container">
     <h1>Workshopy</h1>
 
-    {% set totalWorkshops = workshops_no_timeslot|length %}
-    {% for ts in timeslots %}
-        {% set totalWorkshops = totalWorkshops + (workshops_by_timeslot[ts.code] ?? [])|length %}
-    {% endfor %}
+    {% if user %}
+        <div class="card ws-reg-info">
+            <div class="card__body">
+                {% if not registration_open %}
+                    <h3>Přihlašování na workshopy ještě nebylo spuštěno.</h3>
+                {% else %}
+                    {{ include('inlines/wizard-info.twig') }}
+                {% endif %}
+                <a href="/cart" class="btn btn--primary btn--sm">Košík a platební údaje</a>
+            </div>
+        </div>
+    {% endif %}
 
-    {% if totalWorkshops == 0 %}
+    {% if error %}
+        <div class="alert alert-error">{{ error }}</div>
+    {% endif %}
+    {% if success %}
+        <div class="alert alert-success">{{ success }}</div>
+    {% endif %}
+
+    {% if groups is empty %}
         <div class="card">
             <div class="card__body">
                 <p>Momentálně nejsou k dispozici žádné workshopy. Zkuste to prosím později.</p>
             </div>
         </div>
     {% else %}
-
-        {% for ts in timeslots %}
-            {% set group = workshops_by_timeslot[ts.code] ?? [] %}
-            {% if group is not empty %}
-                <section class="workshops-timeslot-section">
-                    <h2 class="workshops-timeslot-heading  random{{ ts.id }} " id="ts-{{ ts.code }}" >
+        {% set reg = {
+            'enabled': user and registration_open,
+            'csrf': csrf
+        } %}
+        {% for group in groups %}
+            {% set ts = group.ts %}
+            <section class="workshops-timeslot-section">
+                {% if ts %}
+                    <h2 class="workshops-timeslot-heading random{{ ts.id }}" id="ts-{{ ts.code }}">
                         {{ ts.name }}
                         <span class="workshops-timeslot-code">({{ ts.code }})</span>
                     </h2>
-                    <div >
-                        {% if ts and ts.start_datetime %}
-                            <div class="workshop-detail-item">
-                            <strong>Začátek:</strong> {{ ts.start_datetime|date('j.n.Y H:i') }}
-                            </div>
+                    <div>
+                        {% if ts.start_datetime %}
+                            <div class="workshop-detail-item"><strong>Začátek:</strong> {{ ts.start_datetime|date('j.n.Y H:i') }}</div>
                         {% endif %}
-                            {% if ts and ts.end_datetime %}
-                        <div class="workshop-detail-item">
-                            <strong>Konec:</strong> {{ ts.end_datetime|date('j.n.Y H:i') }}
-                        </div>
+                        {% if ts.end_datetime %}
+                            <div class="workshop-detail-item"><strong>Konec:</strong> {{ ts.end_datetime|date('j.n.Y H:i') }}</div>
                         {% endif %}
-                        {% if ts and ts.duration_minutes %}
-                        <div class="workshop-detail-item">
-                            <strong>Délka:</strong> {{ ts.duration_minutes }} min
-                        </div>
+                        {% if ts.duration_minutes %}
+                            <div class="workshop-detail-item"><strong>Délka:</strong> {{ ts.duration_minutes }} min</div>
                         {% endif %}
                     </div>
-                    <div class="workshops-grid">
-                        {% for workshop in group %}
-                            {{ _self.workshopCard(workshop, user, people_by_workshop[workshop.id] ?? [], photo, ts) }}
-                        {% endfor %}
-                    </div>
-                </section>
-            {% endif %}
-        {% endfor %}
-
-        {% if workshops_no_timeslot is not empty %}
-            <section class="workshops-timeslot-section">
-                <h2 class="workshops-timeslot-heading">Ostatní workshopy</h2>
+                {% else %}
+                    <h2 class="workshops-timeslot-heading">Ostatní workshopy</h2>
+                {% endif %}
                 <div class="workshops-grid">
-                    {% for workshop in workshops_no_timeslot %}
-                        {{ _self.workshopCard(workshop, user, people_by_workshop[workshop.id] ?? [], photo, null) }}
+                    {% for workshop in group.workshops %}
+                        {{ _self.workshopCard(workshop, user, people_by_workshop[workshop.id] ?? [], photo, ts, reg) }}
                     {% endfor %}
                 </div>
             </section>
-        {% endif %}
-
+        {% endfor %}
     {% endif %}
 </div>
 
-{% macro workshopCard(workshop, user, lidi, fotky, ts) %}
+{% macro workshopCard(workshop, user, lidi, fotky, ts, reg) %}
     {% set isFull = workshop.paid  <= workshop.capacity %}
     
     
-    <div class="workshop-card {{ isFull ? 'full' : '' }}{% if workshop.cancelled %} cancelled{% endif %}" data-workshop-id="{{ workshop.id }}" id="workshop-{{ workshop.id }}">
+    <div class="workshop-card{% if workshop.alreadyRegistered %} bg4{% endif %} {{ isFull ? 'full' : '' }}{% if workshop.cancelled %} cancelled{% endif %}" data-workshop-id="{{ workshop.id }}" id="workshop-{{ workshop.id }}">
         <div class="workshop-header">
             <h3 class="workshop-title">{{ workshop.name }} </h3>
             {% if workshop.cancelled %}
@@ -128,6 +130,34 @@
                         {% endif %}
                 </div>
             </div>
+
+            {% if reg.enabled %}
+                <div class="ws-actions">
+                    {% if workshop.alreadyRegistered == 'paid' %}
+                        <span class="ws-paid-badge">Zaplaceno!</span>
+                    {% elseif workshop.alreadyRegistered %}
+                        <form method="POST" action="/workshops/register" class="ws-action-form">
+                            <input type="hidden" name="_csrf" value="{{ reg.csrf }}">
+                            <input type="hidden" name="cancel_workshop_id" value="{{ workshop.id }}">
+                            <button type="submit" class="btn btn--outline btn--sm">Zrušit registraci</button>
+                            {% if workshop.queue_position is defined and workshop.queue_position + 1 > workshop.capacity %}
+                                <span class="ws-queue">
+                                    Na čekací listině je dost lidí před vámi.<br>
+                                    Doporučujeme zrušit registraci a vybrat si jiný workshop nebo napsat organizátorům.
+                                </span>
+                            {% endif %}
+                        </form>
+                    {% elseif workshop.can_register %}
+                        <form method="POST" action="/workshops/register" class="ws-action-form">
+                            <input type="hidden" name="_csrf" value="{{ reg.csrf }}">
+                            <input type="hidden" name="workshop_id" value="{{ workshop.id }}">
+                            <button type="submit" class="btn btn--primary btn--sm">Přihodit workshop do košíku</button>
+                        </form>
+                    {% elseif not workshop.cancelled and workshop.timeslot %}
+                        <span class="ws-full-badge">Na workshop teď není možné se přihlásit.</span>
+                    {% endif %}
+                </div>
+            {% endif %}
   
               
         </div>
@@ -207,4 +237,106 @@
     letter-spacing: 0.04em;
     text-transform: uppercase;
 }
+.ws-reg-info { margin-bottom: 1.5rem; }
+.ws-actions {
+    margin-top: 0.75rem;
+    padding-top: 0.75rem;
+    border-top: 1px solid var(--color-border, #e0e0e0);
+}
+.ws-action-form button:disabled { opacity: 0.6; cursor: default; }
+.ws-paid-badge { display: inline-block; font-weight: 700; color: #27ae60; }
+.ws-full-badge, .ws-action-error {
+    display: inline-block;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #c0392b;
+}
+.ws-action-error { display: block; margin: 0 0 0.35rem; }
+.ws-queue {
+    display: block;
+    margin-top: 0.4rem;
+    font-size: 0.82rem;
+    color: #1a6fa8;
+}
 </style>
+
+<script>
+(function () {
+    var forms = document.querySelectorAll('.ws-action-form');
+    if (!forms.length) return;
+
+    function esc(s) {
+        return String(s).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    }
+
+    var isHero = {{ is_hero ? 'true' : 'false' }};
+
+    function registerHtml(csrf, id, resp) {
+        if (!isHero && (resp.paid >= resp.capacity || resp.enrolled_count >= resp.capacity)) {
+            return '<span class="ws-full-badge">Na workshop teď není možné se přihlásit.</span>';
+        }
+        return '<form method="POST" action="/workshops/register" class="ws-action-form">'
+             + '<input type="hidden" name="_csrf" value="' + esc(csrf) + '">'
+             + '<input type="hidden" name="workshop_id" value="' + id + '">'
+             + '<button type="submit" class="btn btn--primary btn--sm">Přihodit workshop do košíku</button>'
+             + '</form>';
+    }
+
+    function cancelHtml(csrf, id, resp) {
+        var html = '<form method="POST" action="/workshops/register" class="ws-action-form">'
+                 + '<input type="hidden" name="_csrf" value="' + esc(csrf) + '">'
+                 + '<input type="hidden" name="cancel_workshop_id" value="' + id + '">'
+                 + '<button type="submit" class="btn btn--outline btn--sm">Zrušit registraci</button>';
+        if (resp.queue_position !== null && resp.queue_position + 1 > resp.capacity) {
+            html += '<span class="ws-queue">Workshop má aktuálně zaregistrováno víc lidí, než je míst.<br>'
+                  + 'Doporučujeme si vybrat jiný workshop.</span>';
+        }
+        return html + '</form>';
+    }
+
+    document.addEventListener('submit', function (e) {
+        var form = e.target.closest('.ws-action-form');
+        if (!form) return;
+        e.preventDefault();
+
+        var card       = form.closest('[data-workshop-id]');
+        var actionsDiv = form.closest('.ws-actions');
+        var btn        = form.querySelector('button[type="submit"]');
+        var csrf       = form.querySelector('[name="_csrf"]').value;
+        var savedHtml  = actionsDiv.innerHTML;
+
+        btn.disabled    = true;
+        btn.textContent = '\u2026';
+
+        var data = new FormData(form);
+        data.append('_ajax', '1');
+
+        fetch('/workshops/register', { method: 'POST', body: data })
+            .then(function (r) {
+                if (!r.ok) throw new Error('HTTP ' + r.status);
+                return r.json();
+            })
+            .then(function (resp) {
+                if (!resp.ok) {
+                    actionsDiv.innerHTML = savedHtml;
+                    var err = document.createElement('p');
+                    err.className   = 'ws-action-error';
+                    err.textContent = resp.error || 'Chyba. Zkuste to znovu.';
+                    actionsDiv.prepend(err);
+                    return;
+                }
+                if (window.cartChanged) window.cartChanged(resp.cart_count);
+                if (resp.action === 'registered') {
+                    card.classList.add('bg4');
+                    actionsDiv.innerHTML = cancelHtml(csrf, resp.workshop_id, resp);
+                } else {
+                    card.classList.remove('bg4');
+                    actionsDiv.innerHTML = registerHtml(csrf, resp.workshop_id, resp);
+                }
+            })
+            .catch(function () {
+                actionsDiv.innerHTML = savedHtml;
+            });
+    });
+}());
+</script>

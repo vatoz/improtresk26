@@ -1,84 +1,176 @@
 <div class="container">
     <h1>Merch</h1>
-     <a href="/dashboard" class="btn btn--primary btn--block">Vrátit se na přehled</a>
-    {% if items is empty %}
+
+    {% if error %}
+        <div class="alert alert-error">{{ error }}</div>
+    {% endif %}
+    {% if success %}
+        <div class="alert alert-success">{{ success }} <a href="/cart">Přejít do košíku</a></div>
+    {% endif %}
+
+    {% if groups is empty %}
         <div class="card">
             <div class="card__body">
                 <p>Momentálně není k dispozici žádný merch. Zkuste to prosím později.</p>
             </div>
         </div>
     {% else %}
-        <div class="shop-grid">
-            {% for item in items %}
-                {% set alreadyOrdered = item.id in user_purchased_ids %}
-                <div class="shop-card">
-                    <div class="shop-card__body">
-                        <h3 class="shop-card__name">{{ item.name }}</h3>
+        {% for group in groups %}
+            {% set prices = group.variants|map(v => v.price) %}
+            <section class="merch-section" id="merch_{{ group.id }}">
+                <div class="merch-item card{% if group.state != 'available' %} merch-item--unavailable{% endif %}">
+                    <div class="card__body">
+                        <h2 class="merch-item__title">{{ group.name }}</h2>
+                        <div class="merch-item__price">
+                            {% if min(prices) == max(prices) %}
+                                {{ min(prices)|number_format(0, ',', ' ') }} Kč
+                            {% else %}
+                                {{ min(prices)|number_format(0, ',', ' ') }} – {{ max(prices)|number_format(0, ',', ' ') }} Kč
+                            {% endif %}
+                            {% if group.variants|length > 1 %}
+                                <span class="merch-item__count">· varianty: {{ group.variants|length }}</span>
+                            {% endif %}
+                        </div>
 
-                        {% if item.description %}
-                            <p class="shop-card__desc">{{ item.description }}</p>
+                        {% if group.photo %}
+                            <img class="merch-item__img" src="/img/{{ group.photo }}" alt="{{ group.name }}" loading="lazy">
                         {% endif %}
 
-                        <div class="shop-card__footer">
-                            <span class="shop-card__price">{{ item.price|number_format(0, ',', ' ') }} Kč</span>
+                        {% if group.description %}
+                            <div class="merch-item__desc">{{ group.description|raw|nl2br|cz_nbsp }}</div>
+                        {% endif %}
 
-                            {% if user %}
-                                <form method="POST" action="/shop/buy">
-                                    <input type="hidden" name="_csrf"      value="{{ csrf }}">
-                                    <input type="hidden" name="item_type" value="merch">
-                                    <input type="hidden" name="item_id"   value="{{ item.id }}">
-                                    <button type="submit" class="btn btn--primary btn--sm">
-                                        {% if alreadyOrdered %}Přidat další{% else %}Objednat{% endif %}
-                                    </button>
-                                </form>
-                            {% else %}
-                                <a href="/login" class="btn btn--outline btn--sm">Přihlásit se</a>
-                            {% endif %}
+                        <div class="merch-variants" id="variants_{{ group.id }}">
+                            <h4 class="merch-variants__heading">
+                                {{ group.variants|length > 1 ? 'Vyberte variantu' : 'Objednávka' }}
+                            </h4>
+                            {% for v in group.variants %}
+                                {% set alreadyOrdered = v.id in user_purchased_ids %}
+                                <div class="merch-variants__row{% if v.state != 'available' %} merch-variants__row--off{% endif %}">
+                                    {% if v.photo is defined and v.photo and not v.is_parent %}
+                                        <img class="merch-variants__thumb" src="/img/{{ v.photo }}" alt="{{ v.name }}" loading="lazy">
+                                    {% endif %}
+                                    <div class="merch-variants__info">
+                                        <span class="merch-variants__name">{{ v.name }}</span>
+                                        {% if v.description and not v.is_parent %}
+                                            <span class="merch-variants__desc">{{ v.description|raw|cz_nbsp }}</span>
+                                        {% endif %}
+                                        <span class="merch-variants__meta">
+                                            {% if v.state == 'available' %}
+                                                Objednávky do {{ v.sale_until|date('j. n. Y') }}
+                                                {% if v.stock_total is not null %}· zbývá {{ v.stock_available }} ks{% endif %}
+                                            {% elseif v.state == 'soldout' %}
+                                                Vyprodáno
+                                            {% else %}
+                                                Objednávky skončily {{ v.sale_until|date('j. n. Y') }}
+                                            {% endif %}
+                                        </span>
+                                        {% if alreadyOrdered %}
+                                            <span class="merch-variants__incart">Už máte objednáno</span>
+                                        {% endif %}
+                                    </div>
+                                    <span class="merch-variants__price">{{ v.price|number_format(0, ',', ' ') }} Kč</span>
+                                    <div class="merch-variants__action">
+                                        {% if v.state != 'available' %}
+                                            <span class="btn btn--outline btn--sm btn--disabled">Nedostupné</span>
+                                        {% elseif user %}
+                                            <form method="POST" action="/shop/buy">
+                                                <input type="hidden" name="_csrf"     value="{{ csrf }}">
+                                                <input type="hidden" name="item_type" value="merch">
+                                                <input type="hidden" name="item_id"   value="{{ v.id }}">
+                                                <button type="submit" class="btn btn--primary btn--sm">
+                                                    {% if alreadyOrdered %}Přidat další{% else %}Do košíku{% endif %}
+                                                </button>
+                                            </form>
+                                        {% else %}
+                                            <a href="/login" class="btn btn--outline btn--sm">Přihlásit se</a>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            {% endfor %}
                         </div>
                     </div>
                 </div>
-            {% endfor %}
+            </section>
+        {% endfor %}
+    {% endif %}
+
+    {% if user %}
+        <div class="shop-nav">
+            <a href="/cart" class="btn btn--primary">Košík a platební údaje</a>
+            <a href="/dashboard" class="btn btn--outline">Můj přehled</a>
         </div>
     {% endif %}
 </div>
 
 <style>
-.shop-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-    gap: 1.25rem;
-    margin-top: 1.5rem;
+.merch-section { margin-bottom: 1.5rem; }
+.merch-item__title {
+    margin: 0 0 0.3rem;
 }
-.shop-card {
-    background: var(--color-card-bg, #fff);
-    border: 1px solid var(--color-border, #e0e0e0);
-    border-radius: 8px;
-    overflow: hidden;
-}
-.shop-card__body {
-    padding: 1.25rem;
-    display: flex;
-    flex-direction: column;
-    gap: 0.6rem;
-}
-.shop-card__name {
-    margin: 0;
+.merch-item__price {
     font-size: 1.1rem;
-}
-.shop-card__desc {
-    margin: 0;
-    font-size: 0.9rem;
-    color: var(--color-muted, #666);
-}
-.shop-card__footer {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-top: 0.5rem;
-}
-.shop-card__price {
-    font-size: 1.15rem;
     font-weight: 700;
     color: var(--color-primary, #c0392b);
+    margin-bottom: 0.8rem;
 }
+.merch-item__count {
+    font-size: 0.9rem;
+    font-weight: 400;
+    color: var(--color-muted, #888);
+}
+.merch-item__img {
+    float: right;
+    width: 40%;
+    max-width: 420px;
+    margin: 0 0 1em 2em;
+    border: thick solid grey;
+}
+@media (max-width: 700px) {
+    .merch-item__img { float: none; display: block; width: 100%; max-width: none; margin: 0 0 1em; }
+}
+.merch-item__desc { margin-top: 0.5rem; }
+.merch-item--unavailable .merch-item__img { filter: grayscale(1); opacity: .6; }
+
+.merch-variants {
+    clear: both;
+    margin-top: 1.25rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--color-border, #e8e8e8);
+}
+.merch-variants__heading {
+    margin: 0 0 0.6rem;
+    font-size: 0.95rem;
+    color: var(--color-muted, #555);
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+}
+.merch-variants__row {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 0.6rem 0;
+    border-bottom: 1px solid var(--color-border, #f2f2f2);
+    flex-wrap: wrap;
+}
+.merch-variants__row--off { opacity: .55; }
+.merch-variants__thumb {
+    width: 56px; height: 56px;
+    object-fit: cover;
+    border-radius: 4px;
+}
+.merch-variants__info {
+    flex: 1 1 14rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.1rem;
+}
+.merch-variants__name   { font-weight: 600; }
+.merch-variants__desc,
+.merch-variants__meta   { font-size: 0.82rem; color: var(--color-muted, #888); }
+.merch-variants__incart { font-size: 0.82rem; font-weight: 600; color: #27ae60; }
+.merch-variants__price  { font-weight: 700; white-space: nowrap; min-width: 5rem; text-align: right; }
+.merch-variants__action { min-width: 8rem; text-align: right; }
+.shop-nav { display: flex; gap: 0.75rem; flex-wrap: wrap; margin-top: 2rem; }
 </style>
+

@@ -239,6 +239,59 @@ a:hover {
   gap: var(--space-8);
   margin-top: var(--space-16);
 }
+
+/* Cart icon in navigation */
+.navbar-links a.nav-cart {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+.nav-cart__count {
+  position: absolute;
+  top: -2px;
+  left: 18px;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 4px;
+  border-radius: 999px;
+  background: #c0392b;
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 18px;
+  text-align: center;
+}
+@media (min-width: 768px) {
+  .nav-cart__label { display: none; }
+}
+.nav-cart__count[hidden] { display: none; }
+
+/* Cart changed: gold blink + star instead of the count (see cartChanged() in app.js) */
+@keyframes cart-gold-blink {
+  0%, 100% { color: inherit; filter: none; transform: scale(1); }
+  20%, 60% { color: #e6a800; filter: drop-shadow(0 0 6px #ffd447); transform: scale(1.25); }
+  40%, 80% { color: inherit; filter: none; transform: scale(1); }
+}
+@keyframes cart-star-pop {
+  0%   { transform: scale(0.3) rotate(-90deg); }
+  60%  { transform: scale(1.4) rotate(15deg); }
+  100% { transform: scale(1) rotate(0); }
+}
+.navbar-links a.nav-cart--changed svg,
+.menu-toggle.nav-cart--changed {
+  animation: cart-gold-blink 1.8s ease-in-out;
+}
+.nav-cart--changed .nav-cart__count {
+  background: #e6a800;
+  color: #fff;
+  animation: cart-star-pop 0.5s ease-out;
+}
+@media (prefers-reduced-motion: reduce) {
+  .navbar-links a.nav-cart--changed svg,
+  .menu-toggle.nav-cart--changed,
+  .nav-cart--changed .nav-cart__count { animation: none; }
+}
 @media print {
   .navbar,.countdown-section{
     display: none !important;

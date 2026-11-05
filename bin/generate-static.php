@@ -57,6 +57,7 @@ $twig = new Environment(new FilesystemLoader($root . '/templates'), [
 ]);
 $twig->addFilter(new \Twig\TwigFilter('cz_nbsp', 'fixCzechOrphans', ['is_safe' => ['html']]));
 $twig->addFilter(new \Twig\TwigFilter('trimStartZero', 'trimStartZero', ['is_safe' => ['html']]));
+$twig->addGlobal('merch_enabled', merch_enabled());
 
 // Sessions are not started in CLI; expose an empty array so csrf_token() / getCurrentUser() work.
 $_SESSION = $_SESSION ?? [];

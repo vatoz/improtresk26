@@ -49,19 +49,15 @@
             <div class="card__body">
         {% if registration_start and registration_start|date('U') > "now"|date('U') %}
             {% if user.role == 'admin' %}          
-                    <a href="/wizard" class="btn btn--primary"  class="btn btn--outline">Wizard pro admina</a>                                                      
+                    <a href="/workshops" class="btn btn--primary"  class="btn btn--outline">Přihlásit se na workshopy (admin)</a>                                                      
                 {% else %}
                     <h3>Tlačítko ještě čeká na spuštění. </h3>
                     {% if questions_blocking %}Doporučujem taky vyplnit povinné otázky.{% endif %}            
             {% endif %}    
         {% else %}
             <a href="/ticket_please" class="btn btn--primary"  class="btn btn--outline">Chci jenom vstupenku na večerní program</a>   
-                {% if questions_blocking %}
-                    <span class="btn btn--primary btn--disabled" title="Nejprve vyplňte povinné otázky">Nejprve vyplňte povinné otázky, pak tu bude Průvodce výběrem workshopů</span>
-                {% else %}
-                    <a href="/wizard" class="btn btn--primary"  class="btn btn--outline">Průvodce výběrem workshopů</a>
-                    <a href="/wizard/payment" class="btn btn--primary"  class="btn btn--outline">Zobrazit platební detaily</a>
-                {% endif %}            
+                <a href="/workshops" class="btn btn--primary">Přihlásit se na workshopy</a>
+                <a href="/cart" class="btn btn--primary">Košík a platební údaje</a>
         {% endif %}
         {{ include('inlines/wizard-info.twig') }}
         </div>
@@ -73,7 +69,7 @@
                 <h3>Doplňující informace</h3>
                 {% if questions_blocking %}
                     <div class="alert alert-warning uq-blocking-notice">
-                        Nejprve vyplňte povinné otázky (označené <span class="uq-required-mark">*</span>). Pak budou dostupné další funkce.
+                        Vyplňte prosím povinné otázky (označené <span class="uq-required-mark">*</span>). Bez nich nebude možné zaplatit.
                     </div>
                 {% endif %}
 
@@ -177,15 +173,11 @@
                                 Čekám na spuštění přihlašování.
                             
                             {% else%}
-                            {% if questions_blocking %}
-                                <br><span class="btn btn--primary btn--disabled" title="Nejprve vyplňte povinné otázky">Vybrat si workshopy</span>
-                            {% else %}
-                                <br><a href="/wizard" class="btn btn--primary"  class="btn btn--outline">Vybrat si workshopy</a>
-                            {% endif %}
+                                <br><a href="/workshops" class="btn btn--primary">Vybrat si workshopy</a>
                             {% endif %}
                         </p>
                      {% if user.role == 'admin' %}
-                     <a href="/wizard" class="btn btn--primary"  class="btn btn--outline">Vybrat si workshopy (ADMIN)</a>
+                     <a href="/workshops" class="btn btn--primary"  class="btn btn--outline">Vybrat si workshopy (ADMIN)</a>
                      {% endif %} 
                      
                     {% else %}
@@ -293,12 +285,14 @@
                          <p>
                          <span class="dashboard-status dashboard-status--paid">Zaplaceno</span> je takový workshop, na který dle systému nyní půjdeš..                        <br>
                         <span class="dashboard-status dashboard-status--pending">Čeká </span> neboť za něj zatím nebylo zaplaceno. Na stránce s platbou zjistíš svoji pozici.                        <br>
-                        U něčeho je <span class="dashboard-status dashboard-status--upgradable">Možný upgrade</span>, pokud se uvolní dost míst.                        <br>
+                        <!--U něčeho je <span class="dashboard-status dashboard-status--upgradable">Možný upgrade</span>, pokud se uvolní dost míst.                        <br>-->
                     
-                        <span class="dashboard-status dashboard-status--notpaid">Nezaplaceno, zrušeno</span> protože nedorazila platba včas (do 6 hodin)<br>
+                        <span class="dashboard-status dashboard-status--notpaid">Nezaplaceno, zrušeno</span> protože nedorazila platba včas (do 6 hodin od vložení do košíku)<br>
                         <span class="dashboard-status dashboard-status--cancelled">Zrušeno</span> z libovolných důvodů tebou.                        <br>
                         <span class="dashboard-status dashboard-status--refunded">Platba vrácena</span> v případě nějakých divnokomplikací.                        <br>
-                        <span class="dashboard-status dashboard-status--skipped">Přeskočeno, vybrána lepší varianta</span> znamená, že tebou lépe hodnocený workshop dle tvého pořadí měl pro tebe volné místo (nastavuje admin a případně to umí změnit, napiš nám.).                              <br>
+                        <!-- <span class="dashboard-status dashboard-status--skipped">Přeskočeno, vybrána lepší varianta</span> znamená, že tebou lépe hodnocený workshop dle tvého pořadí měl pro tebe volné místo (nastavuje admin a případně to umí změnit, napiš nám.).                              <br>-->
+                        Pokud chceš workshop změnit, napiš nám. Klidně předtím si udělej na ten nový registraci.
+
                         
 
                 </div>
@@ -312,12 +306,9 @@
                 <div class="purchases-header">
                     <h3>Moje nákupy</h3>
                     <div class="shop-links">
-                        {% if questions_blocking %}
-                            <span class="btn btn--outline btn--sm btn--disabled" title="Nejprve vyplňte povinné otázky">Vstupenky</span>
-                            <span class="btn btn--outline btn--sm btn--disabled" title="Nejprve vyplňte povinné otázky">Merch</span>
-                        {% else %}
-                            <a href="/tickets" class="btn btn--outline btn--sm">Vstupenky</a>
-                            <a href="/merch"   class="btn btn--outline btn--sm">Merch</a>
+                        <a href="/tickets" class="btn btn--outline btn--sm">Vstupenky</a>
+                        {% if merch_enabled %}
+                        <a href="/merch"   class="btn btn--outline btn--sm">Merch</a>
                         {% endif %}
                     </div>
                 </div>
